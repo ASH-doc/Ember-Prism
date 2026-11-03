@@ -33,6 +33,10 @@ bool spireOnEnumLattice(double v) {
     return std::abs(scaled - std::round(scaled)) < 0.005;
 }
 
+int spireEnumIndex(double storedValue) {
+    return spireOnEnumLattice(storedValue) ? static_cast<int>(std::round(storedValue * 999.0)) : -1;
+}
+
 DecodeResult decodeSpire(const void* data, size_t size, const std::string& fileName) {
     if (data == nullptr || size == 0) return blocked("The file is empty.");
     if (size > kSpireMaxFileBytes) return blocked("The file is larger than 2 MB, which is far beyond a Spire preset.");

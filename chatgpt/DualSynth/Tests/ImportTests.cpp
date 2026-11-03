@@ -45,6 +45,7 @@ int main() {
         require(sawGroups && sawGlobal, "groups come from the name prefix");
         require(!r.patch.warnings.empty(), "the ignored icon is mentioned as a warning");
         require(spireEnumIndex(0.002002) == 2 && spireEnumIndex(0.017017) == 17 && spireEnumIndex(0) == 0, "list choices decode as index / 999");
+        require(spireEnumIndex(1.0e100) == -1 && spireEnumIndex(0.5) == -1, "invalid enum values are rejected before integer conversion");
         require(spireOnEnumLattice(0.007007) && !spireOnEnumLattice(0.5) && !spireOnEnumLattice(0.47) && !spireOnEnumLattice(1.5), "lattice check");
     }
     // A byte-order mark is accepted.

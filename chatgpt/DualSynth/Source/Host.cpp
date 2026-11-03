@@ -262,6 +262,25 @@ Result DualProcessor::loadPerformance(const void* data,int length){
  panel.store(jlimit(0,1,int(tree["panel"])));state.replaceState(tree);panic.store(true);
  return Result::ok();
 }
+Result DualProcessor::applyImport(const aether::import::ImportReport& report,
+                                  const var& nativePatch, bool acceptApproximation){
+ using namespace aether::import;
+ if(report.result == FileResult::Blocked || !report.blocker.empty())
+  return Result::fail("This preset is blocked.");
+ if((report.result == FileResult::Approximation || report.approximated() || report.omitted())
+     && !acceptApproximation)
+  return Result::fail("This preset requires explicit approval of the approximation.");
+ if(report.format != SourceFormat::SpireSpf2 || report.target != TargetEngine::Ember)
+  return Result::fail("This import format and target are not enabled.");
+ const ScopedLock recall(recallLock);
+ if(auto checked = a.setPatch(nativePatch, false); checked.failed())
+  return checked;
+ const ScopeGuard clearPending{[this] { publicationPending.store(false); }};
+ publicationPending.store(true);
+ const ScopedLock publication(publicationLock);
+ return a.setPatch(nativePatch);
+}
+
 void DualProcessor::setStateInformation(const void* data,int length){
  const auto result=loadPerformance(data,length);
  const ScopedLock lock(loadErrorLock);loadError=result.failed()?result.getErrorMessage():String();

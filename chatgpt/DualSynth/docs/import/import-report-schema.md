@@ -58,7 +58,7 @@ Row meanings (agreed in the contract):
   "result": "Approximation",
   "format": "Spire .spf2",
   "target": "Ember",
-  "headline": "Playable with 2 approximations, 1 omission",
+  "headline": "Playable with 1 approximation and 1 omission",
   "blocker": "",
   "rows": [
     { "parameter": "EMBER filter 1 cutoff", "sourceValue": "0.62 (stored)", "nativeValue": "3.1 kHz", "status": "Mapped", "reason": "" },

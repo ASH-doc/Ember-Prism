@@ -1,8 +1,24 @@
 #include "Host.h"
+#include "Import/SpireDecoder.h"
 #include "sa-editor.h"
 #include "sb-ui.h"
 using namespace juce;
 namespace {
+class ImportPreviewWindow final : public AlertWindow {
+public:
+ ImportPreviewWindow(const String& title, const String& message, Component* parent)
+     : AlertWindow(title,message,MessageBoxIconType::NoIcon,parent){}
+ ~ImportPreviewWindow() override { if(getNumCustomComponents()!=0) removeCustomComponent(0); }
+ void showDetails(const String& text){
+  details.setMultiLine(true);
+  details.setReadOnly(true);
+  details.setText(text,false);
+  details.setSize(540,210);
+  addCustomComponent(&details);
+ }
+private:
+ TextEditor details;
+};
 Colour navy(){return Colour(0xff0b1020);}Colour aqua(){return Colour(0xff4fe3f5);}Colour ice(){return Colour(0xffeaf2ff);}
 }
 DualEditor::DualEditor(DualProcessor& processor):AudioProcessorEditor(processor),p(processor),keys(p.keyboard,MidiKeyboardComponent::horizontalKeyboard){
@@ -14,8 +30,9 @@ DualEditor::DualEditor(DualProcessor& processor):AudioProcessorEditor(processor)
  // Original editors remain mounted. Each is told explicitly to hide its own keyboard and wheels; the host provides shared ones.
  if(auto* embedded=dynamic_cast<SynthAEditor*>(editorA.get()))embedded->setEmbedded(true);
  if(auto* embedded=dynamic_cast<PrismEditor*>(editorB.get()))embedded->setEmbedded(true);
- for(auto* button:{&showA,&showB,&panicButton,&save,&load})surface.addAndMakeVisible(button);
+ for(auto* button:{&showA,&showB,&panicButton,&save,&load,&importButton})surface.addAndMakeVisible(button);
  showA.setBounds(247,15,192,34);showB.setBounds(449,15,192,34);showA.onClick=[this]{select(0);};showB.onClick=[this]{select(1);};save.setBounds(823,18,142,28);load.setBounds(975,18,68,28);panicButton.setBounds(1177,18,85,28);save.onClick=[this]{file(true);};load.onClick=[this]{file(false);};panicButton.onClick=[this]{p.panic.store(true);};
+ importButton.setBounds(665,18,140,28);importButton.onClick=[this]{chooseImport();};
  keys.setBounds(114,750,1148,32);keys.setAvailableRange(24,108);keys.setLowestVisibleKey(36);keys.setKeyWidth(20);keys.setVelocity(.8f,true);keys.setColour(MidiKeyboardComponent::whiteNoteColourId,Colour(0xffc8d5ed));keys.setColour(MidiKeyboardComponent::blackNoteColourId,Colour(0xff101b30));keys.setColour(MidiKeyboardComponent::keyDownOverlayColourId,aqua().withAlpha(.6f));surface.addAndMakeVisible(keys);
  for(auto* slider:{&pitch,&mod}){slider->setSliderStyle(Slider::LinearVertical);slider->setTextBoxStyle(Slider::NoTextBox,false,0,0);surface.addAndMakeVisible(slider);}pitch.setRange(-1,1);pitch.setBounds(28,749,28,34);pitch.onValueChange=[this]{p.bend.store(float(pitch.getValue()));};pitch.onDragEnd=[this]{pitch.setValue(0);};mod.setRange(0,127,1);mod.setBounds(70,749,28,34);mod.onValueChange=[this]{p.wheel.store(float(mod.getValue()));};
  dial("master",1077,8,76,49);
@@ -158,6 +175,78 @@ void DualEditor::timerCallback(){if(editorA->isVisible()!=(p.panel.load()==0))se
  refreshMasterTabs();
  String route=p.value("routing")==0?"LAYER":p.value("routing")==1?"SPLIT at "+MidiMessage::getMidiNoteName(int(p.value("split")),true,true,4)+(p.value("swap")>.5f?" (swapped)":""):p.value("routing")==2?"A ONLY":"B ONLY";
  status.setText(route+"    /    Shared MIDI keyboard    /    Master FX "+String(p.value("glue")>.5f?"ON":"BYPASSED"),dontSendNotification);}
+bool DualEditor::isInterestedInFileDrag(const StringArray& files){
+ return files.size()==1 && files[0].endsWithIgnoreCase(".spf2");
+}
+
+void DualEditor::filesDropped(const StringArray& files, int, int){
+ if(isInterestedInFileDrag(files)) previewImport(File(files[0]));
+}
+
+void DualEditor::chooseImport(){
+ chooser=std::make_unique<FileChooser>("Import Preset", File(), "*.spf2");
+ Component::SafePointer<DualEditor> safe(this);
+ chooser->launchAsync(FileBrowserComponent::openMode | FileBrowserComponent::canSelectFiles,
+                      [safe](const FileChooser& chosen){
+  if(safe && chosen.getResult() != File()) safe->previewImport(chosen.getResult());
+ });
+}
+
+void DualEditor::previewImport(const File& file){
+ using namespace aether::import;
+ ImportReport report;
+ report.format=SourceFormat::SpireSpf2;
+ report.headline="Import blocked";
+ const auto title=file.getFileNameWithoutExtension();
+ FileInputStream stream(file);
+ const auto size=stream.getTotalLength();
+ if(!stream.openedOk() || size <= 0 || size > int64(kSpireMaxFileBytes)){
+  report.blocker="The preset is unreadable, empty, or larger than 2 MB.";
+ }else{
+  MemoryBlock bytes;
+  if(stream.readIntoMemoryBlock(bytes, size_t(size)) != size){
+   report.blocker="The preset could not be read completely.";
+  }else{
+   const auto decoded=decodeSpire(bytes.getData(),bytes.getSize(),title.toStdString());
+   if(!decoded.ok) report.blocker=decoded.blocker;
+   else{
+    report.headline=std::to_string(decoded.patch.fields.size())+" Spire settings read";
+    report.blocker="The Spire-to-EMBER mapping is pending calibration.";
+    if(!decoded.patch.warnings.empty())
+     report.blocker+=" Decoder warnings: "+std::to_string(decoded.patch.warnings.size())+". "+decoded.patch.warnings.front();
+   }
+  }
+ }
+ showImportPreview(title, report, {});
+}
+
+void DualEditor::showImportPreview(const String& title, const aether::import::ImportReport& report,
+                                  const var& nativePatch){
+ using namespace aether::import;
+ const bool approximation=report.result==FileResult::Approximation || report.approximated() || report.omitted();
+ const bool canApply=report.result!=FileResult::Blocked && report.blocker.empty() && nativePatch.isObject();
+ String message=String(toString(report.format))+"  →  "+(report.target==TargetEngine::Ember?"EMBER":"PRISM")
+  +"\n"+String(report.headline);
+ if(!report.blocker.empty()) message+="\n"+String(report.blocker);
+ if(report.result!=FileResult::Blocked)
+  message+="\n"+String(report.mapped())+" mapped  ·  "+String(report.approximated())
+          +" approximated  ·  "+String(report.omitted())+" omitted";
+ auto dialog=std::make_unique<ImportPreviewWindow>(title,message,this);
+ String details;
+ for(const auto& row:report.rows)
+  details+=String(row.parameter)+"  |  "+String(row.sourceValue)+"  →  "+String(row.nativeValue)
+           +"  |  "+toString(row.status)+(row.reason.empty()?String():"\n"+String(row.reason))+"\n\n";
+ if(details.isNotEmpty()) dialog->showDetails(details);
+ if(canApply) dialog->addButton(approximation?"Apply Approximation":"Apply",1);
+ dialog->addButton(canApply?"Cancel":"Close",0,KeyPress(KeyPress::escapeKey));
+ Component::SafePointer<DualEditor> safe(this);
+ dialog.release()->enterModalState(true,ModalCallbackFunction::create([safe,report,nativePatch,approximation](int choice){
+  if(!safe || choice!=1) return;
+  if(auto result=safe->p.applyImport(report,nativePatch,approximation);result.failed())
+   AlertWindow::showMessageBoxAsync(MessageBoxIconType::WarningIcon,"Import Preset",result.getErrorMessage());
+ }),true);
+}
+
 void DualEditor::file(bool saving){chooser=std::make_unique<FileChooser>(saving?"Save dual performance":"Load dual performance",File::getSpecialLocation(File::userDocumentsDirectory).getChildFile("Dual Performance.dualsynth"),"*.dualsynth");Component::SafePointer<DualEditor> safe(this);chooser->launchAsync(saving?FileBrowserComponent::saveMode|FileBrowserComponent::canSelectFiles|FileBrowserComponent::warnAboutOverwriting:FileBrowserComponent::openMode|FileBrowserComponent::canSelectFiles,[safe,saving](const FileChooser& chosen){if(!safe||chosen.getResult()==File())return;auto file=chosen.getResult();if(saving){MemoryBlock block;safe->p.getStateInformation(block);if(!file.withFileExtension("dualsynth").replaceWithData(block.getData(),block.getSize()))AlertWindow::showMessageBoxAsync(MessageBoxIconType::WarningIcon,"Performance","Could not save performance.");}else{
   auto warn=[](const String& why){AlertWindow::showMessageBoxAsync(MessageBoxIconType::WarningIcon,"Performance not loaded",why+"\nNothing was changed.");};
   if(file.getSize()>DualProcessor::maxPerformanceBytes){warn("The file is larger than 8 MB.");return;}

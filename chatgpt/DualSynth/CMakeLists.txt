@@ -44,6 +44,7 @@ target_link_libraries(DualSourceHost PRIVATE juce::juce_audio_utils)
 # Serum / Spire import (contract v1): decoders and shared types, no JUCE GUI or audio dependency.
 add_library(AEtherImport STATIC Source/Import/SpireDecoder.cpp)
 target_include_directories(AEtherImport PUBLIC Source)
+target_link_libraries(DualSynth PRIVATE AEtherImport)
 target_link_libraries(AEtherImport PUBLIC juce::juce_core PRIVATE juce::juce_recommended_config_flags)
 juce_add_console_app(DualImportTests PRODUCT_NAME "Dual Synth Import Tests")
 target_sources(DualImportTests PRIVATE Tests/ImportTests.cpp)

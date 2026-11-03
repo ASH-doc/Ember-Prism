@@ -13,8 +13,8 @@ constexpr int kSpireMaxNesting = 16;                        // real files nest 3
 // `fileName` (without folder) is used as the patch name because the file itself carries none.
 DecodeResult decodeSpire(const void* data, size_t size, const std::string& fileName);
 
-// Spire stores list choices as index / 999 (observed in every list-like field of the local library, 72,084 files).
-inline int spireEnumIndex(double storedValue) { return static_cast<int>(storedValue * 999.0 + 0.5); }
+// List choices are stored as index / 999. Returns -1 for invalid input.
+int spireEnumIndex(double storedValue);
 // True when the stored value sits on the index / 999 lattice (a quick check that a field is a list choice).
 bool spireOnEnumLattice(double storedValue);
 

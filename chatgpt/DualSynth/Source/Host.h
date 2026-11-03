@@ -4,6 +4,7 @@
 #include "sb-plugin.h"
 #include "MasterDsp.h"
 #include "EditorWidgets.h"
+#include "Import/ImportTypes.h"
 
 // Hands a child the host transport shifted forward by `samples`, so a child that renders one slice of an
 // oversized host block sees tempo and PPQ for the start of that slice rather than the start of the block.
@@ -33,6 +34,8 @@ public:
  // Validates the whole performance (host tree and both engine patches) before changing anything.
  // On failure nothing has been changed and the message says why.
  juce::Result loadPerformance(const void*,int);
+ juce::Result applyImport(const aether::import::ImportReport&, const juce::var& nativePatch,
+                          bool acceptApproximation);
  static constexpr int maxPerformanceBytes=8*1024*1024;
  // Message of the most recent failed load, empty if the last load worked (a DAW recall has no other way to report it).
  juce::String lastLoadError()const;
@@ -86,7 +89,7 @@ private:
  mutable juce::CriticalSection loadErrorLock;juce::String loadError;
  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DualProcessor)
 };
-class DualEditor final:public juce::AudioProcessorEditor,private juce::Timer {
+class DualEditor final:public juce::AudioProcessorEditor,public juce::FileDragAndDropTarget,private juce::Timer {
 public:explicit DualEditor(DualProcessor&);~DualEditor()override;void resized()override;void paint(juce::Graphics&)override;void select(int);
  // Master section tab: 0 compressor, 1 reverb, 2 tone and width.
  void showMasterTab(int);
@@ -110,5 +113,11 @@ private:
  juce::TextButton tapButton{"TAP"};juce::Label tapLabel;
  void dial(juce::String,int,int,int,int);void toggle(juce::String,juce::String,int,int,int);void menu(juce::String,juce::StringArray,int,int,int,int height=28);
  void refreshMasterTabs();
+ juce::TextButton importButton{"Import Preset…"};
+ bool isInterestedInFileDrag(const juce::StringArray&) override;
+ void filesDropped(const juce::StringArray&, int, int) override;
+ void chooseImport();
+ void previewImport(const juce::File&);
+ void showImportPreview(const juce::String&, const aether::import::ImportReport&, const juce::var& nativePatch);
  void file(bool);void timerCallback()override;
 };
