@@ -7,8 +7,8 @@ if(MSVC)
  add_compile_options(/utf-8)
 endif()
 add_subdirectory(third_party/JUCE EXCLUDE_FROM_ALL)
-juce_add_binary_data(EmberBank NAMESPACE EmberBank HEADER_NAME EmberBankData.h SOURCES Engines/A/Presets/factory.json)
-juce_add_binary_data(PrismBank NAMESPACE PrismBank HEADER_NAME PrismBankData.h SOURCES Engines/B/Presets/factory.json Engines/B/Presets/claude-prism.json)
+juce_add_binary_data(EmberBank NAMESPACE EmberBank HEADER_NAME EmberBankData.h SOURCES Engines/A/Presets/factory.json Engines/A/Presets/signal_studies.json)
+juce_add_binary_data(PrismBank NAMESPACE PrismBank HEADER_NAME PrismBankData.h SOURCES Engines/B/Presets/factory.json Engines/B/Presets/signal_studies.json Engines/B/Presets/claude-prism.json)
 juce_add_plugin(DualSynth COMPANY_NAME "Dual Synth Studio" BUNDLE_ID "studio.dualsynth.instrument"
  PLUGIN_MANUFACTURER_CODE Dyst PLUGIN_CODE Du01 PRODUCT_NAME "Dual Synth"
  FORMATS Standalone VST3 IS_SYNTH TRUE NEEDS_MIDI_INPUT TRUE NEEDS_MIDI_OUTPUT FALSE
