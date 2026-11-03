@@ -1,0 +1,12 @@
+# EMBER Arp & Gate board
+
+Open index.html directly in a browser. Click the three dots beside the compact arp controls. The study has working toggles, stepped controls, and 48 independently editable step controls. It uses mock state and produces no audio.
+
+## JUCE integration for Claude
+
+- The compact ARP / Pattern / Rate strip stays in place. Replace the EMBER-specific callback for the three dots in `Engines/A/Source/sa-editor.cpp` with an expanded `ArpGateBoard` owned by the EMBER editor. Preserve the existing compact gate panel and generic inspector. The board can open as an editor-owned overlay so it does not change host dimensions or cover the graphite sidebar. Close and Escape return focus to the three dots.
+- Use one step-column layout for both lanes. Amber velocity and sage gate sliders share column numbers, grouped in fours. Tie buttons sit under the gate lane. Scroll the full matrix together when it cannot fit. Use native keyboard-focusable controls with step numbers in accessible names and parameter values in the readout.
+- Bind the arp header to the existing `arp.on`, `arp.mode`, `arp.rate`, `arp.hold`, `arp.octaves`, `arp.swing`, and `arp.gate` parameters. Bind the gate header to `seq.gate.on`, `seq.gate.rate`, `seq.gate.depth`, `seq.gate.smooth`, `seq.gate.shape`, and `seq.gate.restart`. Use the parameter definitions for defaults, units and divisions.
+- For step N (1–16), bind velocity to `arp.velocityN`, gate amplitude to `seq.gate.stepN`, and ties to `seq.gate.tieN`. The lane overlap is visual. Each keeps its existing clock, phase, and meaning. A gate tie is the existing gate transition behavior. Arp velocity never writes a gate parameter. No new parameter IDs, preset fields, MIDI routing or DSP changes are needed.
+- Reuse the existing editor parameter binding or gesture path, including automation and preset refresh. Keep any hover/focus/readout state on the message thread. A future live step indicator needs separate, read-only telemetry for each lane. The mock has no live indicator.
+- Check on Windows in FL Studio at the default size and with scaling. Verify the opener, Escape, tab order, automation and preset recall. With equal and unequal rates, verify that both lanes still follow their own clocks and that opening and closing the board leaves sound and state unchanged. Inspect the EMBER compact panel, PRISM and graphite sidebar after switching.

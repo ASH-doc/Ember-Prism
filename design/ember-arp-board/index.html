@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EMBER • Arp & Gate design study</title>
+<style>
+:root{color-scheme:dark;--ink:#f7dfba;--muted:#c8a782;--metal:#30251d;--amber:#ef9c43;--green:#b7c582}
+*{box-sizing:border-box}body{margin:0;padding:clamp(12px,4vw,56px);background:#171310;color:var(--ink);font:14px system-ui,sans-serif}
+main{max-width:1050px;margin:auto}.badge,.number,legend,.caption,output{font-family:ui-monospace,monospace;letter-spacing:.09em}
+.top,.head,.strip,.footer{display:flex;flex-wrap:wrap;gap:12px;align-items:center}.top{justify-content:space-between;margin-bottom:12px}.badge{color:var(--muted);font-size:11px}.strip,.board{border:1px solid #76563d;background:linear-gradient(155deg,#403026,#261d17 62%);border-radius:8px;box-shadow:inset 0 1px #a27c5740,0 12px 28px #0006;padding:16px}.board{margin-top:12px}.head{justify-content:space-between;border-bottom:1px solid #856347;padding-bottom:10px}h1{font:600 26px Georgia,serif;letter-spacing:.03em;margin:0}button,select{background:#1c1612;color:var(--ink);border:1px solid #886548;border-radius:4px;padding:7px 9px;font:inherit}button{cursor:pointer}button[aria-pressed=true]{color:#211509;background:#f0ab58;border-color:#ffe0a5;box-shadow:0 0 10px #e9892d50}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #ffdc91;outline-offset:3px}
+fieldset{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;border:1px solid #71543c;margin:14px 0;padding:10px}legend,.caption{color:#f6c687;font-size:11px}label{display:inline-flex;gap:6px;align-items:center}input{accent-color:var(--amber)}.dial{width:74px}.scroll{overflow-x:auto;padding:4px 3px 8px}.matrix{min-width:710px;display:grid;grid-template-columns:104px repeat(16,minmax(30px,1fr));gap:4px;align-items:center}.cell{height:76px;background:#211811;border:1px solid #6a4f38;border-radius:3px;display:grid;place-items:center}.cell input{writing-mode:vertical-lr;direction:rtl;width:22px;height:60px;margin:0}.gate input{accent-color:var(--green)}.phrase{border-left-color:#f4ae60}.number{text-align:center;font-size:10px;color:var(--muted)}.tie{font:12px ui-monospace,monospace;padding:4px 0}.footer{color:var(--muted);font-size:12px;margin-top:12px}
+</style>
+<main>
+  <div class="top"><strong>EMBER / PERFORMANCE</strong><span class="badge">INTERACTION STUDY · NO AUDIO</span></div>
+  <div class="strip">
+    <button type="button" data-toggle aria-pressed="false">ARP</button>
+    <label>Pattern <select id="pattern"><option>Up</option><option>Down</option><option>Up-down</option><option>Random</option><option>As played</option><option>Chord</option></select></label>
+    <label>Rate <select id="arp-rate"></select></label>
+    <button type="button" id="more" aria-label="Arpeggiator board" aria-expanded="false" aria-controls="board">···</button>
+  </div>
+  <section class="board" id="board" hidden aria-labelledby="title">
+    <div class="head"><h1 id="title">Arp &amp; Gate</h1><span class="badge">EMBER / 16-STEP PERFORMANCE BOARD</span><button type="button" id="close">Close</button></div>
+    <fieldset>
+      <legend>01 / ARPEGGIATOR</legend>
+      <button type="button" data-toggle aria-pressed="false">HOLD</button>
+      <label>Octaves <select><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+      <label>Swing <input class="dial" type="range" min="0" max="65" value="0"></label>
+      <label>Note length <input class="dial" type="range" min="5" max="95" value="60"></label>
+    </fieldset>
+    <fieldset>
+      <legend>02 / TRANCE GATE</legend>
+      <button type="button" data-toggle aria-pressed="false">GATE</button>
+      <label>Rate <select id="gate-rate"></select></label>
+      <label>Depth <input class="dial" type="range" value="100"></label>
+      <label>Smooth <input class="dial" type="range" min="1" max="100" value="4"></label>
+      <label>Shape <input class="dial" type="range" value="20"></label>
+      <button type="button" data-toggle aria-pressed="true">KEY RESTART</button>
+    </fieldset>
+    <div class="scroll"><div class="matrix" id="matrix"></div></div>
+    <div class="footer"><output id="readout" aria-live="polite">READY</output><span>Velocity shapes arp notes. Gate level and ties shape the output rhythm. The lanes use separate clocks.</span></div>
+  </section>
+</main>
+<script>
+const more = document.querySelector('#more');
+const board = document.querySelector('#board');
+const matrix = document.querySelector('#matrix');
+const readout = document.querySelector('#readout');
+const divisions = ['1/32', '1/16 T', '1/16', '1/8 T', '1/8', '1/8 D', '1/4', '1/2', '1 bar', '2 bars'];
+for (const rate of document.querySelectorAll('#arp-rate, #gate-rate')) {
+  for (const division of divisions) rate.add(new Option(division, division));
+  rate.value = '1/16';
+}
+function setExpanded(expanded) {
+  board.hidden = !expanded;
+  more.setAttribute('aria-expanded', expanded);
+  (expanded ? document.querySelector('#close') : more).focus();
+}
+more.onclick = () => setExpanded(board.hidden);
+document.querySelector('#close').onclick = () => setExpanded(false);
+board.addEventListener('keydown', event => {
+  if (event.key === 'Escape') setExpanded(false);
+});
+function appendText(text, style) {
+  const label = document.createElement('span');
+  label.className = style;
+  label.textContent = text;
+  matrix.append(label);
+}
+appendText('STEP', 'caption');
+for (let step = 1; step <= 16; ++step) appendText(String(step).padStart(2, '0'), 'number');
+for (const lane of ['Velocity', 'Gate level', 'Tie']) {
+  appendText(lane.toUpperCase(), 'caption');
+  for (let step = 1; step <= 16; ++step) {
+    const control = document.createElement(lane === 'Tie' ? 'button' : 'input');
+    control.setAttribute('aria-label', lane + ' step ' + step);
+    if (lane === 'Tie') {
+      control.type = 'button';
+      control.className = 'tie';
+      control.dataset.toggle = '';
+      control.setAttribute('aria-pressed', false);
+      control.textContent = '–';
+      matrix.append(control);
+      continue;
+    }
+    const cell = document.createElement('div');
+    cell.className = 'cell' + (lane === 'Gate level' ? ' gate' : '') + (step % 4 === 1 ? ' phrase' : '');
+    control.type = 'range';
+    control.min = lane === 'Velocity' ? 5 : 0;
+    control.max = 100;
+    control.value = lane === 'Velocity' ? (step % 4 === 1 ? 100 : 80) : (step % 4 === 0 ? 0 : 100);
+    control.oninput = () => { readout.textContent = lane + ' ' + step + ' / ' + control.value + '%'; };
+    cell.append(control);
+    matrix.append(cell);
+  }
+}
+for (const toggle of document.querySelectorAll('[data-toggle]')) {
+  toggle.onclick = () => {
+    const pressed = toggle.getAttribute('aria-pressed') !== 'true';
+    toggle.setAttribute('aria-pressed', pressed);
+    if (toggle.classList.contains('tie')) toggle.textContent = pressed ? '↝' : '–';
+    readout.textContent = (toggle.getAttribute('aria-label') || toggle.textContent) + (pressed ? ' ON' : ' OFF');
+  };
+}
+</script>
+</html>
