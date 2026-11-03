@@ -27,13 +27,42 @@ void Instrument::message(const Event& event){
  const int channel=bounded(event.channel,1,16),key=bounded(event.key,0,127);const size_t c=size_t(channel-1);
  switch(event.kind){
   case Event::Down:if(event.value<=0){Event off=event;off.kind=Event::Up;message(off);return;}keys[c][size_t(key)]=event.value;priorities[c][size_t(key)]=++serial;performance.key(key,channel,event.value,true);if(!performance.running())start(key,channel,event.value,0);break;
-  case Event::Up:{keys[c][size_t(key)]=0;performance.key(key,channel,0,false);bool replaced=false;if(!performance.running()&&int(global[size_t(layout.mode)])!=0&&pool[0].key==key){uint64_t newest=0;int note=-1;for(int n=0;n<128;++n)if(keys[c][size_t(n)]>0&&priorities[c][size_t(n)]>newest){newest=priorities[c][size_t(n)];note=n;}if(note>=0){start(note,channel,keys[c][size_t(note)],0);replaced=true;}}if(!replaced)stop(key,channel,0);break;}
+  case Event::Up:{keys[c][size_t(key)]=0;performance.key(key,channel,0,false);bool replaced=false;if (!performance.running() && int(global[size_t(layout.mode)]) != 0 &&
+      pool[0].key == key && pool[0].channel == channel) {
+    uint64_t newest = 0;
+    int note = -1, nextChannel = 0;
+    for (int ch = 0; ch < 16; ++ch)
+     for (int n = 0; n < 128; ++n)
+      if (keys[ch][n] > 0 && priorities[ch][n] > newest) {
+       newest = priorities[ch][n]; note = n; nextChannel = ch;
+      }
+    if (note >= 0) {
+     start(note, nextChannel + 1, keys[nextChannel][note], 0);
+     replaced = true;
+    }
+   }if(!replaced)stop(key,channel,0);break;}
   case Event::Bend:bend[c]=bounded(event.value,-1.f,1.f);break;
   case Event::Pressure:pressure[c]=bounded(event.value,0.f,1.f);break;
   case Event::Controller:
    if(key==1)wheels[c]=event.value/127;
    if(key==64){pedals[c]=event.value>=64;performance.pedal(channel,pedals[c]);if(!pedals[c])for(auto& v:pool)if(v.channel==channel&&v.pedalled){v.pedalled=false;for(auto& env:v.envelopes)env.lift();}}
-   if(key==123)releaseAll();if(key==120)reset();break;
+   if (key == 120 || key == 123) {
+    keys[c].fill(0);
+    priorities[c].fill(0);
+    pedals[c] = false;
+    performance.clearChannel(channel);
+    for (auto& voice : pool) {
+     if (!voice.running || voice.channel != channel) continue;
+     voice.pressed = voice.pedalled = false;
+     if (key == 120) {
+      voice.running = false;
+      voice.tailL = voice.tailR = voice.previousL = voice.previousR = 0;
+     } else {
+      for (auto& envelope : voice.envelopes) envelope.lift();
+     }
+    }
+   }
+   break;
   case Event::Silence:reset();break;
  }
 }

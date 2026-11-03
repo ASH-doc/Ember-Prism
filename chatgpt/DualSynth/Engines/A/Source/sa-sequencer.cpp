@@ -26,7 +26,13 @@ void Sequencer::input(int note,float velocity,int channel,bool on) {
 }
 void Sequencer::control(int cc,int value,int channel) {
  if(cc==64){sustain[size_t(channel-1)]=value>=64;if(value<64&&p[holdId]<.5f)for(int i=count-1;i>=0;--i)if(notes[i].channel==channel&&!notes[i].down)notes[i]=notes[--count];}
- if(cc==120||cc==123)for(int i=count-1;i>=0;--i)if(notes[i].channel==channel)notes[i]=notes[--count];
+ if (cc == 120 || cc == 123) {
+   sustain[size_t(channel - 1)] = false;
+   for (int i = count - 1; i >= 0; --i)
+     if (notes[i].channel == channel) notes[i] = notes[--count];
+   for (int i = soundingCount - 1; i >= 0; --i)
+     if (sounding[i].channel == channel) sounding[i] = sounding[--soundingCount];
+ }
 }
 int Sequencer::tick(double beat,float,float,std::array<NoteEvent,256>& out) {
  int n=0;const bool enabled=p[onId]>.5f;

@@ -125,6 +125,13 @@ void DualProcessor::renderSlice(AudioBuffer<float>& audio,int start,int length,c
  }
 }
 void DualProcessor::processBlock(AudioBuffer<float>& audio,MidiBuffer& midi){
+ const ScopedTryLock publication(publicationLock, !publicationPending.load());
+ if (!publication.isLocked() || publicationPending.load()) {
+  audio.clear();
+  midi.clear();
+  for (auto& peak : peaks) peak.store(0);
+  return;
+ }
  ScopedNoDenormals guard;const int n=audio.getNumSamples();
  if(panic.exchange(false)){a.panicRequested.store(true);b.silence.store(true);owners={};keyboard.reset();alignB={};reverb.reset();compressor.reset();toneLow[0]=toneLow[1]=toneHigh[0]=toneHigh[1]=0;}
  keyboard.processNextMidiBuffer(midi,0,n,true);float pb=bend.exchange(-2),mw=wheel.exchange(-1);if(pb>=-1)midi.addEvent(MidiMessage::pitchWheel(1,jlimit(0,16383,int(pb*8192+8192))),0);if(mw>=0)midi.addEvent(MidiMessage::controllerEvent(1,1,int(mw)),0);
@@ -143,9 +150,10 @@ void DualProcessor::processBlock(AudioBuffer<float>& audio,MidiBuffer& midi){
  }
  peaks[0].store(peak.a);peaks[1].store(peak.b);peaks[2].store(peak.master);midi.clear();
 }
-void DualProcessor::getStateInformation(MemoryBlock& block){ValueTree tree=state.copyState();MemoryBlock sa,sb;a.getStateInformation(sa);b.getStateInformation(sb);tree.setProperty("engineA",sa.toBase64Encoding(),nullptr);tree.setProperty("engineB",sb.toBase64Encoding(),nullptr);tree.setProperty("panel",panel.load(),nullptr);MemoryOutputStream output(block,false);tree.writeToStream(output);}
+void DualProcessor::getStateInformation(MemoryBlock& block){const ScopedLock recall(recallLock);ValueTree tree=state.copyState();MemoryBlock sa,sb;a.getStateInformation(sa);b.getStateInformation(sb);tree.setProperty("engineA",sa.toBase64Encoding(),nullptr);tree.setProperty("engineB",sb.toBase64Encoding(),nullptr);tree.setProperty("panel",panel.load(),nullptr);MemoryOutputStream output(block,false);tree.writeToStream(output);}
 
 Result DualProcessor::loadPerformance(const void* data,int length){
+ const ScopedLock recall(recallLock);
  // Stage and validate everything first. Nothing below the "publish" line runs unless every check passed.
  if(data==nullptr||length<=0)return Result::fail("The performance file is empty.");
  if(length>maxPerformanceBytes)return Result::fail("The performance is larger than "+String(maxPerformanceBytes/(1024*1024))+" MB.");
@@ -159,10 +167,18 @@ Result DualProcessor::loadPerformance(const void* data,int length){
   if(JSON::parse(String::fromUTF8(static_cast<const char*>(payload.getData()),int(payload.getSize())),patch[engine]).failed())return Result::fail(name+" data is not a valid patch.");
  }
  if(auto checked=a.setPatch(patch[0],false);checked.failed())return Result::fail("Synth A: "+checked.getErrorMessage());
- if(auto checked=b.restore(patch[1],false);checked.failed())return Result::fail("Synth B: "+checked.getErrorMessage());
- // Publish.
- if(auto applied=a.setPatch(patch[0]);applied.failed())return applied;
- if(auto applied=b.restore(patch[1]);applied.failed())return applied;
+ // Prism validates and prepares its embedded asset before taking the publication lock.
+ // A validated Ember patch has no resource-dependent apply failures.
+ const ScopeGuard clearPending{[&] { publicationPending.store(false); }};
+ std::optional<ScopedLock> publication;
+ auto beginPublication = [&] {
+  publicationPending.store(true);
+  publication.emplace(publicationLock);
+ };
+ if (auto applied = b.restore(patch[1], true, beginPublication); applied.failed())
+  return Result::fail("Synth B: " + applied.getErrorMessage());
+ if (auto applied = a.setPatch(patch[0]); applied.failed())
+  return applied;
  panel.store(jlimit(0,1,int(tree["panel"])));state.replaceState(tree);panic.store(true);
  return Result::ok();
 }

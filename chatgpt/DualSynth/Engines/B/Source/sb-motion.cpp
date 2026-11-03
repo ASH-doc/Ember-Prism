@@ -30,6 +30,15 @@ void Performance::key(int note,int channel,float velocity,bool down){
  }else for(int i=count-1;i>=0;--i)if(held[size_t(i)].note==note&&held[size_t(i)].channel==channel){held[size_t(i)].down=false;if(!latched&&!pedals[size_t(channel-1)])held[size_t(i)]=held[size_t(--count)];}
 }
 void Performance::pedal(int channel,bool down){pedals[size_t(channel-1)]=down;if(!down&&!latched)for(int i=count-1;i>=0;--i)if(held[size_t(i)].channel==channel&&!held[size_t(i)].down)held[size_t(i)]=held[size_t(--count)];}
+void Performance::clearChannel(int channel) {
+ pedals[size_t(channel - 1)] = false;
+ for (int i = count - 1; i >= 0; --i)
+  if (held[size_t(i)].channel == channel) held[size_t(i)] = held[size_t(--count)];
+ for (auto& lane : lanes)
+  for (int i = lane.count - 1; i >= 0; --i)
+   if (lane.sounding[size_t(i)].channel == channel)
+    lane.sounding[size_t(i)] = lane.sounding[size_t(--lane.count)];
+}
 int Performance::advance(double beat,std::array<PulseNote,512>& out){
  int events=0;const bool jump=lastBeat>=0&&(beat<lastBeat-.002||beat-lastBeat>.5);lastBeat=beat;
  for(int laneIndex=0;laneIndex<2;++laneIndex){auto& lane=lanes[size_t(laneIndex)];int base=laneIndex==0?layout.arp:layout.seq;const float* p=values.data()+base;bool enabled=p[seqOn]>.5f;

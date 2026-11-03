@@ -65,7 +65,19 @@ void Engine::midi(const MidiEvent& e) {
    held[ci][size_t(n)]=0;sequencer.input(n,0,c,false);
    if(!lastArp){
      bool resumed=false;
-     if(int(global[modeId])!=0&&voices[0].parent==n){uint64_t newest=0;int next=-1;for(int k=0;k<128;++k)if(held[ci][size_t(k)]>0&&heldOrder[ci][size_t(k)]>newest){newest=heldOrder[ci][size_t(k)];next=k;}if(next>=0){directNote(next,held[ci][size_t(next)],c,true);resumed=true;}}
+     if (int(global[modeId]) != 0 && voices[0].parent == n && voices[0].channel == c) {
+       uint64_t newest = 0;
+       int next = -1, nextChannel = 0;
+       for (int ch = 0; ch < 16; ++ch)
+         for (int key = 0; key < 128; ++key)
+           if (held[ch][key] > 0 && heldOrder[ch][key] > newest) {
+             newest = heldOrder[ch][key]; next = key; nextChannel = ch;
+           }
+       if (next >= 0) {
+         directNote(next, held[nextChannel][next], nextChannel + 1, true);
+         resumed = true;
+       }
+     }
      if(!resumed)directNote(n,0,c,false);
    }break;
   case MidiEvent::PitchBend:bend[ci]=clamp(e.value,-1.f,1.f);break;
@@ -74,8 +86,21 @@ void Engine::midi(const MidiEvent& e) {
    sequencer.control(n,int(e.value),c);
    if(n==1)wheel[ci]=e.value/127;
    if(n==64){sustain[ci]=e.value>=64;if(!sustain[ci])for(auto& v:voices)if(v.channel==c&&v.sustained){v.sustained=false;for(auto& env:v.env)env.off();}}
-   if(n==120){panic();}
-   if(n==123){for(auto& v:voices)if(v.channel==c){v.down=v.sustained=false;for(auto& env:v.env)env.off();}held[ci].fill(0);sustain[ci]=false;}
+   if (n == 120 || n == 123) {
+     held[ci].fill(0);
+     heldOrder[ci].fill(0);
+     sustain[ci] = false;
+     for (auto& voice : voices) {
+       if (!voice.active || voice.channel != c) continue;
+       voice.down = voice.sustained = false;
+       if (n == 120) {
+         voice.active = false;
+         voice.lastL = voice.lastR = voice.tailL = voice.tailR = 0;
+       } else {
+         for (auto& envelope : voice.env) envelope.off();
+       }
+     }
+   }
    break;
   case MidiEvent::Panic:panic();break;
  }

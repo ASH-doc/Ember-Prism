@@ -59,6 +59,10 @@ private:
  juce::dsp::Compressor<float> compressor;juce::Reverb reverb;
  std::array<std::array<float,4>,2> alignB{};int alignHead=0;
  float toneLow[2]{},toneHigh[2]{};double sampleRate=48000;
+ // Recall publication is exclusive with a complete host audio block.
+ juce::CriticalSection publicationLock;
+ std::atomic<bool> publicationPending{false};
+ mutable juce::CriticalSection recallLock;
  mutable juce::CriticalSection loadErrorLock;juce::String loadError;
  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DualProcessor)
 };

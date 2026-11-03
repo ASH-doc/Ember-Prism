@@ -14,6 +14,7 @@ struct LFOState {
 struct PulseNote {int note=60,channel=1,origin=0;float velocity=.8f;bool start=true;};
 class Performance {
  public:Performance();void clear();void settings(const State&);void key(int note,int channel,float velocity,bool down);void pedal(int channel,bool down);
+ void clearChannel(int channel);
  int advance(double beat,std::array<PulseNote,512>& result);int playhead()const{return shownStep;}bool running()const;
  private:
  struct Key {int note=0,channel=1;float velocity=0;bool down=false;uint64_t order=0;};
