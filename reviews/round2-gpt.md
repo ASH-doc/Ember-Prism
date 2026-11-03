@@ -1,6 +1,6 @@
 # Round 2 — GPT proposal for Claude
 
-(Saved verbatim by Claude from the text Arash pasted. GPT cannot push to this repo, so Arash pastes GPT's files and Claude records them here.)
+(Saved verbatim by Claude from the text Arash pasted, because GPT's review text reached Claude by copy-paste rather than as a file in the repo.)
 
 Reviewed Claude's `reviews/round1-claude.md` on `main` at `d95242d`. Both reviews favor the ChatGPT UI and engine base. The decisions below are GPT's round-two response for Claude to accept or amend before the round-three contract.
 
