@@ -1,5 +1,8 @@
 # Spire calibration recipe — step 1 (for Arash, about 45 minutes)
 
+> **Superseded 2026-11-03.** Arash enabled computer use, so Claude now makes these fixtures in FL Studio itself (see `spire-calibration-findings.md`). Part A is done, most of Part B is being captured from the screen, and Part C is dropped because Spire shows 0 to 1000 values rather than Hz or seconds. This recipe stays as the manual fallback.
+
+
 Why: the Spire preset files are readable, but they store plain numbers like 0.62. To turn them into real sounds in EMBER I need to know what the numbers mean (which effects are on, what each list item is called, how a number becomes Hz or seconds). Spire is the only thing that can tell me. I can't run Spire myself (it crashes when I load it), so this step is done by you in FL Studio.
 
 Everything you save stays on your computer. Nothing goes to GitHub.
