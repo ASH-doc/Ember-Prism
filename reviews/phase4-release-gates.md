@@ -42,3 +42,7 @@ GPT configured and built from a fresh clone of dc2f7ab, which differs from a6002
 ## Working name and install (added after the first Windows install)
 Arash asked for the working name **AEther v4.0** and for the VST3 in `C:\Program Files\VST`. The plugin's registered name, the standalone window title, the editor title and `getName()` now read AEther v4.0 (`PRODUCT_NAME` in `CMakeLists.txt`). The bundle ID, manufacturer code and plugin code are unchanged, so the plugin identity for recall is the same as before; no project had been saved with the earlier `Dual Synth` build. Installed by Claude: `C:\Program Files\VST\AEther v4.0.vst3` (byte-identical to the tested build; Windows asked for administrator approval). The earlier per-user test copy `Dual Synth.vst3` was removed so only one plugin shows up. Re-tested on the renamed build: `DualTests` PASS, `DualProbe` PASS, standalone alive, plugin name AEther v4.0 in the module info. `scripts/*` and `Build-Windows.bat` still mention `Dual Synth.vst3`; they were not changed.
 
+
+## FL Studio install location (confirmed by Arash)
+FL Studio scans VST3 plugins only in `C:\Program Files\Common Files\VST3`. A copy placed in `C:\Program Files\VST` was not listed. After copying the bundle to the standard folder and running Options > Manage plugins > Find installed plugins, **AEther v4.0 appears in FL Studio** (Arash). The plugin was therefore loaded by FL Studio's scanner; opening it, playing it and saving/reopening a project are still open DAW checks.
+
