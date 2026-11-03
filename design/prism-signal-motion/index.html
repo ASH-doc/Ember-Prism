@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PRISM / Signal & Motion</title>
+<style>
+:root{color-scheme:dark;--text:#e2ebff;--dim:#a8b6d2;--line:#344363;--cyan:#68e9eb;--violet:#bb9cff}
+*{box-sizing:border-box}body{margin:0;padding:clamp(12px,3vw,42px);background:#0b1020;color:var(--text);font:14px system-ui,sans-serif}main{max-width:1320px;margin:auto}header,.head,.controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}h1{margin:0;font-size:30px}h2{margin:0;font-size:15px}.tag,output,small{color:var(--dim);font:12px ui-monospace,monospace;letter-spacing:.06em}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}.card{padding:14px;border:1px solid var(--line);border-radius:10px;background:linear-gradient(145deg,#192542,#10192c);min-width:0}.filter{grid-column:1/-1}.controls{justify-content:flex-start;margin-top:10px}label{display:inline-flex;align-items:center;gap:5px}button,select{font:inherit;color:inherit;background:#121d33;border:1px solid #52658d;border-radius:5px;padding:6px}button{cursor:pointer}button[aria-pressed=true]{background:#254459;border-color:var(--cyan)}:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}input{accent-color:var(--cyan);width:100px}svg{width:100%;display:block;margin-top:10px;background:#0b1325;border:1px solid var(--line);border-radius:6px;touch-action:none}.graph{cursor:crosshair}.trace{fill:none;stroke:var(--cyan);stroke-width:2;vector-effect:non-scaling-stroke}.osc:nth-child(2) .trace{stroke:var(--violet)}.motion-head{display:flex;align-items:center;gap:14px}.dial{cursor:ns-resize;touch-action:none;width:56px;height:56px;border-radius:50%;background:conic-gradient(from 225deg,var(--cyan) var(--arc,0deg),#354363 0 270deg,#151f35 0);display:grid;place-items:center}.dial::after{content:'';width:43px;height:43px;border-radius:50%;background:#18233b;border:1px solid #536389}.lane{margin:8px 0;display:flex;gap:8px;align-items:center;min-width:650px}.lane strong{width:126px}.step{height:58px;width:35px;background:#111a30;display:grid;place-items:center;border-bottom:2px solid var(--violet)}.step.active{outline:2px solid var(--cyan)}.step input{width:21px;height:48px;writing-mode:vertical-lr;direction:rtl}.lanes{overflow:auto}.note{margin:8px 0 0;color:var(--dim)}@media(max-width:650px){.grid{grid-template-columns:1fr}}
+</style>
+<main>
+<header><div><small>PRISM FLUX / VOICE WORKBENCH</small><h1>Signal &amp; Motion</h1></div><span class="tag">DESIGN STUDY · NO AUDIO</span><a style="color:var(--cyan)" href="../ember-arp-board/index.html">EMBER board</a></header>
+<div class="grid" id="signals"></div>
+<section class="card">
+<div class="head"><div class="motion-head"><span class="dial" id="dial" aria-hidden="true"></span><div><h2>MOTION</h2><label>Amount <input id="amount" type="range" min="0" max="100" value="0"><output id="amount-value">0%</output></label></div></div><button id="play" type="button" aria-pressed="false">Preview motion</button></div>
+<p class="note">Three independent loops. Edit the steps and raise Amount to see the modulation on the displays.</p>
+<div class="lanes" id="lanes"></div>
+</section>
+</main>
+<script>
+const signals = document.querySelector('#signals');
+for (let osc = 1; osc <= 2; osc++) {
+  signals.insertAdjacentHTML('beforeend', `<section class="card osc">
+    <div class="head"><h2>OSC ${osc} / WAVETABLE</h2><output id="osc${osc}-value"></output></div>
+    <svg class="graph" id="osc${osc}" viewBox="0 0 500 145" aria-hidden="true"></svg>
+    <div class="controls"><label>Table <select id="table${osc}"><option>Glass stack</option><option>Edge fold</option><option>Air formant</option></select></label>
+    <label>Position <input id="pos${osc}" type="range" min="0" max="100" value="25"></label></div>
+  </section>`);
+}
+signals.insertAdjacentHTML('beforeend', `<section class="card filter">
+<div class="head"><h2>FILTER / RESPONSE</h2><div class="controls"><button data-filter="0" aria-pressed="true">Filter 1</button><button data-filter="1" aria-pressed="false">Filter 2</button></div></div>
+<svg class="graph" id="filter" viewBox="0 0 860 180" aria-hidden="true"></svg>
+<div class="controls"><label>Power <input id="power" type="checkbox" style="width:auto"></label><label>Type <select id="type"><option>LP 12</option><option>LP 24</option><option>High pass</option><option>Band pass</option><option>Notch</option><option>Comb</option><option>Vowel</option><option>Air shelf</option><option>Low shelf</option></select></label>
+<label>Cutoff <input id="cut" type="range" min="0" max="100"></label><label>Resonance <input id="res" type="range" min="0" max="100"></label><output id="frequency"></output>
+<label>Routing <select><option>Serial</option><option>Parallel</option><option>Per oscillator</option><option>Both to both</option></select></label></div>
+</section>`);
+const get = id => document.getElementById(id);
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+const filters = [{cut:90,res:12,type:0,power:true},{cut:64,res:28,type:1,power:false}];
+const lanes = [
+  {name:'A · OSC 1 POSITION', steps:[0,22,55,83,35,9,-32,-63], rate:3},
+  {name:'B · OSC 2 POSITION', steps:[0,-64,17,70,-31], rate:5},
+  {name:'C · FILTER 1 CUTOFF', steps:[0,18,41,70,53,12,-30], rate:4}
+];
+let selected = 0, frame = 0, timer;
+function graph(svg, w, h, trace, ghost, marker='', labels=[]) {
+  const vertical = Array.from({length:9}, (_, i) => `M${i*w/8} 0v${h}`).join('');
+  const horizontal = Array.from({length:5}, (_, i) => `M0 ${i*h/4}h${w}`).join('');
+  svg.innerHTML = `<path d="${vertical+horizontal}" stroke="#283755" fill="none"/>
+    <path class="trace" d="${ghost}" opacity=".25" stroke-dasharray="4 4"/>
+    <path class="trace" d="${trace}"/>${marker}` + labels.map(([x,t]) =>
+    `<text x="${x}" y="${h-7}" fill="#9baed1" font-size="10">${t}</text>`).join('');
+}
+function path(w, height, evaluate) {
+  return Array.from({length:161}, (_, i) => `${i ? 'L':'M'}${(i*w/160).toFixed(1)} ${clamp(evaluate(i/160),2,height-2).toFixed(1)}`).join('');
+}
+const active = lane => Math.floor(frame/lane.rate) % lane.steps.length;
+const movement = lane => timer ? +get('amount').value * lane.steps[active(lane)] / 100 : 0;
+function draw() {
+  for (let i = 1; i <= 2; i++) {
+    const base = +get('pos'+i).value;
+    const pos = clamp(base+movement(lanes[i-1])*.5,0,100);
+    const table = get('table'+i).selectedIndex;
+    const wave = (x,p) => {
+      const a = x*Math.PI*2;
+      return 72 - 41*(Math.sin(a) + p/150*Math.sin(a*(table+2)+p/120) + p/450*Math.sin(7*a));
+    };
+    graph(get('osc'+i),500,145,path(500,145,x=>wave(x,pos)),path(500,145,x=>wave(x,base)));
+    get('osc'+i+'-value').textContent = 'WT POSITION ' + Math.round(pos) + '%';
+  }
+  const f = filters[selected];
+  const cut = clamp(f.cut + (selected === 0 ? movement(lanes[2])*.35 : 0),0,100);
+  const response = (x,c) => {
+    if (!f.power) return 52;
+    const d = (x-c/100)*8, bump = 36*f.res/100*Math.exp(-9*d*d);
+    const low = 52+100/(1+Math.exp(-3*d));
+    if (f.type === 2) return 52+100/(1+Math.exp(3*d))-bump;
+    if (f.type === 3) return 148-108*Math.exp(-2*d*d)-bump;
+    if (f.type === 4) return 52+76*Math.exp(-3*d*d)-bump;
+    if (f.type === 5) return 68+32*Math.sin(d*8)**2-bump;
+    if (f.type === 6) return 128-65*Math.exp(-3*d*d)-42*Math.exp(-4*(d-1)**2)-bump;
+    if (f.type === 7) return 62-29/(1+Math.exp(-3*d))-bump;
+    if (f.type === 8) return 35+29/(1+Math.exp(-3*d))-bump;
+    return (f.type === 1 ? 52+100/(1+Math.exp(-5*d)) : low)-bump;
+  };
+  const x = cut*8.6;
+  graph(get('filter'),860,180,path(860,180,t=>response(t,cut)),path(860,180,t=>response(t,f.cut)),
+    `<line x1="${x}" x2="${x}" y1="0" y2="180" stroke="#688bb1" stroke-dasharray="4 4"/><circle cx="${x}" cy="${response(cut/100,cut)}" r="5" fill="#68e9eb"/>`,
+    [[6,'20 Hz'],[190,'100'],[477,'1 kHz'],[757,'10 kHz'],[814,'20 kHz']]);
+  get('frequency').textContent = Math.round(20*1000**(cut/100)).toLocaleString() + ' Hz';
+  get('amount-value').textContent = get('amount').value + '%';
+  get('dial').style.setProperty('--arc', get('amount').value*2.7 + 'deg');
+  for (const [i,lane] of lanes.entries()) lane.cells.forEach((cell,j)=>cell.classList.toggle('active',Boolean(timer)&&j===active(lane)));
+}
+function selectFilter(index) {
+  selected = index;
+  const f = filters[index];
+  for (const key of ['cut','res']) get(key).value = f[key];
+  get('power').checked = f.power;
+  get('type').selectedIndex = f.type;
+  document.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.filter===index));
+  draw();
+}
+function drag(svg, update) {
+  const move = e => {
+    const r = svg.getBoundingClientRect();
+    update(clamp((e.clientX-r.left)/r.width,0,1),clamp((e.clientY-r.top)/r.height,0,1));
+    draw();
+  };
+  svg.onpointerdown = e => { if (e.button === 0) { svg.setPointerCapture(e.pointerId); move(e); } };
+  svg.onpointermove = e => { if (svg.hasPointerCapture(e.pointerId)) move(e); };
+}
+for (let i=1;i<=2;i++) {
+  drag(get('osc'+i),x=>{get('pos'+i).value=Math.round(x*100);});
+  get('pos'+i).oninput=draw;
+  get('table'+i).onchange=draw;
+}
+for (const key of ['cut','res','power','type']) get(key).oninput = () => {
+  const el = get(key);
+  filters[selected][key] = key==='power' ? el.checked : key==='type' ? el.selectedIndex : +el.value;
+  draw();
+};
+drag(get('filter'),(x,y)=>{
+  filters[selected].cut=Math.round(x*100);
+  filters[selected].res=Math.round((1-y)*100);
+  get('cut').value=filters[selected].cut;
+  get('res').value=filters[selected].res;
+});
+document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>selectFilter(+b.dataset.filter));
+for (const lane of lanes) {
+  const row = document.createElement('div');
+  row.className='lane';
+  const label=document.createElement('strong');
+  label.textContent=lane.name;
+  row.append(label);
+  lane.cells=lane.steps.map((value,i)=>{
+    const cell=document.createElement('label');
+    cell.className='step';
+    const slider=document.createElement('input');
+    slider.type='range';slider.min=-100;slider.max=100;slider.value=value;
+    slider.setAttribute('aria-label',lane.name+' step '+(i+1));
+    slider.oninput=()=>{lane.steps[i]=+slider.value;draw();};
+    cell.append(slider);row.append(cell);
+    return cell;
+  });
+  get('lanes').append(row);
+}
+get('amount').oninput=draw;
+drag(get('dial'),(_,y)=>{get('amount').value=Math.round((1-y)*100);});
+get('play').onclick=()=>{
+  if(timer){clearInterval(timer);timer=null;}else{frame=0;timer=setInterval(()=>{frame++;draw();},100);}
+  get('play').setAttribute('aria-pressed',Boolean(timer));
+  get('play').textContent=timer?'Stop preview':'Preview motion';
+  draw();
+};
+selectFilter(0);
+</script>
+</html>
