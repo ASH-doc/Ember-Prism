@@ -64,7 +64,7 @@ Result PrismProcessor::importWave(const File& file,int oscillator,int cycleLengt
 }
 void PrismProcessor::snapshot(){scene=patch();}
 void PrismProcessor::swapScene(){auto now=patch();if(!scene.isVoid())restore(scene);scene=now;}
-void PrismProcessor::route(int src,int dest){if(src<=0||src>=24||dest<0||dest>=int(SynthB::Schema::get().specs.size()))return;const auto& l=SynthB::Schema::get().loc;
+void PrismProcessor::route(int src,int dest){if(src<=0||src>=SynthB::modulationSourceCount||dest<0||dest>=int(SynthB::Schema::get().specs.size()))return;const auto& l=SynthB::Schema::get().loc;
  for(int n=0;n<SynthB::routes;++n){int b=l.route[n];if(int(read(b))==src&&int(read(b+1))==dest+1)return;}
  for(int n=0;n<SynthB::routes;++n){int b=l.route[n];if(read(b)<.5f){undo.beginNewTransaction("Add modulation");write(b,float(src));write(b+1,float(dest+1));write(b+2,.2f);write(b+3,1);write(b+4,1);return;}}
 }

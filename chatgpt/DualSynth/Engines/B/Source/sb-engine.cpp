@@ -67,8 +67,8 @@ void Instrument::message(const Event& event){
  }
 }
 void Instrument::modulate(State& state,const Voice& voice){
- for(int r=0;r<routes;++r){int base=layout.route[r];int src=bounded(int(voice.local[size_t(base+source)]),0,23),dest=int(voice.local[size_t(base+destination)])-1;if(src==0||dest<0||dest>=int(schema.specs.size()))continue;
-  float amount=voice.source[size_t(src)];if(voice.local[size_t(base+bipolar)]<.5f&&(src>=4&&src<=7||src==12||src==13))amount=(amount+1)*.5f;
+ for(int r=0;r<routes;++r){int base=layout.route[r];int src=bounded(int(voice.local[size_t(base+source)]),0,modulationSourceCount-1),dest=int(voice.local[size_t(base+destination)])-1;if(src==0||dest<0||dest>=int(schema.specs.size()))continue;
+  float amount=voice.source[size_t(src)];if(voice.local[size_t(base+bipolar)]<.5f&&(src>=4&&src<=7||src==12||src==13||src==pitchBendSource))amount=(amount+1)*.5f;
   amount=std::copysign(std::pow(std::abs(amount),voice.local[size_t(base+shape)]),amount);const auto& spec=schema.specs[size_t(dest)];state[size_t(dest)]=spec.valid(spec.realValue(spec.unitValue(state[size_t(dest)])+amount*voice.local[size_t(base+depth)]));
  }
 }
@@ -98,6 +98,7 @@ Stereo Instrument::sample(Voice& v,float bpm){
  for(int l=0;l<4;++l)v.source[size_t(l+4)]=v.lfos[size_t(l)].advance(p.data()+layout.lfo[l],internalRate,bpm,v.rng);
  v.source[8]=v.velocity;v.source[9]=(float(v.key)-60)/60;v.source[10]=wheels[size_t(v.channel-1)];v.source[11]=pressure[size_t(v.channel-1)];v.source[12]=v.random;v.source[13]=v.lfos[0].sampleHold;
  for(int m=0;m<8;++m)v.source[size_t(14+m)]=p[size_t(layout.macro[m])];v.source[22]=p[size_t(layout.euphoria)];v.source[23]=p[size_t(layout.space)];
+ v.source[pitchBendSource] = bendSmooth[size_t(v.channel - 1)];
  const float sub=std::sin(float(tau)*v.subPhase);float other[2]{std::sin(float(tau)*v.phase[1][0]),std::sin(float(tau)*v.phase[0][0])};Stereo oscillators[2];
  for(int o=0;o<2;++o){const int b=layout.osc[o];const WaveSet& wt=tables.at(int(p[size_t(b+table)]),imported);float mod=p[size_t(b+fmSource)]>.5f?sub:other[o];
   for(int u=0;u<v.lanes[size_t(o)];++u){float phase=v.phase[size_t(o)][size_t(u)];phase=warpedPhase(phase,int(p[size_t(b+warp1)]),p[size_t(b+amount1)],mod);phase=warpedPhase(phase,int(p[size_t(b+warp2)]),p[size_t(b+amount2)],mod);
@@ -141,6 +142,6 @@ void Instrument::render(float* left,float* right,int frames,const Event* events,
   unsigned index=spectrumIndex.load(std::memory_order_relaxed);spectrum[size_t(index%2048)].store((left[frame]+right[frame])*.5f,std::memory_order_relaxed);spectrumIndex.store(index+1,std::memory_order_release);
  }
  const Voice* newest=nullptr;for(size_t i=0;i<pool.size();++i){const auto& v=pool[i];voiceLights[i].store(v.running);if(v.running&&(!newest||v.serial>newest->serial))newest=&v;}
- for(size_t i=0;i<schema.specs.size();++i)displayed[i].store(newest?newest->local[i]:global[i],std::memory_order_relaxed);for(size_t i=0;i<24;++i)sources[i].store(newest?newest->source[i]:0,std::memory_order_relaxed);step.store(performance.playhead());meter.store(std::max(peak,meter.load()*.9f));
+ for(size_t i=0;i<schema.specs.size();++i)displayed[i].store(newest?newest->local[i]:global[i],std::memory_order_relaxed);for(size_t i=0;i<sources.size();++i)sources[i].store(newest?newest->source[i]:0,std::memory_order_relaxed);step.store(performance.playhead());meter.store(std::max(peak,meter.load()*.9f));
 }
 }

@@ -316,6 +316,43 @@ void phase2HostTests(){
 }
 
 // Every parameter the unmodified baseline published (id, name, steps, default, range and choice texts) must still exist, unchanged.
+void pitchBendModulationTest() {
+ auto host = makeHost();
+ auto& prism = host->b;
+ const auto& schema = SynthB::Schema::get();
+ const int destination = schema.find("osc1.pos");
+ const int route = schema.loc.route[0];
+
+ prism.write(destination, .5f);
+ prism.route(SynthB::pitchBendSource, destination);
+ prism.write(route + SynthB::depth, .25f);
+ require(prism.read(route) == SynthB::pitchBendSource, "Prism accepts Pitch Bend from the drag source");
+ host->prepareToPlay(48000, 256);
+
+ AudioBuffer<float> audio(2, 256);
+ MidiBuffer midi;
+ midi.addEvent(MidiMessage::noteOn(2, 60, .8f), 0);
+ auto render = [&](int channel, int bend) {
+  midi.addEvent(MidiMessage::pitchWheel(channel, bend), 0);
+  for (int block = 0; block < 48; ++block)
+   host->processBlock(audio, midi);
+  return prism.engine.displayed[size_t(destination)].load();
+ };
+ require(std::abs(render(1, 16383) - .5f) < .002f, "other-channel bend leaves Prism modulation unchanged");
+ require(std::abs(render(2, 16383) - .75f) < .002f, "positive pitch bend raises the routed destination");
+ require(std::abs(render(2, 0) - .25f) < .002f, "negative pitch bend lowers the routed destination");
+ prism.write(route + SynthB::bipolar, 0.f);
+ require(std::abs(render(2, 0) - .5f) < .002f, "unipolar pitch bend maps the negative endpoint to zero");
+ require(std::abs(render(2, 8192) - .625f) < .002f, "unipolar pitch bend maps centre to halfway");
+
+ MemoryBlock saved;
+ host->getStateInformation(saved);
+ auto recalled = makeHost();
+ require(recalled->loadPerformance(saved.getData(), int(saved.getSize())).wasOk()
+         && recalled->b.read(route) == SynthB::pitchBendSource,
+         "Pitch Bend survives full performance recall");
+}
+
 void parameterCatalogTest(){
  const auto baselineFile=File(__FILE__).getParentDirectory().getChildFile("baseline-parameter-catalog.txt");
  require(baselineFile.existsAsFile(),"baseline parameter catalog file is present next to the tests");
@@ -326,6 +363,15 @@ void parameterCatalogTest(){
   if (expected == actual) return true;
   const auto oldFields = StringArray::fromTokens(expected, "|", "");
   const auto newFields = StringArray::fromTokens(actual, "|", "");
+  // The only allowed choice extension is Pitch Bend, appended to Prism's existing routes.
+  if (oldFields.size() == 10 && newFields.size() == 10 && oldFields[0].startsWith("B.mod")
+      && oldFields[0].endsWith(".source") && oldFields[2] == "24" && oldFields[8] == "Space") {
+   auto extended = oldFields;
+   extended.set(2, "25");
+   extended.set(8, "Pitch Bend");
+   extended.set(9, oldFields[9] + ";Pitch Bend");
+   return extended == newFields;
+  }
   if (oldFields.size() < 9 || oldFields.size() != newFields.size() || oldFields[3] != "0")
    return false;
   for (int field = 0; field < oldFields.size(); ++field) {
@@ -384,7 +430,7 @@ void processBlockAllocationInfo(){
 
 int main(int argc,char** argv){ScopedJuceInitialiser_GUI gui;
  if(argc==3&&String(argv[1])=="--golden-write"){const auto samples=goldenMasterRender();require(File::getCurrentWorkingDirectory().getChildFile(argv[2]).replaceWithData(samples.data(),samples.size()*sizeof(float)),"golden file written");std::cout<<"golden written: "<<samples.size()<<" samples\n";return 0;}
- midiOwnershipTests();parameterCatalogTest();goldenMasterTest();fetDspTests();phase2HostTests();engineChannelTests();recallBoundaryTest();routeMidiAllocationTest();slicingTests();stateTests();loadDuringPlaybackTest();processBlockAllocationInfo();
+ midiOwnershipTests();parameterCatalogTest();pitchBendModulationTest();goldenMasterTest();fetDspTests();phase2HostTests();engineChannelTests();recallBoundaryTest();routeMidiAllocationTest();slicingTests();stateTests();loadDuringPlaybackTest();processBlockAllocationInfo();
  {auto heapP=std::make_unique<DualProcessor>();DualProcessor& p=*heapP;MidiBuffer input,ma,mb;input.addEvent(MidiMessage::noteOn(1,60,.8f),17);p.routeMidi(input,ma,mb);require(ma.getNumEvents()==1&&mb.getNumEvents()==1,"layer fans out to both");p.write("routing",1);p.write("split",72);input.clear();input.addEvent(MidiMessage::noteOff(1,60),21);p.routeMidi(input,ma,mb);require(ma.getNumEvents()==1&&mb.getNumEvents()==1,"held note ownership survives changed split");input.clear();input.addEvent(MidiMessage::noteOn(1,71,.8f),3);input.addEvent(MidiMessage::noteOn(1,72,.8f),4);p.routeMidi(input,ma,mb);require(ma.getNumEvents()==1&&mb.getNumEvents()==1,"split boundary routes A below and B at split");require((*ma.begin()).samplePosition==3&&(*mb.begin()).samplePosition==4,"MIDI sample offsets preserved");p.write("a.high",60);input.clear();input.addEvent(MidiMessage::noteOn(1,61,.7f),0);p.routeMidi(input,ma,mb);require(ma.isEmpty()&&mb.isEmpty(),"split intersects per-engine note range");p.write("a.channel",2);input.clear();input.addEvent(MidiMessage::noteOn(1,40,.7f),0);p.routeMidi(input,ma,mb);require(ma.isEmpty()&&mb.isEmpty(),"channel filter");input.clear();input.addEvent(MidiMessage::controllerEvent(1,64,127),0);p.routeMidi(input,ma,mb);require(ma.getNumEvents()==1&&mb.getNumEvents()==1,"controllers reach both to release tails");}
  for(int engine=0;engine<2;++engine){auto heapHost=std::make_unique<DualProcessor>();DualProcessor& host=*heapHost;std::unique_ptr<AudioProcessor> reference=engine==0?std::unique_ptr<AudioProcessor>(new SynthAProcessor):std::unique_ptr<AudioProcessor>(new PrismProcessor);host.write("routing",float(engine+2));host.write("a.gain",0);host.write("b.gain",0);host.write("master",0);host.write("glue",0);host.prepareToPlay(48000,256);reference->setRateAndBufferSizeDetails(48000,256);reference->prepareToPlay(48000,256);auto visible=std::unique_ptr<AudioProcessorEditor>(host.createEditor());AudioBuffer<float> output(2,256),raw(2,256);std::array<std::array<float,4>,2> delay{};int head=0;double energy=0;for(int block=0;block<200;++block){if(block%40==0)dynamic_cast<DualEditor*>(visible.get())->select((block/40)%2);MidiBuffer midi,copy;if(block==0){midi.addEvent(MidiMessage::noteOn(1,60,.8f),17);midi.addEvent(MidiMessage::noteOn(1,67,.7f),80);}if(block==120)midi.addEvent(MidiMessage::allNotesOff(1),9);copy=midi;host.processBlock(output,midi);reference->processBlock(raw,copy);for(int n=0;n<256;++n){for(int c=0;c<2;++c){float expected=raw.getSample(c,n);if(engine==1){float aligned=delay[size_t(c)][size_t(head)];delay[size_t(c)][size_t(head)]=expected;expected=aligned;}if(output.getSample(c,n)!=expected){std::cerr<<"engine "<<engine<<" block "<<block<<" sample "<<n<<" got "<<output.getSample(c,n)<<" expected "<<expected<<" delta "<<(output.getSample(c,n)-expected)<<" gains "<<host.value("a.gain")<<" "<<host.value("b.gain")<<" "<<host.value("master")<<"\n";require(false,"unity/bypassed output exactly equals original engine (B aligned by4samples)");}energy+=expected*expected;}head=(head+1)%4;}}require(energy>1.e-6,"identity comparison has signal");}
  auto heapMain=std::make_unique<DualProcessor>();DualProcessor& p=*heapMain;p.a.loadPreset(3);p.b.selectFactory(4);p.write("split",65);p.write("a.gain",-3);p.write("b.mute",1);p.write("room",.83f);p.panel.store(1);MemoryBlock state;p.getStateInformation(state);auto heapRecalled=std::make_unique<DualProcessor>();DualProcessor& recalled=*heapRecalled;recalled.setStateInformation(state.getData(),int(state.getSize()));require(recalled.value("split")==65&&recalled.value("b.mute")==1&&std::abs(recalled.value("room")-.83f)<1.e-6,"host state recall");require(recalled.a.patchName()==p.a.patchName()&&recalled.b.title()==p.b.title()&&recalled.panel.load()==1,"both complete engine states and view recall");

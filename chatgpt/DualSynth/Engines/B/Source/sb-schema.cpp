@@ -2,7 +2,7 @@
 #include "sb-schema.h"
 #include <stdexcept>
 namespace SynthB {
-const std::vector<std::string>& sourceNames(){static const std::vector<std::string> names{"None","Env 1","Env 2","Env 3","LFO 1","LFO 2","LFO 3","LFO 4","Velocity","Key","Wheel","Pressure","Random","Sample hold","Macro 1","Macro 2","Macro 3","Macro 4","Macro 5","Macro 6","Macro 7","Macro 8","Euphoria","Space"};return names;}
+const std::vector<std::string>& sourceNames(){static const std::vector<std::string> names{"None","Env 1","Env 2","Env 3","LFO 1","LFO 2","LFO 3","LFO 4","Velocity","Key","Wheel","Pressure","Random","Sample hold","Macro 1","Macro 2","Macro 3","Macro 4","Macro 5","Macro 6","Macro 7","Macro 8","Euphoria","Space","Pitch Bend"};return names;}
 const std::vector<std::string>& tableNames(){static const std::vector<std::string> names{"Vector Saw","Pulse Atlas","Harmonic Fold","Prism Ramp","Triangle Orbit","Glass Mesh","Chrome Grid","Crystal Teeth","Ion Shards","Digital Silk","Vowel Arc","Formant Lane","Choir Vector","Whisper Mouth","Vocal Prism","Fluid Cell","Coral Thread","Grain Current","Plasma Ribbon","Organic Lattice","Bell Spectrum","FM Crown","Chime Matrix","Metal Rain","Orbital Gong","Air Spectrum","Frozen Hiss","Cloud Comb","White Halo","Spectral Dust","Imported"};return names;}
 const std::vector<std::string>& effectNames(){static const std::vector<std::string> n{"Chorus","Flanger","Phaser","Delay","Reverb","Distortion","EQ","Compressor","Filter","Widener"};return n;}
 const Schema& Schema::get(){static Schema s;return s;}
