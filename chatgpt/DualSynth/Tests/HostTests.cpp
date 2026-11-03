@@ -1,6 +1,7 @@
 #include "Host.h"
 #include "PresetBrowser.h"
 #include "sa-editor.h"
+#include "sb-ui.h"
 #include "Catalog.h"
 #include <EmberBankData.h>
 #include <iostream>
@@ -691,6 +692,14 @@ void uiDesignTests(const File* folder){
    host->a.setParam("arp.on",1.f);host->a.setParam("seq.gate.on",1.f);face.openArpBoard();
    savePng(*folder,"ember-arp-board-x2.png",editor->createComponentSnapshot(editor->getLocalBounds(),true,2.f));face.closeArpBoard();
   }
+ }
+ {auto editor=std::unique_ptr<AudioProcessorEditor>(host->b.createEditor());auto* prism=dynamic_cast<PrismEditor*>(editor.get());require(prism!=nullptr,"PRISM editor is created");editor->setSize(1280,720);
+  auto& surface=prism->panel();require(surface.signalViewShown()&&surface.signalView()!=nullptr,"PRISM opens in the Signal view");
+  surface.signalView()->chooseFilter(1);require(surface.signalView()->chosenFilter()==1,"the filter selector switches which filter is edited");surface.signalView()->chooseFilter(0);
+  surface.showSignalView(false);require(!surface.signalViewShown(),"the classic layout is still available");surface.showSignalView(true);
+  if(folder!=nullptr){savePng(*folder,"prism-signal-view-x2.png",editor->createComponentSnapshot(editor->getLocalBounds(),true,2.f));
+   host->b.write("motion.amount",.6f);surface.signalView()->chooseFilter(1);savePng(*folder,"prism-signal-view-filter2-motion.png",editor->createComponentSnapshot(editor->getLocalBounds(),true,1.f));
+   surface.showSignalView(false);savePng(*folder,"prism-classic-view.png",editor->createComponentSnapshot(editor->getLocalBounds(),true,1.f));host->b.write("motion.amount",0);}
  }
  {auto editor=std::unique_ptr<AudioProcessorEditor>(host->createEditor());editor->setSize(2000,1050);
   require(int(host->state.state.getProperty("uiWidth"))==2000,"the window width is remembered with the project");

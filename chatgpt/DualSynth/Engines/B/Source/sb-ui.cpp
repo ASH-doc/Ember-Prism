@@ -49,18 +49,31 @@ void WaveView::paint(Graphics& g){
      ? processor.engine.displayed[size_t(base + SynthB::pos)].load() : processor.read(base + SynthB::pos);
  g.setColour(Colour(0xff0d1528));
  g.fillRoundedRectangle(getLocalBounds().toFloat(), 9);
- const float w=float(getWidth()-30),h=float(getHeight()-26);for(int frame=13;frame>=0;--frame){float p=float(frame)/13,offset=float(frame)*1.6f;Path path;for(int n=0;n<100;++n){float x=9+float(n)*w/99+offset*.6f,y=h*.6f+18-offset+table.visual(float(n)/100,p)*h*.24f;if(n==0)path.startNewSubPath(x,y);else path.lineTo(x,y);}g.setColour((oscillator==0?aqua():violet()).withAlpha(.1f+.15f*(1-p)));g.strokePath(path,PathStrokeType(.7f));}
- Path active;for(int n=0;n<160;++n){float x=9+float(n)*w/159+position*13*.96f,y=h*.6f+18-position*13*1.6f+table.visual(float(n)/160,position)*h*.24f;if(n==0)active.startNewSubPath(x,y);else active.lineTo(x,y);}auto colour=oscillator==0?aqua():violet();g.setColour(colour.withAlpha(.15f));g.strokePath(active,PathStrokeType(4));g.setColour(colour);g.strokePath(active,PathStrokeType(1.4f));
- if (claude > 0) {
-  g.setColour(ice().withAlpha(.8f));
-  g.setFont(FontOptions(8.f, Font::bold));
-  g.drawFittedText("CLAUDE / " + String(table.title), 8, 3, getWidth() - 16, 13,
-                   Justification::centredLeft, 1);
- }
- int voices=int(processor.read(base+SynthB::unison));g.setColour(colour.withAlpha(.65f));for(int i=0;i<voices;++i)g.fillEllipse(float(getWidth()/2)+(float(i)-float(voices-1)*.5f)*5-1.5f,float(getHeight()-7),3,3);
+ // Everything scales with the view's height; the compact 222 x 89 view keeps its original proportions (scale 1).
+ const float scale=std::max(1.f,float(getHeight())/89.f),w=float(getWidth())-30-(scale-1)*14,h=float(getHeight()-26);
+ const bool large=scale>1.2f;const float centre=large?float(getHeight())*.56f:h*.6f+18,amplitude=large?h*.3f:h*.24f;
+ for(int frame=13;frame>=0;--frame){float p=float(frame)/13,offset=float(frame)*1.6f*scale;Path path;for(int n=0;n<100;++n){float x=9+float(n)*w/99+offset*.6f,y=centre-offset+table.visual(float(n)/100,p)*amplitude;if(n==0)path.startNewSubPath(x,y);else path.lineTo(x,y);}g.setColour((oscillator==0?aqua():violet()).withAlpha(.1f+.15f*(1-p)));g.strokePath(path,PathStrokeType(.7f*std::min(scale,1.5f)));}
+ Path active;for(int n=0;n<160;++n){float x=9+float(n)*w/159+position*13*.96f*scale,y=centre-position*13*1.6f*scale+table.visual(float(n)/160,position)*amplitude;if(n==0)active.startNewSubPath(x,y);else active.lineTo(x,y);}auto colour=oscillator==0?aqua():violet();g.setColour(colour.withAlpha(.15f));g.strokePath(active,PathStrokeType(4*std::min(scale,1.5f)));g.setColour(colour);g.strokePath(active,PathStrokeType(1.4f*std::min(scale,1.6f)));
+ g.setColour(ice().withAlpha(.8f));g.setFont(FontOptions(scale>1.2f?10.f:8.f,Font::bold));
+ g.drawFittedText((claude>0?"CLAUDE / ":"")+String(table.title),8,3,getWidth()-16,int(13*std::min(scale,1.4f)),Justification::centredLeft,1);
+ if(scale>1.2f){g.setColour(ice().withAlpha(.5f));g.setFont(FontOptions(9.f));g.drawText("WAVETABLE PREVIEW  /  POSITION "+String(position,2),getLocalBounds().withTrimmedLeft(8).withTrimmedBottom(3),Justification::bottomLeft);
+  g.setColour(colour.withAlpha(.45f));g.fillRect(juce::Rectangle<float>(position*float(getWidth()-2),22.f,1.5f,float(getHeight())-44.f));}
+ int voices=int(processor.read(base+SynthB::unison));g.setColour(colour.withAlpha(.65f));if(!large)for(int i=0;i<voices;++i)g.fillEllipse(float(getWidth()/2)+(float(i)-float(voices-1)*.5f)*5-1.5f,float(getHeight()-7),3,3);
 }
+// Illustrative magnitude response (0..~1.3) of a filter type, the same sketch the compact view has always drawn.
+float filterResponse(int type,float cutoff,float res,float hz){
+ const float r=hz/cutoff;float m=1/std::sqrt(1+std::pow(r,type==1?8.f:4.f));
+ if(type==2)m=1-m;if(type==3)m=std::exp(-std::pow(std::log2(r)*1.6f,2.f));if(type==4)m=1-std::exp(-std::pow(std::log2(r)*2,2.f));if(type==5)m=.45f+.45f*std::cos(float(SynthB::tau)*r);if(type==6)m=.2f+.8f*std::exp(-std::pow((std::log2(hz)-10.5f),2.f));if(type>=7)m=.4f+.4f*(type==7?1-m:m);
+ return m+res*.2f*std::exp(-std::pow(std::log2(r)*3,2.f));
+}
+void WaveView::mouseDown(const MouseEvent& e){const auto& layout=SynthB::Schema::get().loc;if(auto* parameter=processor.parameters.getParameter(SynthB::Schema::get().specs[size_t(layout.osc[oscillator]+SynthB::pos)].key))parameter->beginChangeGesture();gesture=true;mouseDrag(e);}
+void WaveView::mouseDrag(const MouseEvent& e){const auto& layout=SynthB::Schema::get().loc;if(auto* parameter=processor.parameters.getParameter(SynthB::Schema::get().specs[size_t(layout.osc[oscillator]+SynthB::pos)].key))parameter->setValueNotifyingHost(SynthB::bounded(float(e.x)/float(std::max(1,getWidth())),0.f,1.f));repaint();}
+void WaveView::mouseUp(const MouseEvent&){if(!gesture)return;gesture=false;const auto& layout=SynthB::Schema::get().loc;if(auto* parameter=processor.parameters.getParameter(SynthB::Schema::get().specs[size_t(layout.osc[oscillator]+SynthB::pos)].key))parameter->endChangeGesture();}
+bool WaveView::keyPressed(const KeyPress& key){
+ const auto& layout=SynthB::Schema::get().loc;const int index=layout.osc[oscillator]+SynthB::pos;const float step=key.getModifiers().isShiftDown()?.005f:.02f;
+ if(key==KeyPress::leftKey){processor.write(index,processor.read(index)-step);return true;}if(key==KeyPress::rightKey){processor.write(index,processor.read(index)+step);return true;}return false;}
 void FilterView::paint(Graphics& g){int b=SynthB::Schema::get().loc.filter[filter];float cutoff=processor.read(b+SynthB::cutoff),res=processor.read(b+SynthB::resonance);int type=int(processor.read(b+SynthB::type));g.setColour(Colours::white.withAlpha(.04f));for(int y=10;y<getHeight();y+=12)g.drawHorizontalLine(y,0,float(getWidth()));Path path;
- for(int i=0;i<getWidth();++i){float hz=20*std::pow(1000.f,float(i)/float(getWidth())),r=hz/cutoff,m=1/std::sqrt(1+std::pow(r,type==1?8.f:4.f));if(type==2)m=1-m;if(type==3)m=std::exp(-std::pow(std::log2(r)*1.6f,2.f));if(type==4)m=1-std::exp(-std::pow(std::log2(r)*2,2.f));if(type==5)m=.45f+.45f*std::cos(float(SynthB::tau)*r);if(type==6)m=.2f+.8f*std::exp(-std::pow((std::log2(hz)-10.5f),2.f));if(type>=7)m=.4f+.4f*(type==7?1-m:m);m+=res*.2f*std::exp(-std::pow(std::log2(r)*3,2.f));float y=float(getHeight()-3)-m*float(getHeight()-8);if(i==0)path.startNewSubPath(0,y);else path.lineTo(float(i),y);}
+ for(int i=0;i<getWidth();++i){float hz=20*std::pow(1000.f,float(i)/float(getWidth())),m=filterResponse(type,cutoff,res,hz);float y=float(getHeight()-3)-m*float(getHeight()-8);if(i==0)path.startNewSubPath(0,y);else path.lineTo(float(i),y);}
  g.setColour(filter==0?aqua():violet());g.strokePath(path,PathStrokeType(1.3f));float x=std::log(cutoff/20)/std::log(1000.f)*float(getWidth());g.fillEllipse(x-3,3,6,6);
 }
 void FilterView::mouseDrag(const MouseEvent& e){int b=SynthB::Schema::get().loc.filter[filter];processor.write(b+SynthB::cutoff,20*std::pow(1000.f,SynthB::bounded(float(e.x)/float(getWidth()),0.f,1.f)));processor.write(b+SynthB::resonance,SynthB::bounded(1-float(e.y)/float(getHeight()),0.f,1.f));repaint();}
@@ -77,7 +90,7 @@ Surface::Surface(PrismProcessor& p):processor(p),style(p),motion(p,style),spectr
  button("<",{207,45,25,18},[this]{const int next=PresetBrowser::nextIndex(preset,selected,-1);if(next>=0){selected=next;processor.selectFactory(next);rebuildBrowser();}});button(">",{238,45,25,18},[this]{const int next=PresetBrowser::nextIndex(preset,selected,1);if(next>=0){selected=next;processor.selectFactory(next);rebuildBrowser();}});
  button("Load",{275,45,47,18},[this]{file(false);});button("Save",{328,45,47,18},[this]{file(true);});button("Snapshot",{388,45,68,18},[this]{processor.snapshot();});button("Swap",{462,45,49,18},[this]{processor.swapScene();});button("Undo",{518,45,48,18},[this]{processor.undo.undo();});button("All controls",{575,45,90,18},[this]{showDetail("");});button("Panic",{673,45,47,18},[this]{processor.silence.store(true);});
  button("SURPRISE ME",{855,14,133,28},[this]{processor.randomize();});button("Section locks",{855,46,133,18},[this]{showDetail("Randomizer locks");});dial("clock.bpm",1005,7,74,56);dial("voice.mode",1085,15,105,43);dial("master.gain",1197,6,63,58);
- status.setBounds(733,45,110,18);status.setFont(FontOptions(8.5f));status.setColour(Label::textColourId,aqua());addAndMakeVisible(status);
+ status.setBounds(112,41,95,18);status.setFont(FontOptions(8.5f));status.setColour(Label::textColourId,aqua());addAndMakeVisible(status);
  for(int m=0;m<10;++m){int x=146+m*110;String id=m<8?"macro"+String(m+1)+".value":m==8?"macro.euphoria":"macro.space";auto& c=dial(id,x,80,86,67);if(m<8){c.label.setVisible(false);auto& label=macroLabels[size_t(m)];label.setText(processor.macroTitle(m),dontSendNotification);label.setFont(FontOptions(9.f));label.setJustificationType(Justification::centred);label.setEditable(false,true);label.onTextChange=[this,m]{processor.nameMacro(m,macroLabels[size_t(m)].getText());};label.setBounds(x,80,86,13);addAndMakeVisible(label);}}
  for(int o=0;o<2;++o){int x=18+o*420;String prefix="osc"+String(o+1)+".";button("Import WAV",{x+244,168,78,19},[this,o]{import(o);});button("Edit",{x+330,168,62,19},[this,o]{showDetail("Oscillator "+String(o+1));});
   auto& table=dial(prefix+"table",x+14,193,222,26);table.label.setVisible(false);table.choice.setBounds(0,0,222,26);
@@ -91,6 +104,8 @@ Surface::Surface(PrismProcessor& p):processor(p),style(p),motion(p,style),spectr
  static_assert(std::size(labels) + 1 == SynthB::modulationSourceCount);
  for(int s=1;s<SynthB::modulationSourceCount;++s){auto chip=std::make_unique<SourceChip>(s,labels[s-1]);chip->setBounds(115+(s-1)*48,380,45,23);addAndMakeVisible(*chip);chips.push_back(std::move(chip));}
  motion.setBounds(18,413,914,178);motion.inspect=[this](String q){showDetail(q);};addAndMakeVisible(motion);spectrum.setBounds(945,413,317,178);addAndMakeVisible(spectrum);
+ signal=std::make_unique<SignalView>(processor,style,[this](String q){showDetail(q);},[this](int o){import(o);});signal->setBounds(18,73,1250,520);addAndMakeVisible(*signal);
+ viewButton.setBounds(733,45,110,18);viewButton.setTooltip("Switch between the large Signal view and the compact classic layout (macros, modulation sources, envelopes, LFOs, matrix)");viewButton.onClick=[this]{showSignalView(!signalViewShown());};addAndMakeVisible(viewButton);
  lastOrder.fill(-1);keyboard.setBounds(111,683,1150,26);keyboard.setAvailableRange(24,108);keyboard.setLowestVisibleKey(36);keyboard.setKeyWidth(20);keyboard.setColour(MidiKeyboardComponent::whiteNoteColourId,Colour(0xffb8c8e1));keyboard.setColour(MidiKeyboardComponent::blackNoteColourId,Colour(0xff111a30));keyboard.setColour(MidiKeyboardComponent::keyDownOverlayColourId,aqua().withAlpha(.65f));addAndMakeVisible(keyboard);
  for(auto* slider:{&bend,&wheel}){slider->setLookAndFeel(&style);slider->setSliderStyle(Slider::LinearVertical);slider->setTextBoxStyle(Slider::NoTextBox,false,0,0);addAndMakeVisible(*slider);}bend.setRange(-1,1);bend.setBounds(28,682,25,28);bend.onValueChange=[this]{processor.bendRequest.store(float(bend.getValue()));};bend.onDragEnd=[this]{bend.setValue(0);};wheel.setRange(0,127,1);wheel.setBounds(65,682,25,28);wheel.onValueChange=[this]{processor.wheelRequest.store(float(wheel.getValue()));};
  rebuildBrowser();timerCallback();startTimerHz(30);
@@ -109,8 +124,9 @@ void Surface::timerCallback(){
  status.setText(processor.learnTarget.load()>=0?"Move a MIDI CC":String(processor.voices.load())+" voices  •  "+String(processor.cpuLoad.load()*100,0)+"%",dontSendNotification);
  auto& loc=SynthB::Schema::get().loc;std::array<int,10> order{};for(int i=0;i<10;++i)order[size_t(i)]=int(processor.read(loc.order[i]));order=SynthB::resolvedRack(order);for(int i=0;i<10;++i){int effect=order[size_t(i)];if(effect!=lastOrder[size_t(i)]){lastOrder[size_t(i)]=effect;rack[size_t(i)]=std::make_unique<RackCell>(processor,style,i,effect);rack[size_t(i)]->setBounds(18+i*125,601,119,73);rack[size_t(i)]->inspect=[this](String q){showDetail(q);};addAndMakeVisible(*rack[size_t(i)]);}}
  for(auto& c:controls)if(c->parameter==loc.osc[0]||c->parameter==loc.osc[1])c->choice.setItemEnabled(31,processor.importedTable()!=nullptr);
- spectrum.update();motion.refresh();repaint();
+ spectrum.update();motion.refresh();if(signal!=nullptr&&signal->isVisible())signal->refresh();repaint();
 }
+void Surface::showSignalView(bool show){if(signal==nullptr)return;signal->setVisible(show);viewButton.setButtonText(show?"CLASSIC VIEW":"SIGNAL VIEW");repaint();}
 void Surface::rebuildBrowser(){
  PresetBrowser::rebuild(preset, category, search.getText(), processor.factoryCount(), [this](int i){ return processor.factoryPatch(i); });
  preset.setSelectedId(selected+1, dontSendNotification);
