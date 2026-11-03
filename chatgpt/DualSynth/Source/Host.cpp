@@ -168,12 +168,15 @@ void DualProcessor::renderSlice(AudioBuffer<float>& audio,int start,int length,c
   dryLeft[i]=dry[0];dryRight[i]=dry[1];wetLeft[i]=wet[0];wetRight[i]=wet[1];
  }
  // Pass 2: the compressor. "Glue" is the baseline compressor, untouched; "FET 76" is the Phase 2 peak compressor.
+ // Whichever compressor is not in use is kept reset, so switching types always starts the new one from a clean state.
  if(fetMode){
+  compressor.reset();
   if(compOn){
    masterdsp::FetParams fp;fp.inputDb=get(FetInput);fp.outputDb=get(FetOutput);fp.attackUs=get(FetAttack);fp.releaseMs=get(FetRelease);fp.mix=get(FetMix);fp.ratio=int(get(FetRatio));fp.sidechainHighpass=get(FetSidechain)>.5f;
    peak.reduction=std::max(peak.reduction,fet.process(wetLeft,wetRight,length,fp));
   }else fet.reset();
  }else{
+  fet.reset();
   for(int i=0;i<length;++i){
    const float detector=std::max(std::abs(wetLeft[i]),std::abs(wetRight[i]));const float compressed=compressor.processSample(0,detector);
    if(compOn&&detector>1.e-12f){const float reduction=compressed/detector;wetLeft[i]*=reduction;wetRight[i]*=reduction;peak.reduction=std::max(peak.reduction,-masterdsp::gainToDb(reduction));}
@@ -217,7 +220,9 @@ void DualProcessor::processBlock(AudioBuffer<float>& audio,MidiBuffer& midi){
  }
  peaks[0].store(peak.a);peaks[1].store(peak.b);peaks[2].store(peak.master);
  for(size_t i=0;i<levels.size();++i)levels[i].store(peak.level[i]);
- gainReduction.store(peak.reduction);midi.clear();
+ // The needle shows compression you can hear: it is scaled by how much of the master-effects path is blended in,
+ // so it reads zero while Master FX is bypassed (the detector keeps running underneath).
+ gainReduction.store(peak.reduction*jlimit(0.f,1.f,fxBlend.getCurrentValue()));midi.clear();
 }
 void DualProcessor::getStateInformation(MemoryBlock& block){const ScopedLock recall(recallLock);ValueTree tree=state.copyState();MemoryBlock sa,sb;a.getStateInformation(sa);b.getStateInformation(sb);tree.setProperty("engineA",sa.toBase64Encoding(),nullptr);tree.setProperty("engineB",sb.toBase64Encoding(),nullptr);tree.setProperty("panel",panel.load(),nullptr);MemoryOutputStream output(block,false);tree.writeToStream(output);}
 

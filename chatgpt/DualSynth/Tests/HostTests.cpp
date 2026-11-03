@@ -231,6 +231,13 @@ void fetDspTests(){
  {ReverbInputStage stage;stage.prepare(48000);std::vector<float> out(1000);for(int i=0;i<1000;++i){float l=i==0?1.f:0.f,r=l;stage.process(l,r,10.f,20.f);out[size_t(i)]=l;}int first=-1;for(int i=0;i<1000;++i)if(out[size_t(i)]!=0.f){first=i;break;}require(first==480&&out[480]==1.f,"reverb pre-delay of 10 ms delays by exactly 480 samples at 48 kHz");}
  {ReverbInputStage stage;stage.prepare(48000);bool same=true;for(int i=0;i<2000;++i){float l=std::sin(float(i)*.01f),r=std::cos(float(i)*.013f);const float l0=l,r0=r;stage.process(l,r,0.f,20.f);same=same&&l==l0&&r==r0;}require(same,"reverb input stage at its default settings is bit-transparent");}
  {ReverbInputStage stage;stage.prepare(48000);float l=0,r=0;for(int i=0;i<2400;++i){l=r=1.f;stage.process(l,r,0.f,300.f);}require(std::abs(l)<1.e-3f,"reverb low cut removes a constant level");}
+ // Automating pre-delay and low cut does not click: the largest sample-to-sample step stays near that of the plain sine.
+ {auto largestStepAfterChange=[&](float delayFrom,float delayTo,float cutFrom,float cutTo){ReverbInputStage stage;stage.prepare(48000);float previous=0,largest=0;
+   for(int i=0;i<96000;++i){float l=std::sin(MathConstants<float>::twoPi*200.f*float(i)/48000.f),r=l;const bool after=i>=48000;stage.process(l,r,after?delayTo:delayFrom,after?cutTo:cutFrom);if(i>48000)largest=std::max(largest,std::abs(l-previous));previous=l;}return largest;};
+  const float plain=2.f*MathConstants<float>::pi*200.f/48000.f;   // largest step of a unit 200 Hz sine
+  const float delayJump=largestStepAfterChange(0,60,20,20),cutJump=largestStepAfterChange(0,0,20,500);
+  std::cout<<"INFO: reverb input stage, largest sample step after a sudden change: pre-delay 0->60 ms "<<delayJump<<", low cut 20->500 Hz "<<cutJump<<" (a plain sine steps "<<plain<<")\n";
+  require(delayJump<plain*3.f&&cutJump<plain*3.f,"pre-delay and low-cut changes are smoothed (no click)");}
 }
 
 MemoryBlock withoutPhase2Controls(const MemoryBlock& state){
@@ -282,11 +289,25 @@ void phase2HostTests(){
   AudioBuffer<float> one(2,256),two(2,256);bool identical=true;for(int block=0;block<40;++block){MidiBuffer m1,m2;if(block==0){m1.addEvent(MidiMessage::noteOn(1,60,.8f),0);m2.addEvent(MidiMessage::noteOn(1,60,.8f),0);}both->processBlock(one,m1);plain->processBlock(two,m2);for(int c=0;c<2;++c)for(int i=0;i<256;++i)identical=identical&&one.getSample(c,i)==two.getSample(c,i);}
   require(identical,"solo on both strips is the same as no solo");}
  // Meters and the gain-reduction readout.
- {auto host=makeHost();host->write("routing",0);host->write("fet.input",24);host->write("fet.ratio",3);host->prepareToPlay(48000,256);AudioBuffer<float> out(2,256);float reduction=0;
+ {auto host=makeHost();host->write("routing",0);host->write("glue",1);host->write("fet.input",24);host->write("fet.ratio",3);host->prepareToPlay(48000,256);AudioBuffer<float> out(2,256);float reduction=0;
   for(int block=0;block<120;++block){MidiBuffer m;if(block==0)for(int note:{48,55,60,67})m.addEvent(MidiMessage::noteOn(1,note,.9f),0);host->processBlock(out,m);if(block==100)reduction=host->gainReduction.load();}
   std::cout<<"INFO: FET gain reduction readout with +24 dB input, 20:1 on a four-note chord: "<<reduction<<" dB; A left "<<host->levels[0].load()<<", output left "<<host->levels[4].load()<<"\n";
   require(reduction>1.f,"the gain-reduction readout moves when the FET compressor works");require(host->levels[0].load()>0&&host->levels[1].load()>0&&host->levels[4].load()>0&&host->levels[5].load()>0,"stereo meters read signal");
-  host->write("comp",0);for(int block=0;block<4;++block){MidiBuffer m;host->processBlock(out,m);}require(host->gainReduction.load()==0.f,"gain reduction reads zero with the compressor off");}
+  host->write("comp",0);for(int block=0;block<4;++block){MidiBuffer m;host->processBlock(out,m);}require(host->gainReduction.load()==0.f,"gain reduction reads zero with the compressor off");
+  // With Master FX bypassed the compressor's work is inaudible, so the needle must not move.
+  host->write("comp",1);host->write("glue",0);for(int block=0;block<60;++block){MidiBuffer m;host->processBlock(out,m);}
+  std::cout<<"INFO: gain-reduction readout with Master FX bypassed: "<<host->gainReduction.load()<<" dB\n";require(host->gainReduction.load()<.05f,"the gain-reduction needle reads zero while Master FX is bypassed");
+  host->write("glue",1);for(int block=0;block<60;++block){MidiBuffer m;host->processBlock(out,m);}require(host->gainReduction.load()>1.f,"the needle moves again when Master FX is switched on");}
+ // Switching compressor type starts the new type from a clean state: after loud material in FET, a trip through Glue and back
+ // must not leave the FET detector holding old gain reduction.
+ {auto host=makeHost();host->write("routing",0);host->write("glue",1);host->write("fet.input",24);host->write("fet.ratio",3);host->prepareToPlay(48000,256);AudioBuffer<float> out(2,256);
+  for(int block=0;block<100;++block){MidiBuffer m;if(block==0)for(int note:{48,55,60,67})m.addEvent(MidiMessage::noteOn(1,note,.9f),0);host->processBlock(out,m);}
+  require(host->gainReduction.load()>3.f,"switch test: FET is compressing before the switch");
+  host->write("comp.mode",0);for(int block=0;block<20;++block){MidiBuffer m;host->processBlock(out,m);}
+  host->write("a.mute",1);host->write("b.mute",1);for(int block=0;block<40;++block){MidiBuffer m;host->processBlock(out,m);}   // strips muted: the master path sees silence
+  host->write("comp.mode",1);{MidiBuffer m;host->processBlock(out,m);}
+  std::cout<<"INFO: FET gain reduction in the first block after switching back from Glue with silent input: "<<host->gainReduction.load()<<" dB\n";
+  require(host->gainReduction.load()<.01f,"switching compressor type does not leave stale gain reduction behind");}
  // Tap tempo: three taps half a second apart set about 120 BPM on the chosen engine(s) and turn off their host-sync.
  {auto host=makeHost();host->tapTempo();Thread::sleep(500);host->tapTempo();Thread::sleep(500);const float bpm=host->tapTempo();
   std::cout<<"INFO: tap tempo, three taps 500 ms apart: "<<bpm<<" BPM\n";

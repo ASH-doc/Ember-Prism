@@ -72,26 +72,37 @@ private:
 };
 
 // ---- Reverb input stage: pre-delay and low cut -----------------------------------------------------------------------
+// Both controls are smoothed (about 20 ms) so automating them does not click: the delay tap glides with linear
+// interpolation and the low cut is a filter whose cutoff glides and whose amount fades in and out.
 // With pre-delay 0 and low cut at or below 20 Hz the signal passes through bit-for-bit unchanged, so saved states from
 // before these controls existed sound exactly as they did.
 class ReverbInputStage {
 public:
  static constexpr float maxPreDelayMs=200.f;
- void prepare(double sampleRate){sr=float(sampleRate);size=size_t(maxPreDelayMs*.001f*sr)+2;for(auto& line:buffer)line.assign(size,0.f);reset();}
- void reset(){for(auto& line:buffer)std::fill(line.begin(),line.end(),0.f);head=0;lp[0]=lp[1]=0;}
+ void prepare(double sampleRate){sr=float(sampleRate);size=size_t(maxPreDelayMs*.001f*sr)+4;for(auto& line:buffer)line.assign(size,0.f);smoothing=1.f-std::exp(-1.f/(.02f*sr));reset();}
+ void reset(){for(auto& line:buffer)std::fill(line.begin(),line.end(),0.f);head=0;lp[0]=lp[1]=0;primed=false;}
  void process(float& left,float& right,float preDelayMs,float lowCutHz){
-  const size_t delay=std::min(size-1,size_t(std::max(0.f,preDelayMs)*.001f*sr+.5f));
-  float in[2]={left,right};
-  if(buffer[0].empty()){return;}
-  float out[2]={in[0],in[1]};
-  if(delay>0){for(int c=0;c<2;++c){buffer[size_t(c)][head]=in[c];out[c]=buffer[size_t(c)][(head+size-delay)%size];}}
-  else{for(int c=0;c<2;++c)buffer[size_t(c)][head]=in[c];}
+  if(buffer[0].empty())return;
+  float targetDelay=std::min(float(size-3),std::max(0.f,preDelayMs)*.001f*sr);
+  const float whole=std::round(targetDelay);if(std::abs(targetDelay-whole)<.01f)targetDelay=whole;
+  const float targetCut=std::max(20.f,lowCutHz),targetAmount=lowCutHz>20.5f?1.f:0.f;
+  if(!primed){delay=targetDelay;cut=targetCut;amount=targetAmount;primed=true;}
+  else{delay=glide(delay,targetDelay);cut=glide(cut,targetCut);amount=glide(amount,targetAmount);}
+  const float in[2]={left,right};float out[2]={in[0],in[1]};
+  for(int c=0;c<2;++c)buffer[size_t(c)][head]=in[c];
+  if(delay>0.f){
+   const size_t steps=size_t(delay);const float fraction=delay-float(steps);
+   for(int c=0;c<2;++c){const auto& line=buffer[size_t(c)];const float newer=line[(head+size-steps)%size];
+    out[c]=fraction==0.f?newer:newer+fraction*(line[(head+size-steps-1)%size]-newer);}
+  }
   head=(head+1)%size;
-  if(lowCutHz>20.5f){const float a=1.f-std::exp(-6.2831853f*lowCutHz/sr);for(int c=0;c<2;++c){lp[c]+=a*(out[c]-lp[c]);out[c]-=lp[c];}}
+  const float a=1.f-std::exp(-6.2831853f*cut/sr);
+  for(int c=0;c<2;++c){lp[c]+=a*(out[c]-lp[c]);out[c]-=amount*lp[c];}
   left=out[0];right=out[1];
  }
 private:
- float sr=48000.f;size_t size=0,head=0;std::array<std::vector<float>,2> buffer;float lp[2]{};
+ float glide(float current,float target)const{const float next=current+(target-current)*smoothing;return std::abs(target-next)<1.e-3f?target:next;}
+ float sr=48000.f,smoothing=.001f,delay=0.f,cut=20.f,amount=0.f;size_t size=0,head=0;bool primed=false;std::array<std::vector<float>,2> buffer;float lp[2]{};
 };
 
 }
