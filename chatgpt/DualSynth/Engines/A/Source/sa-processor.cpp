@@ -2,6 +2,7 @@
 #include "sa-processor.h"
 #include "sa-editor.h"
 #include <EmberBankData.h>
+#include <EmberClaudeBankData.h>
 juce::AudioProcessorValueTreeState::ParameterLayout SynthAProcessor::layout(){
  juce::AudioProcessorValueTreeState::ParameterLayout result;
  for(const auto& p:SynthA::parameters()){
@@ -17,6 +18,9 @@ SynthAProcessor::SynthAProcessor():AudioProcessor(BusesProperties().withOutput("
  for(auto& x:pendingCC)x.store(-1);for(auto& x:ccMap)x.store(-1);for(auto& x:heldNotes)x.store(0);
  auto parsed=juce::JSON::parse(juce::String::fromUTF8(EmberBank::factory_json,EmberBank::factory_jsonSize));
  if(auto* array=parsed.getArray())bank=*array;
+ // Presets imported from the Claude baseline are appended after the factory bank, so every factory index is unchanged.
+ auto imported=juce::JSON::parse(juce::String::fromUTF8(EmberClaudeBank::claudeimport_json,EmberClaudeBank::claudeimport_jsonSize));
+ if(auto* array=imported.getArray())bank.addArray(*array);
  setLatencySamples(16);comparePatch=getPatch();
 }
 SynthAProcessor::~SynthAProcessor(){cancelPendingUpdate();}

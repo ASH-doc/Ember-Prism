@@ -1,5 +1,6 @@
 #include "Host.h"
 #include "Catalog.h"
+#include <EmberBankData.h>
 #include <iostream>
 #include <map>
 #include <thread>
@@ -483,6 +484,31 @@ void goldenMasterTest(){
  require(worst<=1.e-4f,"legacy master effects sound unchanged (difference below -80 dB)");
 }
 
+// ---- Claude EMBER preset import (Phase 3) ---------------------------------------------------------------------------
+// The imported bank is appended after the factory bank: factory entries are byte-identical, every imported patch loads
+// under its stated name and makes finite, non-silent sound.
+double emberRenderEnergy(DualProcessor& host,bool& finite){
+ AudioBuffer<float> out(2,256);double energy=0;finite=true;
+ for(int block=0;block<94;++block){MidiBuffer m;if(block==0)m.addEvent(MidiMessage::noteOn(1,60,.8f),0);if(block==60)m.addEvent(MidiMessage::noteOff(1,60),0);host.processBlock(out,m);
+  for(int c=0;c<2;++c)for(int i=0;i<256;++i){const float v=out.getSample(c,i);if(!std::isfinite(v))finite=false;energy+=double(v)*v;}}
+ return energy;
+}
+void claudeEmberImportTests(){
+ auto baseline=JSON::parse(String::fromUTF8(EmberBank::factory_json,EmberBank::factory_jsonSize));
+ const int base=baseline.getArray()->size();auto host=makeHost();
+ std::cout<<"INFO: Claude EMBER import: bank "<<host->a.presetCount()<<" ("<<base<<" factory + "<<host->a.presetCount()-base<<" imported)\n";
+ require(host->a.presetCount()-base>=65,"the 65 Claude EMBER presets (all but Init) are in the bank");
+ for(int i=0;i<base;++i)require(JSON::toString(host->a.preset(i))==JSON::toString((*baseline.getArray())[i]),"factory EMBER presets are unchanged");
+ host->write("routing",2);host->prepareToPlay(48000,256);int imported=0,silent=0;
+ for(int i=base;i<host->a.presetCount();++i){
+  const var preset=host->a.preset(i);if(!preset.hasProperty("claudeImport"))continue;++imported;
+  const String expected=preset["name"].toString();require(expected.endsWith("[C]")||expected.endsWith("[C~]")||expected.endsWith("[C?]"),"imported EMBER name carries its match mark");require(preset["category"].toString().startsWith("Claude "),"imported EMBER category starts with Claude");
+  host->a.loadPreset(i);require(host->a.patchName()==expected,"imported EMBER patch loads under its name");
+  bool finite=true;const double energy=emberRenderEnergy(*host,finite);require(finite,"imported EMBER patch renders finite audio");if(energy<1.e-8)++silent;}
+ std::cout<<"INFO: Claude EMBER import: "<<imported<<" imported patches loaded, silent renders "<<silent<<"\n";
+ require(imported==65&&silent==0,"all 65 imported EMBER patches load and make sound");
+}
+
 void processBlockAllocationInfo(){
  auto host=makeHost();host->prepareToPlay(48000,256);AudioBuffer<float> out(2,256);MidiBuffer midi;
  for(int block=0;block<100;++block){MidiBuffer m;if(block==0)for(int note:{48,55,60,67})m.addEvent(MidiMessage::noteOn(1,note,.8f),0);host->processBlock(out,m);}
@@ -493,7 +519,7 @@ void processBlockAllocationInfo(){
 
 int main(int argc,char** argv){ScopedJuceInitialiser_GUI gui;
  if(argc==3&&String(argv[1])=="--golden-write"){const auto samples=goldenMasterRender();require(File::getCurrentWorkingDirectory().getChildFile(argv[2]).replaceWithData(samples.data(),samples.size()*sizeof(float)),"golden file written");std::cout<<"golden written: "<<samples.size()<<" samples\n";return 0;}
- midiOwnershipTests();parameterCatalogTest();pitchBendModulationTest();claudePrismBankTest();goldenMasterTest();fetDspTests();phase2HostTests();engineChannelTests();recallBoundaryTest();routeMidiAllocationTest();slicingTests();stateTests();loadDuringPlaybackTest();processBlockAllocationInfo();
+ midiOwnershipTests();parameterCatalogTest();pitchBendModulationTest();claudePrismBankTest();claudeEmberImportTests();goldenMasterTest();fetDspTests();phase2HostTests();engineChannelTests();recallBoundaryTest();routeMidiAllocationTest();slicingTests();stateTests();loadDuringPlaybackTest();processBlockAllocationInfo();
  {auto heapP=std::make_unique<DualProcessor>();DualProcessor& p=*heapP;MidiBuffer input,ma,mb;input.addEvent(MidiMessage::noteOn(1,60,.8f),17);p.routeMidi(input,ma,mb);require(ma.getNumEvents()==1&&mb.getNumEvents()==1,"layer fans out to both");p.write("routing",1);p.write("split",72);input.clear();input.addEvent(MidiMessage::noteOff(1,60),21);p.routeMidi(input,ma,mb);require(ma.getNumEvents()==1&&mb.getNumEvents()==1,"held note ownership survives changed split");input.clear();input.addEvent(MidiMessage::noteOn(1,71,.8f),3);input.addEvent(MidiMessage::noteOn(1,72,.8f),4);p.routeMidi(input,ma,mb);require(ma.getNumEvents()==1&&mb.getNumEvents()==1,"split boundary routes A below and B at split");require((*ma.begin()).samplePosition==3&&(*mb.begin()).samplePosition==4,"MIDI sample offsets preserved");p.write("a.high",60);input.clear();input.addEvent(MidiMessage::noteOn(1,61,.7f),0);p.routeMidi(input,ma,mb);require(ma.isEmpty()&&mb.isEmpty(),"split intersects per-engine note range");p.write("a.channel",2);input.clear();input.addEvent(MidiMessage::noteOn(1,40,.7f),0);p.routeMidi(input,ma,mb);require(ma.isEmpty()&&mb.isEmpty(),"channel filter");input.clear();input.addEvent(MidiMessage::controllerEvent(1,64,127),0);p.routeMidi(input,ma,mb);require(ma.getNumEvents()==1&&mb.getNumEvents()==1,"controllers reach both to release tails");}
  for(int engine=0;engine<2;++engine){auto heapHost=std::make_unique<DualProcessor>();DualProcessor& host=*heapHost;std::unique_ptr<AudioProcessor> reference=engine==0?std::unique_ptr<AudioProcessor>(new SynthAProcessor):std::unique_ptr<AudioProcessor>(new PrismProcessor);host.write("routing",float(engine+2));host.write("a.gain",0);host.write("b.gain",0);host.write("master",0);host.write("glue",0);host.prepareToPlay(48000,256);reference->setRateAndBufferSizeDetails(48000,256);reference->prepareToPlay(48000,256);auto visible=std::unique_ptr<AudioProcessorEditor>(host.createEditor());AudioBuffer<float> output(2,256),raw(2,256);std::array<std::array<float,4>,2> delay{};int head=0;double energy=0;for(int block=0;block<200;++block){if(block%40==0)dynamic_cast<DualEditor*>(visible.get())->select((block/40)%2);MidiBuffer midi,copy;if(block==0){midi.addEvent(MidiMessage::noteOn(1,60,.8f),17);midi.addEvent(MidiMessage::noteOn(1,67,.7f),80);}if(block==120)midi.addEvent(MidiMessage::allNotesOff(1),9);copy=midi;host.processBlock(output,midi);reference->processBlock(raw,copy);for(int n=0;n<256;++n){for(int c=0;c<2;++c){float expected=raw.getSample(c,n);if(engine==1){float aligned=delay[size_t(c)][size_t(head)];delay[size_t(c)][size_t(head)]=expected;expected=aligned;}if(output.getSample(c,n)!=expected){std::cerr<<"engine "<<engine<<" block "<<block<<" sample "<<n<<" got "<<output.getSample(c,n)<<" expected "<<expected<<" delta "<<(output.getSample(c,n)-expected)<<" gains "<<host.value("a.gain")<<" "<<host.value("b.gain")<<" "<<host.value("master")<<"\n";require(false,"unity/bypassed output exactly equals original engine (B aligned by4samples)");}energy+=expected*expected;}head=(head+1)%4;}}require(energy>1.e-6,"identity comparison has signal");}
  auto heapMain=std::make_unique<DualProcessor>();DualProcessor& p=*heapMain;p.a.loadPreset(3);p.b.selectFactory(4);p.write("split",65);p.write("a.gain",-3);p.write("b.mute",1);p.write("room",.83f);p.panel.store(1);MemoryBlock state;p.getStateInformation(state);auto heapRecalled=std::make_unique<DualProcessor>();DualProcessor& recalled=*heapRecalled;recalled.setStateInformation(state.getData(),int(state.getSize()));require(recalled.value("split")==65&&recalled.value("b.mute")==1&&std::abs(recalled.value("room")-.83f)<1.e-6,"host state recall");require(recalled.a.patchName()==p.a.patchName()&&recalled.b.title()==p.b.title()&&recalled.panel.load()==1,"both complete engine states and view recall");
