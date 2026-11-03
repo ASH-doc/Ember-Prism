@@ -13,6 +13,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout PrismProcessor::makeLayout()
 PrismProcessor::PrismProcessor():AudioProcessor(BusesProperties().withOutput("Prism stereo",juce::AudioChannelSet::stereo(),true)),parameters(*this,&undo,"SynthB",makeLayout()){
  const auto& specs=SynthB::Schema::get().specs;for(size_t i=0;i<specs.size();++i)atomics[i]=parameters.getRawParameterValue(specs[i].key);for(auto& a:ccAssignments)a.store(-1);for(auto& p:ccPending)p.store(-1);
  auto bank=juce::JSON::parse(juce::String::fromUTF8(PrismBank::factory_json,PrismBank::factory_jsonSize));if(auto* array=bank.getArray())factory=*array;
+ auto mapped=juce::JSON::parse(juce::String::fromUTF8(PrismBank::claudeprism_json,PrismBank::claudeprism_jsonSize));
+ if(auto* array=mapped.getArray())for(const auto& preset:*array)factory.add(preset);
  setLatencySamples(12);scene=patch();
 }
 PrismProcessor::~PrismProcessor(){cancelPendingUpdate();}

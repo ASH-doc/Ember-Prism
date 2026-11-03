@@ -28,6 +28,7 @@ enum Fx {fxOn,fxMix,fxA,fxB,fxC,fxMode,fxSync,fxDivision,fxSize};
 enum Route {source,destination,depth,bipolar,shape,routeSize};
 enum Seq {seqOn,seqMode,seqRate,seqSwing,seqLength,seqHold,seqOctaves,seqRestart,stepPitch0,stepGate0=stepPitch0+16,stepVelocity0=stepGate0+16,seqSize=stepVelocity0+16};
 struct Layout {
+ std::array<int,2> claudeTable{};
  std::array<int,2> osc{},filter{};std::array<int,3> env{};std::array<int,4> lfo{};
  std::array<int,8> macro{};std::array<int,10> fx{},order{};std::array<int,routes> route{};
  int sub,subOct,subWave,noise,noiseColor,routing,filterBalance,mode,glide,bend,velocityCurve,tempo,host,master,pan,arp,seq,euphoria,space;
@@ -39,6 +40,7 @@ class Schema {
 };
 const std::vector<std::string>& sourceNames();
 const std::vector<std::string>& tableNames();
+const std::vector<std::string>& claudeTableNames();
 const std::vector<std::string>& effectNames();
 inline constexpr std::array<float,10> beatLengths{.125f,1.f/6,.25f,1.f/3,.5f,.75f,1,2,4,8};
 inline std::array<int,10> resolvedRack(std::array<int,10> order){std::array<bool,10> used{};for(auto& index:order){index=bounded(index,0,9);if(used[size_t(index)])for(int candidate=0;candidate<10;++candidate)if(!used[size_t(candidate)]){index=candidate;break;}used[size_t(index)]=true;}return order;}

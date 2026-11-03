@@ -26,7 +26,8 @@ Dial::Dial(PrismProcessor& p,Style& look,int index,bool linear,bool row):paramet
 Dial::~Dial(){slider.removeMouseListener(this);label.removeMouseListener(this);slider.setLookAndFeel(nullptr);choice.setLookAndFeel(nullptr);setLookAndFeel(nullptr);}
 void Dial::resized(){auto r=getLocalBounds();if(row){label.setBounds(r.removeFromLeft(getWidth()/2));if(menuBinding)choice.setBounds(r.reduced(3));else slider.setBounds(r);}else{label.setBounds(r.removeFromTop(13));if(menuBinding)choice.setBounds(r.reduced(1));else slider.setBounds(r);}}
 void Dial::paint(Graphics& g){if(hover){g.setColour(aqua().withAlpha(.14f));g.fillRoundedRectangle(getLocalBounds().toFloat(),9);g.setColour(aqua());g.drawRoundedRectangle(getLocalBounds().toFloat().reduced(.7f),9,1.4f);}}
-bool Dial::isInterestedInDragSource(const SourceDetails& d){return d.description.toString().startsWith("mod:");}
+bool Dial::isInterestedInDragSource(const SourceDetails& d){const auto& schema = SynthB::Schema::get();
+ return parameter < schema.loc.claudeTable[0] && d.description.toString().startsWith("mod:");}
 void Dial::itemDragEnter(const SourceDetails&){hover=true;repaint();}void Dial::itemDragExit(const SourceDetails&){hover=false;repaint();}
 void Dial::itemDropped(const SourceDetails& details){hover=false;int source=details.description.toString().fromFirstOccurrenceOf(":",false,false).getIntValue();processor.route(source,parameter);repaint();}
 void Dial::mouseDown(const MouseEvent& event){
@@ -39,9 +40,22 @@ void Dial::mouseDown(const MouseEvent& event){
 void SourceChip::paint(Graphics& g){auto colour=sourceColour(source);g.setColour(colour.withAlpha(.12f));g.fillRoundedRectangle(getLocalBounds().toFloat(),8);g.setColour(colour.withAlpha(.4f));g.drawRoundedRectangle(getLocalBounds().toFloat().reduced(.5f),8,1);g.setColour(colour);g.setFont(FontOptions(9.f,Font::bold));g.drawText(label,getLocalBounds(),Justification::centred);}
 void SourceChip::mouseDrag(const MouseEvent& e){if(e.getDistanceFromDragStart()>3)if(auto* drag=DragAndDropContainer::findParentDragContainerFor(this))drag->startDragging("mod:"+String(source),this);}
 void WaveView::paint(Graphics& g){
- int base=SynthB::Schema::get().loc.osc[oscillator];const auto& table=SynthB::Tables::get().at(int(processor.read(base)),processor.importedTable());float position=processor.voices.load()>0?processor.engine.displayed[size_t(base+SynthB::pos)].load():processor.read(base+SynthB::pos);g.setColour(Colour(0xff0d1528));g.fillRoundedRectangle(getLocalBounds().toFloat(),9);
+ const auto& layout = SynthB::Schema::get().loc;
+ const int base = layout.osc[oscillator];
+ const int claude = int(processor.read(layout.claudeTable[oscillator]));
+ const auto& table = SynthB::Tables::get().at(int(processor.read(base)), processor.importedTable(), claude);
+ const float position = processor.voices.load() > 0
+     ? processor.engine.displayed[size_t(base + SynthB::pos)].load() : processor.read(base + SynthB::pos);
+ g.setColour(Colour(0xff0d1528));
+ g.fillRoundedRectangle(getLocalBounds().toFloat(), 9);
  const float w=float(getWidth()-30),h=float(getHeight()-26);for(int frame=13;frame>=0;--frame){float p=float(frame)/13,offset=float(frame)*1.6f;Path path;for(int n=0;n<100;++n){float x=9+float(n)*w/99+offset*.6f,y=h*.6f+18-offset+table.visual(float(n)/100,p)*h*.24f;if(n==0)path.startNewSubPath(x,y);else path.lineTo(x,y);}g.setColour((oscillator==0?aqua():violet()).withAlpha(.1f+.15f*(1-p)));g.strokePath(path,PathStrokeType(.7f));}
  Path active;for(int n=0;n<160;++n){float x=9+float(n)*w/159+position*13*.96f,y=h*.6f+18-position*13*1.6f+table.visual(float(n)/160,position)*h*.24f;if(n==0)active.startNewSubPath(x,y);else active.lineTo(x,y);}auto colour=oscillator==0?aqua():violet();g.setColour(colour.withAlpha(.15f));g.strokePath(active,PathStrokeType(4));g.setColour(colour);g.strokePath(active,PathStrokeType(1.4f));
+ if (claude > 0) {
+  g.setColour(ice().withAlpha(.8f));
+  g.setFont(FontOptions(8.f, Font::bold));
+  g.drawFittedText("CLAUDE / " + String(table.title), 8, 3, getWidth() - 16, 13,
+                   Justification::centredLeft, 1);
+ }
  int voices=int(processor.read(base+SynthB::unison));g.setColour(colour.withAlpha(.65f));for(int i=0;i<voices;++i)g.fillEllipse(float(getWidth()/2)+(float(i)-float(voices-1)*.5f)*5-1.5f,float(getHeight()-7),3,3);
 }
 void FilterView::paint(Graphics& g){int b=SynthB::Schema::get().loc.filter[filter];float cutoff=processor.read(b+SynthB::cutoff),res=processor.read(b+SynthB::resonance);int type=int(processor.read(b+SynthB::type));g.setColour(Colours::white.withAlpha(.04f));for(int y=10;y<getHeight();y+=12)g.drawHorizontalLine(y,0,float(getWidth()));Path path;

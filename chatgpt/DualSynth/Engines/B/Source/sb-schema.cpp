@@ -48,6 +48,8 @@ Schema::Schema(){
  loc.master=number("master.gain","Output",-60,0,-9,"Master","dB");loc.pan=number("master.pan","Pan",-1,1,0,"Master");
  std::vector<std::string> dest{"None"};for(const auto& p:specs)dest.push_back(p.key);for(int n=0;n<routes;++n)for(auto suffix:{"source","destination","depth","bipolar","curve"})dest.push_back("mod"+std::to_string(n+1)+"."+suffix);
  for(int n=0;n<routes;++n){auto k="mod"+std::to_string(n+1)+".";loc.route[n]=int(specs.size());menu(k+"source","Source",sourceNames(),0,"Matrix");menu(k+"destination","Destination",dest,0,"Matrix");number(k+"depth","Depth",-1,1,0,"Matrix");flag(k+"bipolar","Bipolar",true,"Matrix");number(k+"curve","Curve",.25f,4,1,"Matrix");}
+ for (int n = 0; n < 2; ++n)
+  loc.claudeTable[n] = menu("osc"+std::to_string(n+1)+".claude.table", "Claude Table", claudeTableNames(), 0, "Oscillator "+std::to_string(n+1));
  if(specs.size()>capacity)throw std::runtime_error("Synth B parameter capacity exceeded");
 }
 }

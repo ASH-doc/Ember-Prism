@@ -100,7 +100,7 @@ Stereo Instrument::sample(Voice& v,float bpm){
  for(int m=0;m<8;++m)v.source[size_t(14+m)]=p[size_t(layout.macro[m])];v.source[22]=p[size_t(layout.euphoria)];v.source[23]=p[size_t(layout.space)];
  v.source[pitchBendSource] = bendSmooth[size_t(v.channel - 1)];
  const float sub=std::sin(float(tau)*v.subPhase);float other[2]{std::sin(float(tau)*v.phase[1][0]),std::sin(float(tau)*v.phase[0][0])};Stereo oscillators[2];
- for(int o=0;o<2;++o){const int b=layout.osc[o];const WaveSet& wt=tables.at(int(p[size_t(b+table)]),imported);float mod=p[size_t(b+fmSource)]>.5f?sub:other[o];
+ for(int o=0;o<2;++o){const int b=layout.osc[o];const WaveSet& wt=tables.at(int(p[size_t(b+table)]),imported,int(p[size_t(layout.claudeTable[o])]));float mod=p[size_t(b+fmSource)]>.5f?sub:other[o];
   for(int u=0;u<v.lanes[size_t(o)];++u){float phase=v.phase[size_t(o)][size_t(u)];phase=warpedPhase(phase,int(p[size_t(b+warp1)]),p[size_t(b+amount1)],mod);phase=warpedPhase(phase,int(p[size_t(b+warp2)]),p[size_t(b+amount2)],mod);
    float y=wt.sample(phase,v.position[size_t(o)][size_t(u)],v.mip[size_t(o)][size_t(u)]);y=warpedAmplitude(y,int(p[size_t(b+warp1)]),p[size_t(b+amount1)],mod);y=warpedAmplitude(y,int(p[size_t(b+warp2)]),p[size_t(b+amount2)],mod);
    oscillators[o].l+=y*v.stereoL[size_t(o)][size_t(u)]*p[size_t(b+level)];oscillators[o].r+=y*v.stereoR[size_t(o)][size_t(u)]*p[size_t(b+level)];

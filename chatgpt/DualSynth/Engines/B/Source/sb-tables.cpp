@@ -19,7 +19,7 @@ float WaveSet::sample(float phase,float position,float mip)const{
  const float a=read(m);return a+(read(next)-a)*(mip-float(m));
 }
 float WaveSet::visual(float phase,float position)const{return sample(phase,position,0);}
-std::unique_ptr<WaveSet> WaveSet::fromFrames(const std::vector<float>& input,int frameCount,std::string name){
+std::unique_ptr<WaveSet> WaveSet::fromFrames(const std::vector<float>& input,int frameCount,std::string name,bool normalize){
  if(frameCount<1||frameCount>64||input.size()!=size_t(frameCount*frameLength))throw std::invalid_argument("Expected 1–64 frames of 2048 samples");
  auto set=std::make_unique<WaveSet>();set->frames=frameCount;set->title=std::move(name);
  for(int m=0;m<mipCount;++m){auto& layer=set->layers[size_t(m)];layer.length=std::max(64,frameLength>>m);layer.samples.resize(size_t(frameCount*layer.length));}
@@ -27,7 +27,7 @@ std::unique_ptr<WaveSet> WaveSet::fromFrames(const std::vector<float>& input,int
  for(int frame=0;frame<frameCount;++frame){
   double mean=0;float peak=0;for(int i=0;i<frameLength;++i){float x=input[size_t(frame*frameLength+i)];if(!std::isfinite(x))throw std::invalid_argument("Non-finite waveform");mean+=x;}
   mean/=frameLength;for(int i=0;i<frameLength;++i){float x=input[size_t(frame*frameLength+i)]-float(mean);spectrum[size_t(i)]=x;peak=std::max(peak,std::abs(x));}
-  if(peak>0)for(auto& s:spectrum)s*=.95f/peak;transform(spectrum,false);spectrum[0]=0;
+  if(normalize&&peak>0)for(auto& s:spectrum)s*=.95f/peak;transform(spectrum,false);spectrum[0]=0;
   for(int m=0;m<mipCount;++m){auto& layer=set->layers[size_t(m)];const int length=layer.length,maxH=std::max(1,1023>>m);std::vector<std::complex<float>> bins(size_t(length),{0,0});
    for(int h=1;h<=maxH;++h){float taper=h>maxH*.85f?.5f+.5f*std::cos(float(3.141592653589793)*(float(h)/float(maxH)-.85f)/.15f):1;bins[size_t(h)]=spectrum[size_t(h)]*(float(length)/frameLength*taper);bins[size_t(length-h)]=std::conj(bins[size_t(h)]);}
    // Retain the fundamental in the highest octave instead of tapering it to zero.
@@ -56,9 +56,11 @@ Tables::Tables(){
   }
   library[size_t(table)]=WaveSet::fromFrames(frames,64,tableNames()[size_t(table)]);
  }
+ for (int index = 0; index < int(claude.size()); ++index)
+  claude[size_t(index)] = makeClaudeTable(index);
 }
 const Tables& Tables::get(){static Tables t;return t;}
-const WaveSet& Tables::at(int index,const WaveSet* imported)const{if(index==30&&imported)return *imported;return *library[size_t(bounded(index,0,29))];}
+const WaveSet& Tables::at(int index,const WaveSet* imported,int claudeSelection)const{if(claudeSelection>0&&claudeSelection<=int(claude.size()))return *claude[size_t(claudeSelection-1)];if(index==30&&imported)return *imported;return *library[size_t(bounded(index,0,29))];}
 float warpedPhase(float phase,int mode,float amount,float modulation){
  switch(mode){case 1:phase*=1+amount*7;break;case 2:phase=std::pow(phase,1+amount*4);break;case 3:phase=1-std::pow(1-phase,1+amount*4);break;case 4:phase+=amount*((phase<.5f?phase*2:2-phase*2)-phase);break;case 5:{float pivot=.5f+amount*.44f;phase=phase<pivot?phase*.5f/pivot:.5f+(phase-pivot)*.5f/(1-pivot);break;}case 6:phase+=modulation*amount*.3f;break;case 9:{float width=.5f-amount*.45f;phase=phase<width?phase*.5f/width:.5f+(phase-width)*.5f/(1-width);break;}case 11:phase=phase*(1-amount)+(1-phase)*amount;break;default:break;}
  return phase-std::floor(phase);
