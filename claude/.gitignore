@@ -1,0 +1,9 @@
+build/
+test-output/
+Release/*.exe
+Release/*.vst3/
+*.obj
+*.pdb
+*.ilk
+*.user
+.vs/
