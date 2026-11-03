@@ -3,6 +3,7 @@
 //   DualSurvey spire <folder> [<folder>...]   per-parameter value statistics over all .spf2 files
 //   DualSurvey serum1 <folder>                container statistics over all .fxp files (header checks, inflated sizes)
 #include <juce_core/juce_core.h>
+#include "Import/SpireDecoder.h"
 #include <iostream>
 #include <map>
 using namespace juce;
@@ -37,8 +38,20 @@ void serum1(const String& folder){
  int smallest=sizes.empty()?0:sizes.begin()->first,largest=sizes.empty()?0:sizes.rbegin()->first;std::cout<<"smallest "<<smallest<<" largest "<<largest<<"\n";
 }
 }
+// Runs the product decoder over a local library and counts outcomes (parsing coverage only, not playable translation).
+void spireDecode(const StringArray& folders){
+ int files=0,ok=0,blocked=0,withWarnings=0;std::map<String,int> reasons;
+ for(const auto& folder:folders)for(const auto& entry:RangedDirectoryIterator(File(folder),true,"*.spf2",File::findFiles)){
+  ++files;MemoryBlock data;if(!entry.getFile().loadFileAsData(data)){++blocked;reasons["unreadable file"]++;continue;}
+  const auto result=aether::import::decodeSpire(data.getData(),data.getSize(),entry.getFile().getFileNameWithoutExtension().toStdString());
+  if(result.ok){++ok;if(!result.patch.warnings.empty())++withWarnings;}else{++blocked;reasons[String(result.blocker)]++;}
+ }
+ std::cout<<"files "<<files<<" decoded "<<ok<<" blocked "<<blocked<<" (decoded files with warnings: "<<withWarnings<<", all of them the ignored icon unless listed below)\n";
+ for(const auto& [reason,count]:reasons)std::cout<<"blocked: "<<reason<<" x"<<count<<"\n";
+}
 int main(int argc,char** argv){
  if(argc<3){std::cerr<<"usage: DualSurvey spire|serum1 <folder> ...\n";return 2;}
  const String mode(argv[1]);if(mode=="spire"){StringArray folders;for(int i=2;i<argc;++i)folders.add(argv[i]);spire(folders);return 0;}
+ if(mode=="spire-decode"){StringArray folders;for(int i=2;i<argc;++i)folders.add(argv[i]);spireDecode(folders);return 0;}
  if(mode=="serum1"){serum1(argv[2]);return 0;}return 2;
 }
