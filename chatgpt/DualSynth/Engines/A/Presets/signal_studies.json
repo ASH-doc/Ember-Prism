@@ -1,0 +1,371 @@
+[
+  {
+    "format": "dualsynth-patch",
+    "version": 1,
+    "engine": "A",
+    "name": "01 Rubber Voltage",
+    "category": "Bass",
+    "tags": [
+      "Signal Studies",
+      "acid",
+      "resonant",
+      "mono",
+      "glide"
+    ],
+    "params": {
+      "voice.mode": 2,
+      "voice.glide": 0.085,
+      "osc1.wave": 1,
+      "osc1.pw": 0.24,
+      "osc2.level": 0,
+      "mix.sub": 0.22,
+      "flt1.cutoff": 370,
+      "flt1.res": 0.73,
+      "flt1.env": 0.8,
+      "flt1.drive": 0.28,
+      "env1.decay": 0.19,
+      "env1.sustain": 0.58,
+      "env1.release": 0.075,
+      "env2.decay": 0.17,
+      "env2.sustain": 0.02,
+      "env2.release": 0.08,
+      "macro.saturation": 0.28
+    },
+    "mod": [
+      {
+        "src": "Velocity",
+        "dst": "flt1.cutoff",
+        "amount": 0.16
+      },
+      {
+        "src": "Mod wheel",
+        "dst": "osc1.pw",
+        "amount": 0.26
+      }
+    ]
+  },
+  {
+    "format": "dualsynth-patch",
+    "version": 1,
+    "engine": "A",
+    "name": "02 Iron Ribbon",
+    "category": "Leads",
+    "tags": [
+      "Signal Studies",
+      "hard sync",
+      "tearing",
+      "mono",
+      "bright"
+    ],
+    "params": {
+      "voice.mode": 1,
+      "voice.glide": 0.045,
+      "osc1.wave": 0,
+      "osc1.level": 0.18,
+      "osc2.wave": 0,
+      "osc2.level": 0.8,
+      "osc2.coarse": 7,
+      "osc2.sync": 1,
+      "mix.sub": 0,
+      "flt1.cutoff": 6500,
+      "flt1.res": 0.33,
+      "env1.release": 0.14,
+      "env2.decay": 0.35,
+      "env2.sustain": 0.05,
+      "fx.delay.on": 1,
+      "fx.delay.mix": 0.18,
+      "fx.delay.division": 5
+    },
+    "mod": [
+      {
+        "src": "Env 2",
+        "dst": "osc2.coarse",
+        "amount": 0.24
+      },
+      {
+        "src": "Pressure",
+        "dst": "flt1.drive",
+        "amount": 0.28
+      }
+    ]
+  },
+  {
+    "format": "dualsynth-patch",
+    "version": 1,
+    "engine": "A",
+    "name": "03 Felt Circuit",
+    "category": "Keys & Bells",
+    "tags": [
+      "Signal Studies",
+      "soft",
+      "electric keys",
+      "velocity",
+      "short"
+    ],
+    "params": {
+      "osc1.wave": 3,
+      "osc2.wave": 2,
+      "osc2.coarse": 12,
+      "osc2.level": 0.2,
+      "osc3.wave": 3,
+      "osc3.coarse": 19,
+      "osc3.level": 0.15,
+      "mix.sub": 0,
+      "flt1.model": 1,
+      "flt1.cutoff": 2800,
+      "flt1.env": 0.24,
+      "env1.attack": 0.008,
+      "env1.decay": 0.8,
+      "env1.sustain": 0.05,
+      "env1.release": 0.34,
+      "env3.decay": 0.16,
+      "env3.sustain": 0,
+      "fx.chorus.on": 1,
+      "fx.chorus.mix": 0.22,
+      "fx.chorus.rate": 0.34
+    },
+    "mod": [
+      {
+        "src": "Env 3",
+        "dst": "osc3.level",
+        "amount": 0.42
+      },
+      {
+        "src": "Velocity",
+        "dst": "flt1.cutoff",
+        "amount": 0.2
+      }
+    ]
+  },
+  {
+    "format": "dualsynth-patch",
+    "version": 1,
+    "engine": "A",
+    "name": "04 Velvet Fog",
+    "category": "Pads",
+    "tags": [
+      "Signal Studies",
+      "slow attack",
+      "pwm",
+      "dark hall",
+      "stereo"
+    ],
+    "params": {
+      "osc1.wave": 1,
+      "osc1.pw": 0.34,
+      "osc1.uni.voices": 5,
+      "osc1.uni.detune": 0.22,
+      "osc2.wave": 2,
+      "osc2.coarse": 12,
+      "osc2.level": 0.22,
+      "osc2.uni.voices": 3,
+      "mix.sub": 0.05,
+      "analog.age": 0.65,
+      "flt1.cutoff": 1250,
+      "flt1.env": 0.04,
+      "env1.attack": 1.45,
+      "env1.release": 3.2,
+      "lfo1.rate": 0.17,
+      "lfo2.rate": 0.083,
+      "fx.chorus.on": 1,
+      "fx.chorus.mix": 0.28,
+      "fx.reverb.on": 1,
+      "fx.reverb.mode": 1,
+      "fx.reverb.mix": 0.36,
+      "fx.reverb.size": 0.84
+    },
+    "mod": [
+      {
+        "src": "LFO 1",
+        "dst": "osc1.pw",
+        "amount": 0.21
+      },
+      {
+        "src": "LFO 2",
+        "dst": "flt1.cutoff",
+        "amount": 0.12
+      }
+    ]
+  },
+  {
+    "format": "dualsynth-patch",
+    "version": 1,
+    "engine": "A",
+    "name": "05 Brass Signal",
+    "category": "Chords & Stabs",
+    "tags": [
+      "Signal Studies",
+      "brass",
+      "chord memory",
+      "quick swell",
+      "analog"
+    ],
+    "params": {
+      "chord.on": 1,
+      "chord.1": 0,
+      "chord.2": 7,
+      "chord.3": 10,
+      "chord.4": 14,
+      "osc1.wave": 0,
+      "osc2.wave": 1,
+      "osc2.pw": 0.42,
+      "osc2.level": 0.32,
+      "mix.sub": 0,
+      "flt1.cutoff": 980,
+      "flt1.env": 0.75,
+      "flt1.res": 0.22,
+      "env1.attack": 0.025,
+      "env1.decay": 0.26,
+      "env1.sustain": 0.32,
+      "env1.release": 0.16,
+      "env2.attack": 0.075,
+      "env2.decay": 0.32,
+      "env2.sustain": 0.12,
+      "macro.saturation": 0.29
+    },
+    "mod": []
+  },
+  {
+    "format": "dualsynth-patch",
+    "version": 1,
+    "engine": "A",
+    "name": "06 Switchyard",
+    "category": "Arps & Sequences",
+    "tags": [
+      "Signal Studies",
+      "clocked",
+      "square pulse",
+      "stereo echo",
+      "rhythmic"
+    ],
+    "params": {
+      "arp.on": 1,
+      "arp.mode": 2,
+      "arp.octaves": 2,
+      "arp.rate": 4,
+      "arp.swing": 0.19,
+      "arp.gate": 0.37,
+      "osc1.wave": 1,
+      "osc1.pw": 0.32,
+      "osc2.level": 0,
+      "mix.sub": 0,
+      "flt1.cutoff": 3100,
+      "env1.decay": 0.14,
+      "env1.sustain": 0.15,
+      "env1.release": 0.11,
+      "fx.delay.on": 1,
+      "fx.delay.division": 5,
+      "fx.delay.feedback": 0.39,
+      "fx.delay.mix": 0.3,
+      "arp.velocity1": 1,
+      "arp.velocity2": 0.46,
+      "arp.velocity3": 0.68,
+      "arp.velocity4": 0.8,
+      "arp.velocity5": 0.56,
+      "arp.velocity6": 0.9,
+      "arp.velocity7": 0.42,
+      "arp.velocity8": 0.72,
+      "arp.velocity9": 1,
+      "arp.velocity10": 0.46,
+      "arp.velocity11": 0.68,
+      "arp.velocity12": 0.8,
+      "arp.velocity13": 0.56,
+      "arp.velocity14": 0.9,
+      "arp.velocity15": 0.42,
+      "arp.velocity16": 0.72
+    },
+    "mod": [
+      {
+        "src": "LFO 1",
+        "dst": "osc1.pw",
+        "amount": 0.24
+      }
+    ]
+  },
+  {
+    "format": "dualsynth-patch",
+    "version": 1,
+    "engine": "A",
+    "name": "07 Cold Solder",
+    "category": "Textures",
+    "tags": [
+      "Signal Studies",
+      "ring modulation",
+      "filter fm",
+      "band pass",
+      "metallic"
+    ],
+    "params": {
+      "osc1.wave": 3,
+      "osc1.level": 0.36,
+      "osc2.wave": 2,
+      "osc2.level": 0.6,
+      "osc2.coarse": 17,
+      "osc1.fm": 0.3,
+      "mix.ring": 0.68,
+      "mix.sub": 0,
+      "mix.noise": 0.07,
+      "flt1.model": 2,
+      "flt1.mode": 2,
+      "flt1.cutoff": 2100,
+      "flt1.fm": 0.14,
+      "flt1.res": 0.61,
+      "env1.attack": 0.18,
+      "env1.sustain": 0.55,
+      "env1.release": 1.65,
+      "fx.phaser.on": 1,
+      "fx.phaser.mix": 0.37,
+      "fx.reverb.on": 1,
+      "fx.reverb.mix": 0.27
+    },
+    "mod": [
+      {
+        "src": "LFO 2",
+        "dst": "flt1.cutoff",
+        "amount": 0.32
+      },
+      {
+        "src": "Env 2",
+        "dst": "osc1.fm",
+        "amount": 0.17
+      }
+    ]
+  },
+  {
+    "format": "dualsynth-patch",
+    "version": 1,
+    "engine": "A",
+    "name": "08 Pressure Front",
+    "category": "FX",
+    "tags": [
+      "Signal Studies",
+      "noise swell",
+      "sweep",
+      "reverse feel",
+      "hall"
+    ],
+    "params": {
+      "osc1.level": 0,
+      "osc2.level": 0,
+      "osc3.level": 0,
+      "mix.sub": 0,
+      "mix.noise": 0.75,
+      "mix.noise.type": 0,
+      "flt1.model": 3,
+      "flt1.mode": 2,
+      "flt1.cutoff": 530,
+      "flt1.env": 0.85,
+      "flt1.res": 0.54,
+      "env1.attack": 2.2,
+      "env1.sustain": 0.72,
+      "env1.release": 2.8,
+      "env2.attack": 2.1,
+      "env2.decay": 0.8,
+      "env2.sustain": 0.9,
+      "fx.reverb.on": 1,
+      "fx.reverb.mode": 1,
+      "fx.reverb.mix": 0.51
+    },
+    "mod": []
+  }
+]

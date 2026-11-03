@@ -15,6 +15,9 @@ PrismProcessor::PrismProcessor():AudioProcessor(BusesProperties().withOutput("Pr
  auto bank=juce::JSON::parse(juce::String::fromUTF8(PrismBank::factory_json,PrismBank::factory_jsonSize));if(auto* array=bank.getArray())factory=*array;
  auto mapped=juce::JSON::parse(juce::String::fromUTF8(PrismBank::claudeprism_json,PrismBank::claudeprism_jsonSize));
  if(auto* array=mapped.getArray())for(const auto& preset:*array)factory.add(preset);
+ auto curated = juce::JSON::parse(juce::String::fromUTF8(PrismBank::signal_studies_json, PrismBank::signal_studies_jsonSize));
+ if (auto* array = curated.getArray())
+  for (const auto& preset : *array) factory.add(preset);
  setLatencySamples(12);scene=patch();
 }
 PrismProcessor::~PrismProcessor(){cancelPendingUpdate();}

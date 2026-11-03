@@ -18,9 +18,12 @@ SynthAProcessor::SynthAProcessor():AudioProcessor(BusesProperties().withOutput("
  for(auto& x:pendingCC)x.store(-1);for(auto& x:ccMap)x.store(-1);for(auto& x:heldNotes)x.store(0);
  auto parsed=juce::JSON::parse(juce::String::fromUTF8(EmberBank::factory_json,EmberBank::factory_jsonSize));
  if(auto* array=parsed.getArray())bank=*array;
- // Presets imported from the Claude baseline are appended after the factory bank, so every factory index is unchanged.
+ // Presets imported from the Claude baseline are appended after the factory bank (before Signal Studies, which stays last), so every factory index is unchanged.
  auto imported=juce::JSON::parse(juce::String::fromUTF8(EmberClaudeBank::claudeimport_json,EmberClaudeBank::claudeimport_jsonSize));
  if(auto* array=imported.getArray())bank.addArray(*array);
+ auto curated = juce::JSON::parse(juce::String::fromUTF8(EmberBank::signal_studies_json, EmberBank::signal_studies_jsonSize));
+ if (auto* array = curated.getArray())
+  for (const auto& preset : *array) bank.add(preset);
  setLatencySamples(16);comparePatch=getPatch();
 }
 SynthAProcessor::~SynthAProcessor(){cancelPendingUpdate();}

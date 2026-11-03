@@ -1,4 +1,5 @@
 // sa-editor.cpp — Drawn hardware controls, amber display, full matrix, scope and parameter inspector.
+#include "PresetBrowser.h"
 #include "sa-editor.h"
 using namespace juce;
 namespace SynthAUI {
@@ -63,10 +64,10 @@ void Face::toggle(const String& id,const String& text,Rectangle<int> bounds){aut
 Face::Face(SynthAProcessor& p):proc(p),keyboard(p.keyboard,MidiKeyboardComponent::horizontalKeyboard){
  setLookAndFeel(&look);setSize(1280,720);setWantsKeyboardFocus(true);
  presetBox.setBounds(245,25,335,28);addAndMakeVisible(presetBox);presetBox.onChange=[this]{int id=presetBox.getSelectedId();if(id>0){selectedPreset=id-1;proc.loadPreset(selectedPreset);}};
- categoryBox.setBounds(590,25,176,28);categoryBox.addItem("All categories",1);StringArray categories;for(int i=0;i<proc.presetCount();++i)categories.addIfNotAlreadyThere(proc.preset(i)["category"].toString());for(int i=0;i<categories.size();++i)categoryBox.addItem(categories[i],i+2);categoryBox.setSelectedId(1);categoryBox.onChange=[this]{browse();};addAndMakeVisible(categoryBox);
- search.setBounds(776,25,180,28);search.setTextToShowWhenEmpty("Find a patch...",Colour(0xff9c876a));search.onTextChange=[this]{browse();};addAndMakeVisible(search);
- button("<",{245,59,28,22},[this]{selectedPreset=(selectedPreset+proc.presetCount()-1)%proc.presetCount();proc.loadPreset(selectedPreset);browse();});
- button(">",{278,59,28,22},[this]{selectedPreset=(selectedPreset+1)%proc.presetCount();proc.loadPreset(selectedPreset);browse();});
+ categoryBox.setBounds(590,25,176,28);PresetBrowser::categories(categoryBox, proc.presetCount(), [this](int i){return proc.preset(i);});categoryBox.onChange=[this]{browse();};addAndMakeVisible(categoryBox);
+ search.setBounds(776,25,180,28);search.setTextToShowWhenEmpty("Search sounds + tags",Colour(0xff9c876a));search.onTextChange=[this]{browse();};addAndMakeVisible(search);
+ button("<",{245,59,28,22},[this]{const int next=PresetBrowser::nextIndex(presetBox,selectedPreset,-1);if(next>=0){selectedPreset=next;proc.loadPreset(next);browse();}});
+ button(">",{278,59,28,22},[this]{const int next=PresetBrowser::nextIndex(presetBox,selectedPreset,1);if(next>=0){selectedPreset=next;proc.loadPreset(next);browse();}});
  button("LOAD",{315,59,51,22},[this]{loadFile();});button("SAVE",{372,59,51,22},[this]{saveFile();});button("A / B",{430,59,51,22},[this]{proc.compare();});
  button("UNDO",{488,59,51,22},[this]{proc.undo.undo();});button("MUTATE",{546,59,65,22},[this]{proc.mutate();});
  button("ALL CONTROLS",{622,59,102,22},[this]{showInspector("");});button("PANIC",{731,59,57,22},[this]{proc.panicRequested.store(true);});
@@ -110,7 +111,11 @@ Face::Face(SynthAProcessor& p):proc(p),keyboard(p.keyboard,MidiKeyboardComponent
  phosphor=Image(Image::ARGB,160,28,true);browse();timerCallback();startTimerHz(24);
 }
 Face::~Face(){stopTimer();inspectorWindow.reset();setLookAndFeel(nullptr);}
-void Face::browse(){presetBox.clear(dontSendNotification);for(int i=0;i<proc.presetCount();++i){const auto patch=proc.preset(i);if(categoryBox.getSelectedId()>1&&patch["category"].toString()!=categoryBox.getText())continue;if(!patch["name"].toString().containsIgnoreCase(search.getText()))continue;presetBox.addItem(patch["name"].toString(),i+1);}presetBox.setSelectedId(selectedPreset+1,dontSendNotification);if(presetBox.getSelectedId()==0)presetBox.setText(proc.patchName(),dontSendNotification);}
+void Face::browse(){
+ PresetBrowser::rebuild(presetBox, categoryBox, search.getText(), proc.presetCount(), [this](int i){ return proc.preset(i); });
+ presetBox.setSelectedId(selectedPreset+1, dontSendNotification);
+ if (presetBox.getSelectedId() == 0) presetBox.setText(proc.patchName(), dontSendNotification);
+}
 void Face::section(Graphics& g,Rectangle<int> r,const String& title){g.setGradientFill(ColourGradient(Colour(0xff332a21),float(r.getX()),float(r.getY()),Colour(0xff221c16),float(r.getX()),float(r.getBottom()),false));g.fillRoundedRectangle(r.toFloat(),4);g.setColour(Colour(0xff655037));g.drawRoundedRectangle(r.toFloat(),4,.6f);g.setColour(Colour(0xffb9955d));g.setFont(FontOptions(10.f,Font::bold));g.drawText(title,r.getX()+9,r.getY()+6,r.getWidth()-40,15,Justification::centredLeft);g.setColour(Colour(0xff59452e));g.drawHorizontalLine(r.getY()+24,float(r.getX()+7),float(r.getRight()-7));}
 void Face::paint(Graphics& g){
  g.fillAll(Colour(0xff1b1612));

@@ -1,4 +1,5 @@
 #include "Host.h"
+#include "PresetBrowser.h"
 #include "Catalog.h"
 #include <EmberBankData.h>
 #include <iostream>
@@ -322,7 +323,7 @@ void claudePrismBankTest() {
  auto& prism = host->b;
  const auto& schema = SynthB::Schema::get();
  constexpr int originalCount = 117, importedCount = 63;
- require(prism.factoryCount() == originalCount + importedCount, "Claude bank is appended to the original bank");
+ require(prism.factoryCount() >= originalCount + importedCount, "Claude bank is appended to the original bank");
  require(prism.factoryPatch(originalCount - 1)["category"].toString() != "Claude Compatibility",
          "the last original preset retains its index");
 
@@ -344,7 +345,7 @@ void claudePrismBankTest() {
  host->write("routing", 3);
  host->prepareToPlay(48000, 256);
  AudioBuffer<float> audio(2, 256);
- for (int index = originalCount; index < prism.factoryCount(); ++index) {
+ for (int index = originalCount; index < originalCount + importedCount; ++index) {
   const auto preset = prism.factoryPatch(index);
   const auto restored = prism.restore(preset);
   if (restored.failed())
@@ -378,6 +379,90 @@ void claudePrismBankTest() {
  prism.selectFactory(0);
  require(prism.read(schema.loc.claudeTable[0]) == 0 && prism.read(schema.loc.claudeTable[1]) == 0,
          "original presets return to original table selection");
+}
+
+void signalStudiesTest(const File& auditionFolder = {}) {
+ constexpr int blockSize = 256, blocks = 750;
+ for (int engine = 0; engine < 2; ++engine) {
+  auto host = makeHost();
+  auto count = engine == 0 ? host->a.presetCount() : host->b.factoryCount();
+  auto read = [&](int index) { return engine == 0 ? host->a.preset(index) : host->b.factoryPatch(index); };
+
+  ComboBox category, browser;
+  PresetBrowser::categories(category, count, read);
+  PresetBrowser::rebuild(browser, category, {}, count, read);
+  require(browser.getNumItems() == count && browser.getRootMenu()->getNumItems() < count,
+          "all sounds are grouped without losing any presets");
+  category.setText("Signal Studies", dontSendNotification);
+  PresetBrowser::rebuild(browser, category, {}, count, read);
+  require(browser.getNumItems() == 8, "Signal Studies filter shows its eight presets");
+  PresetBrowser::rebuild(browser, category, "glide", count, read);
+  require(browser.getNumItems() == 1 && browser.getItemId(0) == count - 7,
+          "tag search returns the original preset ID in a filtered submenu");
+  browser.setSelectedId(count - 7, dontSendNotification);
+  require(browser.getSelectedId() == count - 7, "nested preset item is selectable");
+
+  std::unique_ptr<AudioFormatWriter> writer;
+  if (auditionFolder.isDirectory()) {
+   const auto path = auditionFolder.getChildFile(engine == 0 ? "Ember-Signal-Studies.wav" : "Prism-Signal-Studies.wav");
+   auto stream = path.createOutputStream();
+   require(stream != nullptr, "create audition file");
+   stream->setPosition(0);
+   stream->truncate();
+   WavAudioFormat format;
+   writer.reset(format.createWriterFor(stream.release(), 48000, 2, 24, {}, 0));
+   require(writer != nullptr, "open audition WAV writer");
+  }
+  host->write("routing", engine == 0 ? 2 : 3);
+  AudioBuffer<float> audio(2, blockSize);
+  AudioBuffer<float> example(2, blockSize * blocks);
+  std::vector<std::vector<float>> previous;
+  for (int index = count - 8; index < count; ++index) {
+   const auto patch = read(index);
+   const auto restored = engine == 0 ? host->a.setPatch(patch) : host->b.restore(patch);
+   if (restored.failed()) std::cerr << patch["name"].toString() << ": " << restored.getErrorMessage() << "\n";
+   require(restored.wasOk(), "Signal Studies patch validates");
+   host->prepareToPlay(48000, blockSize);
+   host->panic.store(true);
+   for (int block = 0; block < blocks; ++block) {
+    MidiBuffer midi;
+    if (block == 0) midi.addEvent(MidiMessage::noteOn(1, 48, .84f), 0);
+    if (block == 94) midi.addEvent(MidiMessage::noteOn(1, 55, .66f), 0);
+    if (block == 188) midi.addEvent(MidiMessage::noteOn(1, 60, .91f), 0);
+    if (block == 469) for (int note : {48, 55, 60}) midi.addEvent(MidiMessage::noteOff(1, note), 0);
+    host->processBlock(audio, midi);
+    for (int c = 0; c < 2; ++c)
+     example.copyFrom(c, block * blockSize, audio, c, 0, blockSize);
+   }
+   std::vector<float> signature;
+   double energy = 0;
+   for (int i = 0; i < example.getNumSamples(); ++i) {
+    const float left = example.getSample(0, i), right = example.getSample(1, i);
+    require(std::isfinite(left) && std::isfinite(right), "curated patch output is finite");
+    energy += double(left) * left + double(right) * right;
+    if (i % 8 == 0) { signature.push_back(left); signature.push_back(right); }
+   }
+   require(energy > 1.e-5, "curated patch produces audible signal");
+   double norm = 0;
+   for (float value : signature) norm += double(value) * value;
+   require(norm > 0, "curated signature contains audio");
+   for (float& value : signature) value /= float(std::sqrt(norm));
+   double largest = 0;
+   for (const auto& other : previous) {
+    double dot = 0;
+    for (size_t i = 0; i < signature.size(); ++i) dot += double(signature[i]) * other[i];
+    largest = std::max(largest, std::abs(dot));
+   }
+   require(largest < .97, "no gain-matched duplicate render in the curated bank");
+   previous.push_back(std::move(signature));
+   std::cout << "INFO: Signal Studies " << patch["name"].toString()
+             << ", max correlation with preceding patches " << largest << "\n";
+   if (writer) {
+    example.applyGain(.55f / example.getMagnitude(0, example.getNumSamples()));
+    require(writer->writeFromAudioSampleBuffer(example, 0, example.getNumSamples()), "write audition clip");
+   }
+  }
+ }
 }
 
 void pitchBendModulationTest() {
@@ -509,6 +594,30 @@ void claudeEmberImportTests(){
  require(imported==65&&silent==0,"all 65 imported EMBER patches load and make sound");
 }
 
+// Bank filters for the two Claude imports, and Previous/Next staying inside a filtered list.
+void claudeBrowserTests(){
+ for(int engine=0;engine<2;++engine){
+  auto host=makeHost();const int count=engine==0?host->a.presetCount():host->b.factoryCount();
+  auto read=[&](int index){return engine==0?host->a.preset(index):host->b.factoryPatch(index);};
+  ComboBox category,browser;PresetBrowser::categories(category,count,read);
+  const String bank=engine==0?"Claude Import":"Claude Compatibility";const int expected=engine==0?65:63;
+  bool listed=false;for(int i=0;i<category.getNumItems();++i)listed=listed||category.getItemText(i)==bank;require(listed,"the category menu offers the Claude bank filter");
+  category.setText(bank,dontSendNotification);PresetBrowser::rebuild(browser,category,{},count,read);
+  std::cout<<"INFO: browser, "<<(engine==0?"EMBER":"PRISM")<<" '"<<bank<<"' filter shows "<<browser.getNumItems()<<" presets\n";
+  require(browser.getNumItems()==expected,"the Claude bank filter shows exactly the imported presets");
+  for(int i=0;i<browser.getNumItems();++i)require(engine==0?read(browser.getItemId(i)-1).hasProperty("claudeImport"):read(browser.getItemId(i)-1)["category"].toString()=="Claude Compatibility","every filtered item belongs to the Claude bank");
+  // Previous/Next walk only the filtered list and wrap around.
+  const int first=browser.getItemId(0)-1,last=browser.getItemId(browser.getNumItems()-1)-1;
+  require(PresetBrowser::nextIndex(browser,first,-1)==last&&PresetBrowser::nextIndex(browser,last,1)==first,"Previous and Next wrap inside the filtered list");
+  int walk=first;for(int step=0;step<browser.getNumItems();++step){walk=PresetBrowser::nextIndex(browser,walk,1);bool inList=false;for(int i=0;i<browser.getNumItems();++i)inList=inList||browser.getItemId(i)-1==walk;require(inList,"Next never leaves the filtered list");}
+  require(walk==first,"Next visits every filtered preset exactly once and returns to the start");
+  // Search inside the bank matches names and sound groups.
+  PresetBrowser::rebuild(browser,category,"bass",count,read);
+  for(int i=0;i<browser.getNumItems();++i){const auto patch=read(browser.getItemId(i)-1);require((patch["name"].toString()+" "+PresetBrowser::sound(patch)+" "+JSON::toString(patch["tags"])).containsIgnoreCase("bass"),"search results match the query");}
+  std::cout<<"INFO: browser, "<<(engine==0?"EMBER":"PRISM")<<" search 'bass' inside the Claude bank: "<<browser.getNumItems()<<" presets\n";
+ }
+}
+
 void processBlockAllocationInfo(){
  auto host=makeHost();host->prepareToPlay(48000,256);AudioBuffer<float> out(2,256);MidiBuffer midi;
  for(int block=0;block<100;++block){MidiBuffer m;if(block==0)for(int note:{48,55,60,67})m.addEvent(MidiMessage::noteOn(1,note,.8f),0);host->processBlock(out,m);}
@@ -519,7 +628,8 @@ void processBlockAllocationInfo(){
 
 int main(int argc,char** argv){ScopedJuceInitialiser_GUI gui;
  if(argc==3&&String(argv[1])=="--golden-write"){const auto samples=goldenMasterRender();require(File::getCurrentWorkingDirectory().getChildFile(argv[2]).replaceWithData(samples.data(),samples.size()*sizeof(float)),"golden file written");std::cout<<"golden written: "<<samples.size()<<" samples\n";return 0;}
- midiOwnershipTests();parameterCatalogTest();pitchBendModulationTest();claudePrismBankTest();claudeEmberImportTests();goldenMasterTest();fetDspTests();phase2HostTests();engineChannelTests();recallBoundaryTest();routeMidiAllocationTest();slicingTests();stateTests();loadDuringPlaybackTest();processBlockAllocationInfo();
+ if(argc==3&&String(argv[1])=="--audition"){auto folder=File::getCurrentWorkingDirectory().getChildFile(argv[2]);folder.createDirectory();signalStudiesTest(folder);return 0;}
+ signalStudiesTest();midiOwnershipTests();parameterCatalogTest();pitchBendModulationTest();claudePrismBankTest();claudeEmberImportTests();claudeBrowserTests();goldenMasterTest();fetDspTests();phase2HostTests();engineChannelTests();recallBoundaryTest();routeMidiAllocationTest();slicingTests();stateTests();loadDuringPlaybackTest();processBlockAllocationInfo();
  {auto heapP=std::make_unique<DualProcessor>();DualProcessor& p=*heapP;MidiBuffer input,ma,mb;input.addEvent(MidiMessage::noteOn(1,60,.8f),17);p.routeMidi(input,ma,mb);require(ma.getNumEvents()==1&&mb.getNumEvents()==1,"layer fans out to both");p.write("routing",1);p.write("split",72);input.clear();input.addEvent(MidiMessage::noteOff(1,60),21);p.routeMidi(input,ma,mb);require(ma.getNumEvents()==1&&mb.getNumEvents()==1,"held note ownership survives changed split");input.clear();input.addEvent(MidiMessage::noteOn(1,71,.8f),3);input.addEvent(MidiMessage::noteOn(1,72,.8f),4);p.routeMidi(input,ma,mb);require(ma.getNumEvents()==1&&mb.getNumEvents()==1,"split boundary routes A below and B at split");require((*ma.begin()).samplePosition==3&&(*mb.begin()).samplePosition==4,"MIDI sample offsets preserved");p.write("a.high",60);input.clear();input.addEvent(MidiMessage::noteOn(1,61,.7f),0);p.routeMidi(input,ma,mb);require(ma.isEmpty()&&mb.isEmpty(),"split intersects per-engine note range");p.write("a.channel",2);input.clear();input.addEvent(MidiMessage::noteOn(1,40,.7f),0);p.routeMidi(input,ma,mb);require(ma.isEmpty()&&mb.isEmpty(),"channel filter");input.clear();input.addEvent(MidiMessage::controllerEvent(1,64,127),0);p.routeMidi(input,ma,mb);require(ma.getNumEvents()==1&&mb.getNumEvents()==1,"controllers reach both to release tails");}
  for(int engine=0;engine<2;++engine){auto heapHost=std::make_unique<DualProcessor>();DualProcessor& host=*heapHost;std::unique_ptr<AudioProcessor> reference=engine==0?std::unique_ptr<AudioProcessor>(new SynthAProcessor):std::unique_ptr<AudioProcessor>(new PrismProcessor);host.write("routing",float(engine+2));host.write("a.gain",0);host.write("b.gain",0);host.write("master",0);host.write("glue",0);host.prepareToPlay(48000,256);reference->setRateAndBufferSizeDetails(48000,256);reference->prepareToPlay(48000,256);auto visible=std::unique_ptr<AudioProcessorEditor>(host.createEditor());AudioBuffer<float> output(2,256),raw(2,256);std::array<std::array<float,4>,2> delay{};int head=0;double energy=0;for(int block=0;block<200;++block){if(block%40==0)dynamic_cast<DualEditor*>(visible.get())->select((block/40)%2);MidiBuffer midi,copy;if(block==0){midi.addEvent(MidiMessage::noteOn(1,60,.8f),17);midi.addEvent(MidiMessage::noteOn(1,67,.7f),80);}if(block==120)midi.addEvent(MidiMessage::allNotesOff(1),9);copy=midi;host.processBlock(output,midi);reference->processBlock(raw,copy);for(int n=0;n<256;++n){for(int c=0;c<2;++c){float expected=raw.getSample(c,n);if(engine==1){float aligned=delay[size_t(c)][size_t(head)];delay[size_t(c)][size_t(head)]=expected;expected=aligned;}if(output.getSample(c,n)!=expected){std::cerr<<"engine "<<engine<<" block "<<block<<" sample "<<n<<" got "<<output.getSample(c,n)<<" expected "<<expected<<" delta "<<(output.getSample(c,n)-expected)<<" gains "<<host.value("a.gain")<<" "<<host.value("b.gain")<<" "<<host.value("master")<<"\n";require(false,"unity/bypassed output exactly equals original engine (B aligned by4samples)");}energy+=expected*expected;}head=(head+1)%4;}}require(energy>1.e-6,"identity comparison has signal");}
  auto heapMain=std::make_unique<DualProcessor>();DualProcessor& p=*heapMain;p.a.loadPreset(3);p.b.selectFactory(4);p.write("split",65);p.write("a.gain",-3);p.write("b.mute",1);p.write("room",.83f);p.panel.store(1);MemoryBlock state;p.getStateInformation(state);auto heapRecalled=std::make_unique<DualProcessor>();DualProcessor& recalled=*heapRecalled;recalled.setStateInformation(state.getData(),int(state.getSize()));require(recalled.value("split")==65&&recalled.value("b.mute")==1&&std::abs(recalled.value("room")-.83f)<1.e-6,"host state recall");require(recalled.a.patchName()==p.a.patchName()&&recalled.b.title()==p.b.title()&&recalled.panel.load()==1,"both complete engine states and view recall");
