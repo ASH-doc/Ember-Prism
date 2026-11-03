@@ -13,6 +13,8 @@ class Instrument {
  int active()const;std::array<std::atomic<float>,capacity> displayed{};std::array<std::atomic<float>,modulationSourceCount> sources{};
  std::array<std::atomic<float>,2048> spectrum{};std::atomic<unsigned> spectrumIndex{0};std::array<std::atomic<bool>,16> voiceLights{};
  std::atomic<int> step{0};std::atomic<float> meter{0};
+ // Step each motion lane is on (0-based, -1 when the lane is idle), for the editor's playhead highlight.
+ std::array<std::atomic<int>,3> motionSteps{};
  private:
  struct Voice {
   bool running=false,pressed=false,pedalled=false;int key=60,channel=1,origin=0;uint64_t serial=0;
@@ -29,6 +31,7 @@ class Instrument {
  float sampleRate=48000,internalRate=96000;double beat=0;uint64_t frameClock=0,serial=0;int modulationClock=0,lastMode=0;bool lastPerformance=false;
  Decimator leftDown,rightDown;DCGuard outputDC[2];const WaveSet* imported=nullptr;
  void start(int key,int channel,float velocity,int origin);void stop(int key,int channel,int origin);
+ std::array<float,3> motionOffset{};std::array<int,3> motionTarget{-1,-1,-1};void motion();
  void refresh(Voice&,float bpm);void modulate(State&,const Voice&);void control(float bpm);Stereo sample(Voice&,float bpm);
 };
 }

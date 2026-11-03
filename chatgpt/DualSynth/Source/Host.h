@@ -99,7 +99,7 @@ private:
  std::vector<std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>> sliders;
  std::vector<std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>> toggles;
  std::vector<std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment>> choices;
- juce::Slider pitch,mod;juce::Label meter,status;
+ juce::Slider pitch,mod;juce::Label meter,status;juce::ComboBox sizeBox;
  std::unique_ptr<juce::FileChooser> chooser;
  // Master section: three tabs (compressor, reverb, tone/width). Each control is tagged with the tab it belongs to.
  enum Group{Always,CompShared,CompFet,CompGlue,ReverbTab,ToneTab};

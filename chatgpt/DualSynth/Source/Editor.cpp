@@ -6,6 +6,8 @@ namespace {
 Colour navy(){return Colour(0xff0b1020);}Colour aqua(){return Colour(0xff4fe3f5);}Colour ice(){return Colour(0xffeaf2ff);}
 }
 DualEditor::DualEditor(DualProcessor& processor):AudioProcessorEditor(processor),p(processor),keys(p.keyboard,MidiKeyboardComponent::horizontalKeyboard){
+ // Read the remembered width first: setting the resize limits below resizes the editor and would overwrite it.
+ const int savedWidth=int(p.state.state.getProperty("uiWidth",1600));
  look.setColour(ResizableWindow::backgroundColourId,navy());look.setColour(Label::textColourId,ice());look.setColour(Slider::thumbColourId,aqua());look.setColour(Slider::rotarySliderFillColourId,aqua());look.setColour(Slider::rotarySliderOutlineColourId,Colour(0xff2e3c59));look.setColour(TextButton::buttonColourId,Colour(0xff202d49));look.setColour(TextButton::buttonOnColourId,Colour(0xff4d4783));look.setColour(Slider::textBoxBackgroundColourId,Colour(0xff101a2e));look.setColour(Slider::textBoxTextColourId,ice());look.setColour(Slider::textBoxOutlineColourId,Colours::transparentBlack);look.setColour(ComboBox::backgroundColourId,Colour(0xff131e34));look.setColour(ComboBox::outlineColourId,Colour(0xff33425d));setLookAndFeel(&look);
  addAndMakeVisible(surface);surface.setSize(1600,840);surface.addAndMakeVisible(clip);clip.setBounds(0,64,1280,720);
  editorA.reset(p.a.createEditor());editorB.reset(p.b.createEditor());for(auto* editor:{editorA.get(),editorB.get()}){editor->setResizable(false,false);editor->setSize(1280,720);editor->setTopLeftPosition(0,0);clip.addAndMakeVisible(editor);}
@@ -34,7 +36,8 @@ DualEditor::DualEditor(DualProcessor& processor):AudioProcessorEditor(processor)
  const char* tabNames[3]={"COMP","REVERB","TONE"};
  for(int i=0;i<3;++i){auto& tab=tabButtons[size_t(i)];tab.setButtonText(tabNames[i]);tab.setClickingTogglesState(false);tab.setBounds(1308+i*89,558,86,22);ControlBay::buttonColours(tab);surface.addAndMakeVisible(tab);tab.onClick=[this,i]{showMasterTab(i);};}
  currentGroup=CompShared;menu("comp.mode",{"Glue","FET 76"},1308,586,100,24);toggle("comp","COMP ON",1414,586,100);
- surface.addAndMakeVisible(reductionMeter);reductionMeter.setBounds(1308,614,264,80);grouped.push_back({&reductionMeter,CompShared});
+ surface.addAndMakeVisible(reductionMeter);reductionMeter.setBounds(1308,614,264,80);
+ reductionMeter.onEnable=[this]{if(auto* master=p.state.getParameter("glue")){master->beginChangeGesture();master->setValueNotifyingHost(1.f);master->endChangeGesture();}};grouped.push_back({&reductionMeter,CompShared});
  currentGroup=CompFet;
  toggle("fet.hpf","90 Hz SC",1520,586,52);
  ratioButtons=std::make_unique<RatioButtons>(p.state,"fet.ratio",StringArray{"4","8","12","20","ALL"});surface.addAndMakeVisible(*ratioButtons);ratioButtons->setBounds(1308,698,264,22);grouped.push_back({ratioButtons.get(),CompFet});
@@ -44,14 +47,23 @@ DualEditor::DualEditor(DualProcessor& processor):AudioProcessorEditor(processor)
  currentGroup=ToneTab;toggle("eq","TONE EQ ON",1308,586,130);dial("low",1308,618,84,72);dial("air",1398,618,84,72);dial("width",1488,618,84,72);
  currentGroup=Always;
  surface.addAndMakeVisible(barsOut);barsOut.setBounds(1334,800,238,16);
- meter.setBounds(880,796,382,24);meter.setColour(Label::textColourId,aqua());meter.setFont(FontOptions(10.f));meter.setJustificationType(Justification::centredRight);surface.addAndMakeVisible(meter);
+ meter.setColour(Label::textColourId,aqua());meter.setFont(FontOptions(10.f));meter.setJustificationType(Justification::centredRight);surface.addAndMakeVisible(meter);
  status.setBounds(28,796,830,24);status.setFont(FontOptions(11.f));status.setColour(Label::textColourId,Colour(0xff94a6c7));surface.addAndMakeVisible(status);
  showMasterTab(0);
- select(p.panel.load());setResizable(true,true);setResizeLimits(1000,525,1920,1008);getConstrainer()->setFixedAspectRatio(1600.0/840.0);setSize(1440,756);timerCallback();startTimerHz(24);
+ // Size: the design is 1600 x 840 and is drawn as vectors, so it is sharpest at exactly 100% (and at 150%, 200%).
+ // The chosen width is remembered with the project; a new instance opens at 100%.
+ meter.setBounds(880,796,284,24);
+ sizeBox.addItemList({"90%","100%","125%","150%","200%"},1);sizeBox.setTooltip("Window size. 100% is sharpest.");sizeBox.setBounds(1172,796,90,24);surface.addAndMakeVisible(sizeBox);
+ sizeBox.onChange=[this]{static const double steps[]={.9,1.,1.25,1.5,2.};const int index=jlimit(0,4,sizeBox.getSelectedId()-1);setSize(int(std::lround(1600*steps[index])),int(std::lround(840*steps[index])));};
+ select(p.panel.load());setResizable(true,true);setResizeLimits(1200,630,3200,1680);getConstrainer()->setFixedAspectRatio(1600.0/840.0);
+ {const int width=jlimit(1200,3200,savedWidth);setSize(width,int(std::lround(width*840.0/1600.0)));}timerCallback();startTimerHz(24);
 }
 DualEditor::~DualEditor(){stopTimer();editorB.reset();editorA.reset();setLookAndFeel(nullptr);}
 void DualEditor::select(int which){p.panel.store(which);editorA->setVisible(which==0);editorB->setVisible(which==1);showA.setToggleState(which==0,dontSendNotification);showB.setToggleState(which==1,dontSendNotification);repaint();}
-void DualEditor::resized(){surface.setBounds(0,0,1600,840);surface.setTransform(AffineTransform::scale(float(getWidth())/1600,float(getHeight())/840));}
+void DualEditor::resized(){surface.setBounds(0,0,1600,840);surface.setTransform(AffineTransform::scale(float(getWidth())/1600,float(getHeight())/840));
+ if(getWidth()>0){p.state.state.setProperty("uiWidth",getWidth(),nullptr);
+  static const double steps[]={.9,1.,1.25,1.5,2.};int match=0;for(int i=0;i<5;++i)if(std::abs(getWidth()-1600*steps[i])<std::abs(getWidth()-1600*steps[match]))match=i;
+  if(std::abs(getWidth()-1600*steps[match])<2)sizeBox.setSelectedId(match+1,dontSendNotification);else sizeBox.setText(String(int(std::lround(100.0*getWidth()/1600)))+"%",dontSendNotification);}}
 void DualEditor::paint(Graphics& g){g.fillAll(navy());g.addTransform(AffineTransform::scale(float(getWidth())/1600,float(getHeight())/840));g.setColour(ice());g.setFont(FontOptions(23.f,Font::bold));g.drawText("AETHER v4.0",26,13,218,35,Justification::centredLeft);g.setColour(aqua());g.setFont(FontOptions(10.f));g.drawText("TWO ENGINES  /  ONE PERFORMANCE",26,47,300,12,Justification::centredLeft);
  const Rectangle<float> bay(1290, 76, 298, 752);
  g.setColour(Colours::black.withAlpha(.5f));
@@ -140,6 +152,7 @@ void DualEditor::refreshMasterTabs(){
 void DualEditor::timerCallback(){if(editorA->isVisible()!=(p.panel.load()==0))select(p.panel.load());
  auto db=[](float x){return x>1.e-7f?String(Decibels::gainToDecibels(x),1):String("-inf");};float out=p.peaks[2].load();meter.setText("A "+db(p.peaks[0].load())+"   B "+db(p.peaks[1].load())+"   OUT "+db(out)+" dB   /   GR "+String(p.gainReduction.load(),1)+" dB",dontSendNotification);meter.setColour(Label::textColourId,out>1?Colours::salmon:aqua());
  barsA.setLevels(p.levels[0].load(),p.levels[1].load());barsB.setLevels(p.levels[2].load(),p.levels[3].load());barsOut.setLevels(p.levels[4].load(),p.levels[5].load());
+ reductionMeter.setBypassed(p.value("glue")<.5f);
  reductionMeter.setTitle(int(p.get(DualProcessor::CompMode))==DualProcessor::Fet76?"FET 76":"GLUE");reductionMeter.setReduction(p.gainReduction.load());reductionMeter.tick();
  const float bpm=p.lastTapBpm();tapLabel.setText(bpm>0?String(bpm,1)+" BPM":"tap tempo",dontSendNotification);
  refreshMasterTabs();

@@ -24,6 +24,11 @@ class GainReductionMeter final:public juce::Component{
 public:
  void setReduction(float db){target=juce::jlimit(0.f,24.f,db);}
  void setTitle(const juce::String& text){if(text!=title){title=text;repaint();}}
+ // Master effects are bypassed: the meter is dimmed and says so; a click calls onEnable (turns Master FX on).
+ void setBypassed(bool off){if(off!=bypassed){bypassed=off;setMouseCursor(off?juce::MouseCursor::PointingHandCursor:juce::MouseCursor::NormalCursor);repaint();}}
+ bool isBypassed()const{return bypassed;}
+ std::function<void()> onEnable;
+ void mouseUp(const juce::MouseEvent& e)override{if(bypassed&&onEnable&&e.mouseWasClicked())onEnable();}
  // Call at the UI refresh rate (about 24 Hz).
  void tick(){const float k=target>needle?.55f:.13f;needle+=(target-needle)*k;if(std::abs(target-needle)<.004f)needle=target;repaint();}
  float needlePosition()const{return needle;}
@@ -56,8 +61,14 @@ public:
   const auto tip=point(positionFor(needle),radius-4.f);
   g.setColour(Colour(0x40000000));g.drawLine({Point<float>(pivotX+1.5f,pivotY+1.5f),Point<float>(tip.x+1.5f,tip.y+1.5f)},2.f);
   g.setColour(Colour(0xff17110a));g.drawLine({Point<float>(pivotX,pivotY),tip},1.7f);
+  if(bypassed){
+   g.setColour(Colour(0xcc1a1a18));g.fillRoundedRectangle(area,7.f);
+   g.setColour(Colour(0xffe4e1d8));g.setFont(FontOptions(12.f,Font::bold));g.drawText("MASTER FX OFF",area.withTrimmedBottom(area.getHeight()*.55f),Justification::centred,false);
+   g.setColour(Colour(0xffb7cb91));g.setFont(FontOptions(10.f));g.drawText("click to switch on",area.withTrimmedTop(area.getHeight()*.38f).withHeight(16.f),Justification::centred,false);
+  }
  }
 private:
+ bool bypassed=false;
  float target=0,needle=0;juce::String title{"FET 76"};
  // Position along the scale (0 = right end, 1 = left end) for a gain reduction in dB; the spacing follows the cramped
  // top end of a real GR meter: 0..3 dB take a lot of room, 10..20 dB very little.

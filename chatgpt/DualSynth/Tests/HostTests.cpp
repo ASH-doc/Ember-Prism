@@ -1,5 +1,6 @@
 #include "Host.h"
 #include "PresetBrowser.h"
+#include "sa-editor.h"
 #include "Catalog.h"
 #include <EmberBankData.h>
 #include <iostream>
@@ -556,6 +557,48 @@ std::vector<float> goldenMasterRender(){
  }
  return samples;
 }
+// PRISM presets rendered before the Motion lanes existed (written by this function on the unchanged engine).
+// With Motion Amount at its default of 0% every old preset has to render as it did.
+std::vector<float> prismGoldenRender(bool motionLanesEdited=false,float motionAmount=0){
+ auto prism=std::make_unique<PrismProcessor>();prism->setRateAndBufferSizeDetails(48000,256);prism->prepareToPlay(48000,256);
+ const int count=prism->factoryCount();std::vector<float> samples;AudioBuffer<float> out(2,256);
+ for(int preset:{0,3,12,25,count/3,count/2,count-30,count-1}){
+  prism->selectFactory(jlimit(0,count-1,preset));
+  if(motionLanesEdited){for(int lane=1;lane<=3;++lane){const String k="motion.lane"+String(lane)+".";prism->write(k+"dest",float(lane==1?3:lane==2?1:2));prism->write(k+"depth",1.f);for(int s=1;s<=16;++s)prism->write(k+"step"+String(s),s%2?1.f:-1.f);}}
+  if(motionAmount>0)prism->write("motion.amount",motionAmount);
+  for(int block=0;block<60;++block){MidiBuffer midi;if(block==0)for(int note:{48,60,67})midi.addEvent(MidiMessage::noteOn(1,note,.8f),note-48);if(block==36)midi.addEvent(MidiMessage::allNotesOff(1),5);
+   prism->processBlock(out,midi);for(int c=0;c<2;++c)for(int i=0;i<256;++i)samples.push_back(out.getSample(c,i));}
+ }
+ return samples;
+}
+void prismMotionTests(){
+ const auto golden=File(__FILE__).getParentDirectory().getChildFile("golden-prism-presets.bin");
+ require(golden.existsAsFile(),"the pre-Motion PRISM golden render is present next to the tests");
+ MemoryBlock stored;golden.loadFileAsData(stored);const float* before=static_cast<const float*>(stored.getData());
+ auto worstAgainstGolden=[&](const std::vector<float>& now){require(stored.getSize()==now.size()*sizeof(float),"PRISM golden render has the expected length");float worst=0;for(size_t i=0;i<now.size();++i)worst=std::max(worst,std::abs(before[i]-now[i]));return worst;};
+ const auto& layout=SynthB::Schema::get().loc;
+ require(SynthB::Schema::get().specs[size_t(layout.motionAmount)].initial==0.f,"Motion Amount defaults to 0%");
+ const float plain=worstAgainstGolden(prismGoldenRender());
+ const float edited=worstAgainstGolden(prismGoldenRender(true,0.f));
+ std::cout<<"INFO: 8 old PRISM presets at Motion Amount 0% vs the render from before Motion existed: largest sample difference "<<plain<<"; with all three lanes rewritten but amount still 0%: "<<edited<<"\n";
+ require(plain<1.e-4f,"old PRISM presets render as before at Motion Amount 0%");require(edited<1.e-4f,"lane settings have no effect at Motion Amount 0%");
+ const auto moving=prismGoldenRender(true,1.f);float difference=0;for(size_t i=0;i<moving.size();++i){require(std::isfinite(moving[i]),"motion render is finite");difference=std::max(difference,std::abs(before[i]-moving[i]));}
+ std::cout<<"INFO: same presets with Motion Amount 100%: largest sample difference "<<difference<<"\n";require(difference>.01f,"Motion Amount raises the lanes into the sound");
+ // The lane position is a function of the beat only: whole loops later (or a transport jump) lands on the same step.
+ auto renderAt=[&](double startBeat,double bpm){
+  auto engine=std::make_unique<SynthB::Instrument>();engine->prepare(48000);auto state=SynthB::Schema::get().initial();state[size_t(layout.motionAmount)]=1;
+  const int lane=layout.motion[0];state[size_t(lane+SynthB::laneDest)]=1;state[size_t(lane+SynthB::laneDivision)]=6;state[size_t(lane+SynthB::laneLength)]=2;state[size_t(lane+SynthB::laneInterp)]=0;state[size_t(lane+SynthB::laneDepth)]=1;
+  for(int s=0;s<4;++s)state[size_t(lane+SynthB::laneValue0+s)]=s%2?-.8f:.8f;
+  engine->parameters(state);std::vector<float> left(256),right(256),all;
+  for(int block=0;block<40;++block){SynthB::Event on;on.kind=SynthB::Event::Down;on.key=60;on.value=.8f;const SynthB::Event* events=block==0?&on:nullptr;
+   engine->render(left.data(),right.data(),256,events,block==0?1:0,bpm,startBeat+double(block)*256*bpm/(60*48000),nullptr);all.insert(all.end(),left.begin(),left.end());}
+  return all;};
+ const auto base=renderAt(0,120),loopLater=renderAt(16,120),oneStepLater=renderAt(1,120);float same=0,moved=0;
+ for(size_t i=0;i<base.size();++i){same=std::max(same,std::abs(base[i]-loopLater[i]));moved=std::max(moved,std::abs(base[i]-oneStepLater[i]));}
+ std::cout<<"INFO: motion lane, beat 0 vs beat 16 (whole loops later): "<<same<<"; beat 0 vs beat 1 (one step later): "<<moved<<"\n";
+ require(same<1.e-6f,"a lane lands on the same step after whole loops");require(moved>1.e-3f,"a different beat selects a different step");
+ std::cout<<"PASS: PRISM Motion lanes are inert at 0%, reproduce the pre-Motion render, respond at 100% and follow the beat.\n";
+}
 void goldenMasterTest(){
  const auto golden=File(__FILE__).getParentDirectory().getChildFile("golden-master-fx.bin");
  require(golden.existsAsFile(),"golden master-effects render is present next to the tests");
@@ -626,10 +669,44 @@ void processBlockAllocationInfo(){
 }
 }
 
+namespace {
+void savePng(const File& folder,const String& name,const Image& image){auto stream=folder.getChildFile(name).createOutputStream();stream->setPosition(0);stream->truncate();PNGImageFormat png;require(png.writeImageToStream(image,*stream),("snapshot "+name).toRawUTF8());}
+// Editor behaviour added after the contract freeze: the EMBER arp and gate board, remembered window size.
+void uiDesignTests(const File* folder){
+ auto host=makeHost();
+ {auto editor=std::unique_ptr<AudioProcessorEditor>(host->a.createEditor());auto* ember=dynamic_cast<SynthAEditor*>(editor.get());require(ember!=nullptr,"EMBER editor is created");editor->setSize(1280,720);
+  auto& face=ember->panel();require(!face.arpBoardOpen(),"the arp board starts closed");
+  face.openArpBoard();require(face.arpBoardOpen(),"the three dots open the arp board");
+  auto* matrix=face.stepMatrix();require(matrix!=nullptr,"the board has its step matrix");
+  host->a.setParam("arp.velocity1",.8f);require(matrix->keyPressed(KeyPress(KeyPress::downKey)),"arrow down is handled");
+  require(std::abs(host->a.getParam("arp.velocity1")-.75f)<.002f,"arrow down lowers the arp velocity of step 1 by 5%");
+  const float gateBefore=host->a.getParam("seq.gate.step1");
+  matrix->keyPressed(KeyPress(KeyPress::rightKey));matrix->keyPressed(KeyPress('t',ModifierKeys(),'t'));matrix->keyPressed(KeyPress(KeyPress::spaceKey));
+  require(host->a.getParam("seq.gate.tie2")>.5f,"space ties step 2");require(host->a.getParam("seq.gate.step1")==gateBefore,"arp velocity and gate edits stay on their own parameters");
+  matrix->keyPressed(KeyPress('g',ModifierKeys(),'g'));matrix->keyPressed(KeyPress(KeyPress::downKey));
+  require(std::abs(host->a.getParam("seq.gate.step2")-.95f)<.002f,"gate level of step 2 follows the gate lane");
+  face.closeArpBoard();require(!face.arpBoardOpen(),"closing hides the board");face.openArpBoard();require(face.arpBoardOpen(),"the board reopens");face.closeArpBoard();
+  if(folder!=nullptr){
+   for(int n=0;n<16;++n){host->a.setParam("arp.velocity"+String(n+1),n%4==0?1.f:n%4==2?.55f:.8f);host->a.setParam("seq.gate.step"+String(n+1),n%4==3?.15f:n%4==1?.7f:1.f);host->a.setParam("seq.gate.tie"+String(n+1),n==5||n==6||n==13?1.f:0.f);}
+   host->a.setParam("arp.on",1.f);host->a.setParam("seq.gate.on",1.f);face.openArpBoard();
+   savePng(*folder,"ember-arp-board-x2.png",editor->createComponentSnapshot(editor->getLocalBounds(),true,2.f));face.closeArpBoard();
+  }
+ }
+ {auto editor=std::unique_ptr<AudioProcessorEditor>(host->createEditor());editor->setSize(2000,1050);
+  require(int(host->state.state.getProperty("uiWidth"))==2000,"the window width is remembered with the project");
+  if(folder!=nullptr){host->write("glue",0);savePng(*folder,"host-master-fx-off.png",editor->createComponentSnapshot(editor->getLocalBounds(),true,1.f));}}
+ {auto editor=std::unique_ptr<AudioProcessorEditor>(host->createEditor());std::cout<<"INFO: reopened editor size "<<editor->getWidth()<<" x "<<editor->getHeight()<<", saved width "<<int(host->state.state.getProperty("uiWidth"))<<"\n";require(editor->getWidth()==2000&&editor->getHeight()==1050,"a reopened editor uses the remembered size");}
+ {auto fresh=makeHost();auto editor=std::unique_ptr<AudioProcessorEditor>(fresh->createEditor());require(editor->getWidth()==1600&&editor->getHeight()==840,"a new instance opens at 100%");}
+ std::cout<<"PASS: arp board opens and closes, edits its own parameters, window size remembered.\n";
+}
+}
+
 int main(int argc,char** argv){ScopedJuceInitialiser_GUI gui;
+ if(argc==3&&String(argv[1])=="--prism-golden-write"){const auto samples=prismGoldenRender();require(File::getCurrentWorkingDirectory().getChildFile(argv[2]).replaceWithData(samples.data(),samples.size()*sizeof(float)),"prism golden file written");std::cout<<"prism golden written: "<<samples.size()<<" samples\n";return 0;}
  if(argc==3&&String(argv[1])=="--golden-write"){const auto samples=goldenMasterRender();require(File::getCurrentWorkingDirectory().getChildFile(argv[2]).replaceWithData(samples.data(),samples.size()*sizeof(float)),"golden file written");std::cout<<"golden written: "<<samples.size()<<" samples\n";return 0;}
  if(argc==3&&String(argv[1])=="--audition"){auto folder=File::getCurrentWorkingDirectory().getChildFile(argv[2]);folder.createDirectory();signalStudiesTest(folder);return 0;}
- signalStudiesTest();midiOwnershipTests();parameterCatalogTest();pitchBendModulationTest();claudePrismBankTest();claudeEmberImportTests();claudeBrowserTests();goldenMasterTest();fetDspTests();phase2HostTests();engineChannelTests();recallBoundaryTest();routeMidiAllocationTest();slicingTests();stateTests();loadDuringPlaybackTest();processBlockAllocationInfo();
+ {File uiFolder;if(argc>1){uiFolder=File::getCurrentWorkingDirectory().getChildFile(argv[1]);uiFolder.createDirectory();}uiDesignTests(argc>1?&uiFolder:nullptr);}
+ signalStudiesTest();midiOwnershipTests();parameterCatalogTest();pitchBendModulationTest();claudePrismBankTest();claudeEmberImportTests();claudeBrowserTests();prismMotionTests();goldenMasterTest();fetDspTests();phase2HostTests();engineChannelTests();recallBoundaryTest();routeMidiAllocationTest();slicingTests();stateTests();loadDuringPlaybackTest();processBlockAllocationInfo();
  {auto heapP=std::make_unique<DualProcessor>();DualProcessor& p=*heapP;MidiBuffer input,ma,mb;input.addEvent(MidiMessage::noteOn(1,60,.8f),17);p.routeMidi(input,ma,mb);require(ma.getNumEvents()==1&&mb.getNumEvents()==1,"layer fans out to both");p.write("routing",1);p.write("split",72);input.clear();input.addEvent(MidiMessage::noteOff(1,60),21);p.routeMidi(input,ma,mb);require(ma.getNumEvents()==1&&mb.getNumEvents()==1,"held note ownership survives changed split");input.clear();input.addEvent(MidiMessage::noteOn(1,71,.8f),3);input.addEvent(MidiMessage::noteOn(1,72,.8f),4);p.routeMidi(input,ma,mb);require(ma.getNumEvents()==1&&mb.getNumEvents()==1,"split boundary routes A below and B at split");require((*ma.begin()).samplePosition==3&&(*mb.begin()).samplePosition==4,"MIDI sample offsets preserved");p.write("a.high",60);input.clear();input.addEvent(MidiMessage::noteOn(1,61,.7f),0);p.routeMidi(input,ma,mb);require(ma.isEmpty()&&mb.isEmpty(),"split intersects per-engine note range");p.write("a.channel",2);input.clear();input.addEvent(MidiMessage::noteOn(1,40,.7f),0);p.routeMidi(input,ma,mb);require(ma.isEmpty()&&mb.isEmpty(),"channel filter");input.clear();input.addEvent(MidiMessage::controllerEvent(1,64,127),0);p.routeMidi(input,ma,mb);require(ma.getNumEvents()==1&&mb.getNumEvents()==1,"controllers reach both to release tails");}
  for(int engine=0;engine<2;++engine){auto heapHost=std::make_unique<DualProcessor>();DualProcessor& host=*heapHost;std::unique_ptr<AudioProcessor> reference=engine==0?std::unique_ptr<AudioProcessor>(new SynthAProcessor):std::unique_ptr<AudioProcessor>(new PrismProcessor);host.write("routing",float(engine+2));host.write("a.gain",0);host.write("b.gain",0);host.write("master",0);host.write("glue",0);host.prepareToPlay(48000,256);reference->setRateAndBufferSizeDetails(48000,256);reference->prepareToPlay(48000,256);auto visible=std::unique_ptr<AudioProcessorEditor>(host.createEditor());AudioBuffer<float> output(2,256),raw(2,256);std::array<std::array<float,4>,2> delay{};int head=0;double energy=0;for(int block=0;block<200;++block){if(block%40==0)dynamic_cast<DualEditor*>(visible.get())->select((block/40)%2);MidiBuffer midi,copy;if(block==0){midi.addEvent(MidiMessage::noteOn(1,60,.8f),17);midi.addEvent(MidiMessage::noteOn(1,67,.7f),80);}if(block==120)midi.addEvent(MidiMessage::allNotesOff(1),9);copy=midi;host.processBlock(output,midi);reference->processBlock(raw,copy);for(int n=0;n<256;++n){for(int c=0;c<2;++c){float expected=raw.getSample(c,n);if(engine==1){float aligned=delay[size_t(c)][size_t(head)];delay[size_t(c)][size_t(head)]=expected;expected=aligned;}if(output.getSample(c,n)!=expected){std::cerr<<"engine "<<engine<<" block "<<block<<" sample "<<n<<" got "<<output.getSample(c,n)<<" expected "<<expected<<" delta "<<(output.getSample(c,n)-expected)<<" gains "<<host.value("a.gain")<<" "<<host.value("b.gain")<<" "<<host.value("master")<<"\n";require(false,"unity/bypassed output exactly equals original engine (B aligned by4samples)");}energy+=expected*expected;}head=(head+1)%4;}}require(energy>1.e-6,"identity comparison has signal");}
  auto heapMain=std::make_unique<DualProcessor>();DualProcessor& p=*heapMain;p.a.loadPreset(3);p.b.selectFactory(4);p.write("split",65);p.write("a.gain",-3);p.write("b.mute",1);p.write("room",.83f);p.panel.store(1);MemoryBlock state;p.getStateInformation(state);auto heapRecalled=std::make_unique<DualProcessor>();DualProcessor& recalled=*heapRecalled;recalled.setStateInformation(state.getData(),int(state.getSize()));require(recalled.value("split")==65&&recalled.value("b.mute")==1&&std::abs(recalled.value("room")-.83f)<1.e-6,"host state recall");require(recalled.a.patchName()==p.a.patchName()&&recalled.b.title()==p.b.title()&&recalled.panel.load()==1,"both complete engine states and view recall");

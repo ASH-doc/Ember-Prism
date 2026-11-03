@@ -71,6 +71,26 @@ void Instrument::modulate(State& state,const Voice& voice){
   float amount=voice.source[size_t(src)];if(voice.local[size_t(base+bipolar)]<.5f&&(src>=4&&src<=7||src==12||src==13||src==pitchBendSource))amount=(amount+1)*.5f;
   amount=std::copysign(std::pow(std::abs(amount),voice.local[size_t(base+shape)]),amount);const auto& spec=schema.specs[size_t(dest)];state[size_t(dest)]=spec.valid(spec.realValue(spec.unitValue(state[size_t(dest)])+amount*voice.local[size_t(base+depth)]));
  }
+ // Motion lanes apply after the base values and the matrix, in the destination's own scaling and clamping.
+ for(size_t l=0;l<3;++l){const int target=motionTarget[l];if(target<0||motionOffset[l]==0)continue;const auto& spec=schema.specs[size_t(target)];state[size_t(target)]=spec.valid(spec.realValue(spec.unitValue(state[size_t(target)])+motionOffset[l]));}
+}
+// Motion lanes: with Motion Amount at zero this does nothing, so a legacy patch renders exactly as before.
+// Lane positions are a pure function of the beat clock (host beat when the host is playing, the internal clock
+// otherwise), so a transport jump or tempo change lands on the right step without any stored state.
+void Instrument::motion(){
+ const float amount=slewed[size_t(layout.motionAmount)];
+ if(amount<=1.e-6f){for(size_t l=0;l<3;++l){motionOffset[l]=0;motionTarget[l]=-1;motionSteps[l].store(-1,std::memory_order_relaxed);}return;}
+ const int targets[7]{-1,layout.osc[0]+pos,layout.osc[1]+pos,layout.filter[0]+cutoff,layout.filter[1]+cutoff,layout.filter[0]+resonance,layout.filter[1]+resonance};
+ for(size_t l=0;l<3;++l){
+  const int base=layout.motion[l];const int destination=bounded(int(slewed[size_t(base+laneDest)]),0,6);
+  if(destination==0){motionOffset[l]=0;motionTarget[l]=-1;motionSteps[l].store(-1,std::memory_order_relaxed);continue;}
+  const int division=bounded(int(slewed[size_t(base+laneDivision)]),0,9),length=bounded(int(slewed[size_t(base+laneLength)])+2,2,16);
+  const double cycles=std::max(0.,beat)/double(beatLengths[size_t(division)]);const double position=std::fmod(cycles,double(length));
+  const int index=bounded(int(position),0,length-1);const float fraction=float(position-double(index));
+  const float first=slewed[size_t(base+laneValue0+index)],second=slewed[size_t(base+laneValue0+(index+1)%length)];
+  const float value=slewed[size_t(base+laneInterp)]>.5f?first+(second-first)*fraction:first;
+  motionTarget[l]=targets[destination];motionOffset[l]=value*slewed[size_t(base+laneDepth)]*amount;motionSteps[l].store(index,std::memory_order_relaxed);
+ }
 }
 void Instrument::refresh(Voice& v,float){
  State next=slewed;modulate(next,v);v.local=next;const auto& p=v.local;
@@ -125,6 +145,7 @@ Stereo Instrument::sample(Voice& v,float bpm){
 void Instrument::control(float bpm){
  const float coefficient=1-std::exp(-32/(internalRate*.012f));for(size_t i=0;i<schema.specs.size();++i)slewed[i]=schema.specs[i].integer?desired[i]:slewed[i]+(desired[i]-slewed[i])*coefficient;
  for(int c=0;c<16;++c)bendSmooth[size_t(c)]+=(bend[size_t(c)]-bendSmooth[size_t(c)])*coefficient;
+ motion();
  const Voice* newest=nullptr;for(auto& v:pool)if(v.running){refresh(v,bpm);if(!newest||v.serial>newest->serial)newest=&v;}
  global=slewed;if(newest)modulate(global,*newest);performance.settings(global);rack.update(global);
  int mode=int(global[size_t(layout.mode)]);bool performing=performance.running();if(mode!=lastMode||performing!=lastPerformance){for(auto& v:pool){v.pressed=v.pedalled=false;for(auto& e:v.envelopes)e.lift();}lastMode=mode;lastPerformance=performing;}

@@ -26,6 +26,8 @@ enum Env {attack,hold,decay,sustain,release,curve,envSize};
 enum Lfo {rate,sync,division,restart,fade,interpolation,point0,lfoSize=point0+16};
 enum Fx {fxOn,fxMix,fxA,fxB,fxC,fxMode,fxSync,fxDivision,fxSize};
 enum Route {source,destination,depth,bipolar,shape,routeSize};
+// Motion lanes (appended after every earlier parameter): three looping bipolar step lanes that offset one destination each.
+enum MotionLane {laneDest,laneDivision,laneLength,laneInterp,laneDepth,laneValue0,laneSize=laneValue0+16};
 enum Seq {seqOn,seqMode,seqRate,seqSwing,seqLength,seqHold,seqOctaves,seqRestart,stepPitch0,stepGate0=stepPitch0+16,stepVelocity0=stepGate0+16,seqSize=stepVelocity0+16};
 struct Layout {
  std::array<int,2> claudeTable{};
@@ -33,6 +35,7 @@ struct Layout {
  std::array<int,8> macro{};std::array<int,10> fx{},order{};std::array<int,routes> route{};
  int sub,subOct,subWave,noise,noiseColor,routing,filterBalance,mode,glide,bend,velocityCurve,tempo,host,master,pan,arp,seq,euphoria,space;
  std::array<int,6> locks{};
+ int motionAmount=-1;std::array<int,3> motion{};
 };
 class Schema {
  public:Schema();std::vector<Spec> specs;Layout loc;int find(const std::string&)const;State initial()const;
@@ -42,6 +45,8 @@ const std::vector<std::string>& sourceNames();
 const std::vector<std::string>& tableNames();
 const std::vector<std::string>& claudeTableNames();
 const std::vector<std::string>& effectNames();
+// Destinations a motion lane can steer: index 0 is "Off", the others map to oscillator positions and filter cutoff/resonance.
+const std::vector<std::string>& motionDestinations();
 inline constexpr std::array<float,10> beatLengths{.125f,1.f/6,.25f,1.f/3,.5f,.75f,1,2,4,8};
 inline std::array<int,10> resolvedRack(std::array<int,10> order){std::array<bool,10> used{};for(auto& index:order){index=bounded(index,0,9);if(used[size_t(index)])for(int candidate=0;candidate<10;++candidate)if(!used[size_t(candidate)]){index=candidate;break;}used[size_t(index)]=true;}return order;}
 struct Stereo {float l=0,r=0;Stereo operator+(Stereo b)const{return {l+b.l,r+b.r};}Stereo operator*(float f)const{return {l*f,r*f};}};

@@ -5,6 +5,7 @@ namespace SynthB {
 const std::vector<std::string>& sourceNames(){static const std::vector<std::string> names{"None","Env 1","Env 2","Env 3","LFO 1","LFO 2","LFO 3","LFO 4","Velocity","Key","Wheel","Pressure","Random","Sample hold","Macro 1","Macro 2","Macro 3","Macro 4","Macro 5","Macro 6","Macro 7","Macro 8","Euphoria","Space","Pitch Bend"};return names;}
 const std::vector<std::string>& tableNames(){static const std::vector<std::string> names{"Vector Saw","Pulse Atlas","Harmonic Fold","Prism Ramp","Triangle Orbit","Glass Mesh","Chrome Grid","Crystal Teeth","Ion Shards","Digital Silk","Vowel Arc","Formant Lane","Choir Vector","Whisper Mouth","Vocal Prism","Fluid Cell","Coral Thread","Grain Current","Plasma Ribbon","Organic Lattice","Bell Spectrum","FM Crown","Chime Matrix","Metal Rain","Orbital Gong","Air Spectrum","Frozen Hiss","Cloud Comb","White Halo","Spectral Dust","Imported"};return names;}
 const std::vector<std::string>& effectNames(){static const std::vector<std::string> n{"Chorus","Flanger","Phaser","Delay","Reverb","Distortion","EQ","Compressor","Filter","Widener"};return n;}
+const std::vector<std::string>& motionDestinations(){static const std::vector<std::string> names{"Off","OSC 1 Position","OSC 2 Position","Filter 1 Cutoff","Filter 2 Cutoff","Filter 1 Resonance","Filter 2 Resonance"};return names;}
 const Schema& Schema::get(){static Schema s;return s;}
 int Schema::find(const std::string& key)const{for(size_t i=0;i<specs.size();++i)if(specs[i].key==key)return int(i);return -1;}
 State Schema::initial()const{State s{};for(size_t i=0;i<specs.size();++i)s[i]=specs[i].initial;return s;}
@@ -50,6 +51,13 @@ Schema::Schema(){
  for(int n=0;n<routes;++n){auto k="mod"+std::to_string(n+1)+".";loc.route[n]=int(specs.size());menu(k+"source","Source",sourceNames(),0,"Matrix");menu(k+"destination","Destination",dest,0,"Matrix");number(k+"depth","Depth",-1,1,0,"Matrix");flag(k+"bipolar","Bipolar",true,"Matrix");number(k+"curve","Curve",.25f,4,1,"Matrix");}
  for (int n = 0; n < 2; ++n)
   loc.claudeTable[n] = menu("osc"+std::to_string(n+1)+".claude.table", "Claude Table", claudeTableNames(), 0, "Oscillator "+std::to_string(n+1));
+ // Motion lanes. Amount defaults to 0 so every earlier patch and preset keeps its sound; missing keys load as these defaults.
+ loc.motionAmount=number("motion.amount","Motion amount",0,1,0,"Motion");
+ {std::vector<std::string> stepCounts;for(int n=2;n<=16;++n)stepCounts.push_back(std::to_string(n));
+  for(int n=0;n<3;++n){const auto k="motion.lane"+std::to_string(n+1)+".",s="Motion lane "+std::to_string(n+1);loc.motion[n]=int(specs.size());
+   menu(k+"dest","Destination",motionDestinations(),n==2?3:n+1,s);menu(k+"division","Division",lengths,n==0?2:n==1?4:6,s);menu(k+"length","Steps",stepCounts,n==2?6:14,s);menu(k+"interp","Interpolation",{"Step","Glide"},n==2?0:1,s);number(k+"depth","Depth",0,1,.5f,s);
+   for(int j=0;j<16;++j){const float t=float(j)/16;const float value=n==0?float(std::sin(tau*t)):n==1?1.f-2.f*float(j)/15:float(j%2==0?.8f:-.5f);number(k+"step"+std::to_string(j+1),"Step "+std::to_string(j+1),-1,1,value,s);}
+  }}
  if(specs.size()>capacity)throw std::runtime_error("Synth B parameter capacity exceeded");
 }
 }

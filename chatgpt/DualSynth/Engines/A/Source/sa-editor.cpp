@@ -58,6 +58,119 @@ void GateGrid::paint(Graphics& g){
 void GateGrid::mouseDown(const MouseEvent& e){previous=-1;ties=e.mods.isShiftDown()||e.mods.isPopupMenu();edit(e);}
 void GateGrid::mouseDrag(const MouseEvent& e){edit(e);}
 void GateGrid::edit(const MouseEvent& e){int step=SynthA::clamp(e.x/31,0,15);float value=SynthA::clamp(float(36-e.y)/23,0.f,1.f);if(ties){if(step!=previous){auto id="seq.gate.tie"+String(step+1);proc.setParam(id,proc.getParam(id)>.5f?0.f:1.f);}}else{if(previous>=0&&previous!=step){int direction=step>previous?1:-1;for(int i=previous+direction;i!=step;i+=direction){float t=float(i-previous)/float(step-previous);proc.setParam("seq.gate.step"+String(i+1),previousValue+(value-previousValue)*t);}}proc.setParam("seq.gate.step"+String(step+1),value);}previous=step;previousValue=value;repaint();}
+// ---- Arp and gate board -------------------------------------------------------------------------------------------------
+namespace {
+Colour boardMuted(){return Colour(0xffc8a782);}Colour boardSage(){return Colour(0xffb7c582);}Colour boardAmber(){return Colour(0xffef9c43);}
+const char* const laneNames[3]={"VELOCITY","GATE LEVEL","TIE"};const char* const laneNotes[3]={"arp notes","output rhythm","hold into next"};
+}
+Rectangle<float> StepMatrix::laneRect(Lane lane)const{
+ const float tieHeight=36.f,top=22.f,gap=8.f,laneHeight=(float(getHeight())-top-tieHeight-gap*2-2.f)/2.f,width=float(getWidth()-gridLeft-2);
+ if(lane==Velocity)return {float(gridLeft),top,width,laneHeight};
+ if(lane==Gate)return {float(gridLeft),top+laneHeight+gap,width,laneHeight};
+ return {float(gridLeft),top+2*laneHeight+2*gap,width,tieHeight};
+}
+int StepMatrix::stepAt(float x)const{return jlimit(0,15,int(std::floor((x-float(gridLeft))/columnWidth())));}
+StepMatrix::Lane StepMatrix::laneAt(float y)const{if(y<laneRect(Velocity).getBottom()+4)return Velocity;if(y<laneRect(Gate).getBottom()+4)return Gate;return Tie;}
+String StepMatrix::idFor(Lane lane,int step)const{return String(lane==Velocity?"arp.velocity":lane==Gate?"seq.gate.step":"seq.gate.tie")+String(step+1);}
+float StepMatrix::valueFor(Lane lane,float y)const{const auto r=laneRect(lane);const float t=jlimit(0.f,1.f,(r.getBottom()-y)/r.getHeight());return lane==Velocity?.05f+.95f*t:t;}
+void StepMatrix::apply(Lane lane,int step,float value){const auto id=idFor(lane,step);if(std::abs(proc.getParam(id)-value)>.001f)proc.setParam(id,value);}
+void StepMatrix::report(Lane lane,int step){
+ if(!onReadout)return;const float v=proc.getParam(idFor(lane,step));
+ onReadout(String(laneNames[lane])+"  STEP "+String(step+1).paddedLeft('0',2)+"  /  "+(lane==Tie?String(v>.5f?"TIED":"OFF"):String(int(std::lround(v*100)))+"%"));
+}
+void StepMatrix::edit(const MouseEvent& e,bool first){
+ const int step=stepAt(float(e.x));
+ if(first){selectedLane=laneAt(float(e.y));previous=-1;if(selectedLane==Tie)paintTie=proc.getParam(idFor(Tie,step))<.5f;}
+ selectedStep=step;
+ if(selectedLane==Tie){const int from=previous<0?step:previous,direction=step>=from?1:-1;for(int i=from;;i+=direction){apply(Tie,i,paintTie?1.f:0.f);if(i==step)break;}}
+ else{
+  const float value=valueFor(selectedLane,float(e.y));
+  if(previous>=0&&previous!=step){const int direction=step>previous?1:-1;for(int i=previous+direction;i!=step;i+=direction){const float t=float(i-previous)/float(step-previous);apply(selectedLane,i,previousValue+(value-previousValue)*t);}}
+  apply(selectedLane,step,value);previousValue=value;
+ }
+ previous=step;report(selectedLane,step);repaint();
+}
+void StepMatrix::mouseDown(const MouseEvent& e){grabKeyboardFocus();edit(e,true);}
+void StepMatrix::mouseDrag(const MouseEvent& e){edit(e,false);}
+void StepMatrix::mouseDoubleClick(const MouseEvent& e){
+ const Lane lane=laneAt(float(e.y));const int step=stepAt(float(e.x));
+ apply(lane,step,lane==Velocity?(step%4==0?1.f:.8f):lane==Gate?(step%4==3?0.f:1.f):0.f);report(lane,step);repaint();
+}
+bool StepMatrix::keyPressed(const KeyPress& key){
+ const auto code=key.getKeyCode();const float fine=key.getModifiers().isShiftDown()?.01f:.05f;
+ if(code==KeyPress::leftKey){selectedStep=std::max(0,selectedStep-1);}
+ else if(code==KeyPress::rightKey){selectedStep=std::min(15,selectedStep+1);}
+ else if(code==KeyPress::upKey||code==KeyPress::downKey){
+  const float sign=code==KeyPress::upKey?1.f:-1.f;
+  if(selectedLane==Tie)apply(Tie,selectedStep,sign>0?1.f:0.f);
+  else apply(selectedLane,selectedStep,jlimit(selectedLane==Velocity?.05f:0.f,1.f,proc.getParam(idFor(selectedLane,selectedStep))+sign*fine));
+ }
+ else if(code==KeyPress::spaceKey||code==KeyPress::returnKey){if(selectedLane==Tie)apply(Tie,selectedStep,proc.getParam(idFor(Tie,selectedStep))>.5f?0.f:1.f);else return false;}
+ else if(key.getTextCharacter()=='v'||key.getTextCharacter()=='V')selectedLane=Velocity;
+ else if(key.getTextCharacter()=='g'||key.getTextCharacter()=='G')selectedLane=Gate;
+ else if(key.getTextCharacter()=='t'||key.getTextCharacter()=='T')selectedLane=Tie;
+ else return false;
+ report(selectedLane,selectedStep);repaint();return true;
+}
+void StepMatrix::paint(Graphics& g){
+ const float cw=columnWidth();
+ g.setFont(FontOptions(12.f,Font::bold));
+ for(int step=0;step<16;++step){g.setColour(step==selectedStep?cream():boardMuted());g.drawText(String(step+1).paddedLeft('0',2),Rectangle<float>(float(gridLeft)+step*cw,0.f,cw,18.f),Justification::centred,false);}
+ for(int lane=0;lane<3;++lane){
+  const auto r=laneRect(Lane(lane));
+  g.setColour(lane==Velocity?boardAmber():lane==Gate?boardSage():cream());g.setFont(FontOptions(12.f,Font::bold));g.drawText(laneNames[lane],Rectangle<float>(0.f,r.getY()+2,float(gridLeft)-8.f,16.f),Justification::centredLeft,false);
+  g.setColour(boardMuted());g.setFont(FontOptions(10.f));g.drawText(laneNotes[lane],Rectangle<float>(0.f,r.getY()+18,float(gridLeft)-8.f,14.f),Justification::centredLeft,false);
+  for(int step=0;step<16;++step){
+   const auto cell=Rectangle<float>(float(gridLeft)+step*cw+1.5f,r.getY(),cw-3.f,r.getHeight());const float v=proc.getParam(idFor(Lane(lane),step));
+   g.setColour(Colour(0xff211811));g.fillRoundedRectangle(cell,3.f);g.setColour(step%4==0?Colour(0xff9a7550):Colour(0xff6a4f38));g.drawRoundedRectangle(cell,3.f,step%4==0?1.4f:1.f);
+   if(lane==Tie){
+    const bool on=v>.5f;
+    if(on){auto bar=cell.reduced(3.f,7.f);if(step<15)bar=bar.withWidth(bar.getWidth()+6.f);g.setColour(boardSage());g.fillRoundedRectangle(bar,3.f);g.setColour(Colour(0xff1d230f));g.setFont(FontOptions(11.f,Font::bold));g.drawText("TIE",cell,Justification::centred,false);}
+    else{g.setColour(Colour(0xff6a4f38));g.drawLine(cell.getCentreX()-6,cell.getCentreY(),cell.getCentreX()+6,cell.getCentreY(),1.5f);}
+   }else{
+    const float norm=lane==Velocity?(v-.05f)/.95f:v;const auto inner=cell.reduced(4.f,4.f);const float height=std::max(2.f,inner.getHeight()*norm);
+    const auto bar=Rectangle<float>(inner.getX(),inner.getBottom()-height,inner.getWidth(),height);
+    const Colour base=lane==Velocity?boardAmber():boardSage();
+    g.setGradientFill(ColourGradient(base.brighter(.25f),bar.getX(),bar.getY(),base.darker(.45f),bar.getX(),bar.getBottom(),false));g.fillRoundedRectangle(bar,2.f);
+    g.setColour(norm>.82f?Colour(0xff2a1706):cream().withAlpha(.9f));g.setFont(FontOptions(11.f,Font::bold));g.drawText(String(int(std::lround(v*100))),cell.withHeight(16.f).translated(0,2),Justification::centred,false);
+   }
+   if(step==selectedStep&&lane==int(selectedLane)){g.setColour(hasKeyboardFocus(false)?Colour(0xffffdc91):cream().withAlpha(.5f));g.drawRoundedRectangle(cell.expanded(1.f),3.f,hasKeyboardFocus(false)?2.f:1.2f);}
+  }
+ }
+}
+ArpBoard::ArpBoard(SynthAProcessor& p,HardwareLook& l):proc(p),matrix(p),look(l){
+ setOpaque(true);setWantsKeyboardFocus(true);
+ addAndMakeVisible(matrix);addAndMakeVisible(closeButton);addAndMakeVisible(readout);
+ closeButton.onClick=[this]{if(onClose)onClose();};
+ readout.setFont(FontOptions(12.f,Font::bold));readout.setColour(Label::textColourId,boardAmber());readout.setText("READY",dontSendNotification);readout.setJustificationType(Justification::centredLeft);
+ matrix.onReadout=[this](const String& text){readout.setText(text,dontSendNotification);};
+ sw("arp.on","ARP",{34,100,84,26});knob("arp.mode",130,84,130,46);knob("arp.rate",270,84,100,46);sw("arp.hold","HOLD",{388,100,84,26});
+ knob("arp.octaves",490,76,64,68);knob("arp.swing",562,76,64,68);knob("arp.gate",634,76,64,68);
+ sw("seq.gate.on","GATE",{34,198,84,26});knob("seq.gate.rate",130,182,100,46);knob("seq.gate.depth",244,174,64,68);knob("seq.gate.smooth",316,174,64,68);knob("seq.gate.shape",388,174,64,68);sw("seq.gate.restart","KEY RESTART",{470,198,130,26});
+}
+Control& ArpBoard::knob(const String& id,int x,int y,int w,int h){auto c=std::make_unique<Control>(proc,SynthA::indexOf(id.toStdString()),false,false);c->setBounds(x,y,w,h);addAndMakeVisible(*c);c->slider.setLookAndFeel(&look);controls.push_back(std::move(c));return *controls.back();}
+void ArpBoard::sw(const String& id,const String& text,Rectangle<int> bounds){auto b=std::make_unique<ToggleButton>(text);b->setBounds(bounds);addAndMakeVisible(*b);attachments.push_back(std::make_unique<AudioProcessorValueTreeState::ButtonAttachment>(proc.state,id,*b));switches.push_back(std::move(b));}
+void ArpBoard::resized(){closeButton.setBounds(getWidth()-112,12,96,28);matrix.setBounds(16,256,getWidth()-32,268);readout.setBounds(16,532,520,24);}
+bool ArpBoard::keyPressed(const KeyPress& key){if(key==KeyPress::escapeKey){if(onClose)onClose();return true;}return false;}
+void ArpBoard::paint(Graphics& g){
+ g.setGradientFill(ColourGradient(Colour(0xff403026),0.f,0.f,Colour(0xff261d17),float(getWidth()),float(getHeight()),false));g.fillAll();
+ for(int y=0;y<getHeight();y+=3){g.setColour(Colours::white.withAlpha(.01f));g.drawHorizontalLine(y,0.f,float(getWidth()));}
+ g.setColour(Colour(0xff76563d));g.drawRect(getLocalBounds(),2);
+ for(auto point:{Point<float>(10,10),Point<float>(float(getWidth())-10,10),Point<float>(10,float(getHeight())-10),Point<float>(float(getWidth())-10,float(getHeight())-10)}){g.setColour(Colour(0xff74614e));g.fillEllipse(point.x-4,point.y-4,8,8);g.setColour(Colour(0xff18130f));g.drawLine(point.x-2.5f,point.y-1,point.x+2.5f,point.y+1,1.f);}
+ g.setColour(Colour(0xfff7dfba));g.setFont(FontOptions("Georgia",26.f,Font::bold));g.drawText("Arp & Gate",34,10,300,34,Justification::centredLeft,false);
+ g.setColour(boardMuted());g.setFont(FontOptions(11.f,Font::bold));g.drawText("EMBER  /  16-STEP PERFORMANCE BOARD",290,18,420,18,Justification::centredLeft,false);
+ g.setColour(Colour(0xff856347));g.drawHorizontalLine(46,16.f,float(getWidth()-16));
+ auto panel=[&](Rectangle<int> r,const String& title,const String& note){
+  g.setColour(Colour(0xff332a21));g.fillRoundedRectangle(r.toFloat(),5.f);g.setColour(Colour(0xff71543c));g.drawRoundedRectangle(r.toFloat(),5.f,1.f);
+  g.setColour(Colour(0xfff6c687));g.setFont(FontOptions(11.f,Font::bold));g.drawText(title,r.getX()+14,r.getY()+6,260,16,Justification::centredLeft,false);
+  g.setColour(boardMuted());g.setFont(FontOptions(11.f));g.drawFittedText(note,Rectangle<int>(r.getRight()-440,r.getY()+30,424,r.getHeight()-38),Justification::centredRight,3);
+ };
+ panel({16,56,getWidth()-32,92},"01 / ARPEGGIATOR","Velocity shapes the notes the arpeggiator plays. Pattern, rate and length stay where they are on the compact strip.");
+ panel({16,154,getWidth()-32,92},"02 / TRANCE GATE","Gate level and ties shape the output rhythm. The arp and the gate run on their own clocks, so a different rate on each makes the lanes drift against each other.");
+ g.setColour(boardMuted());g.setFont(FontOptions(10.f));g.drawText("Drag to draw  /  double-click resets a step  /  arrow keys move and change  /  V G T pick a lane  /  Esc closes",Rectangle<int>(getWidth()-700,532,684,24),Justification::centredRight,false);
+}
+void Face::openArpBoard(){if(arpBoard==nullptr)return;arpBoard->setVisible(true);arpBoard->toFront(false);arpBoard->focusMatrix();}
+void Face::closeArpBoard(){if(arpBoard==nullptr)return;arpBoard->setVisible(false);if(arpMore!=nullptr)arpMore->grabKeyboardFocus();}
 Control& Face::control(const String& id,int x,int y,int w,int h,bool f,bool in){int index=SynthA::indexOf(id.toStdString());jassert(index>=0);auto c=std::make_unique<Control>(proc,index,f,in);c->setBounds(x,y,w,h);addAndMakeVisible(*c);c->slider.setLookAndFeel(&look);controls.push_back(std::move(c));return *controls.back();}
 void Face::button(const String& text,Rectangle<int> bounds,std::function<void()> fn){auto b=std::make_unique<TextButton>(text);b->setBounds(bounds);b->onClick=std::move(fn);addAndMakeVisible(*b);buttons.push_back(std::move(b));}
 void Face::toggle(const String& id,const String& text,Rectangle<int> bounds){auto b=std::make_unique<ToggleButton>(text);b->setBounds(bounds);addAndMakeVisible(*b);switchAttachments.push_back(std::make_unique<AudioProcessorValueTreeState::ButtonAttachment>(proc.state,id,*b));switches.push_back(std::move(b));}
@@ -98,7 +211,7 @@ Face::Face(SynthAProcessor& p):proc(p),keyboard(p.keyboard,MidiKeyboardComponent
    if(i<4){c.label.setVisible(false);auto& label=macroLabels[i];label.setText(proc.macroName(i),dontSendNotification);label.setFont(FontOptions(9.f));label.setEditable(false,true);label.setJustificationType(Justification::centred);label.setBounds(x,y,68,13);label.onTextChange=[this,i]{proc.renameMacro(i,macroLabels[i].getText());};addAndMakeVisible(label);}
  }
  button("ROUTING",{1027,497,80,20},[this]{showInspector("Filter routing");});button("PERFORM",{1114,497,125,20},[this]{showInspector("Performance");});
- toggle("arp.on","ARP",{36,541,60,22});control("arp.mode",102,533,108,40);control("arp.rate",215,533,74,40);button("...",{296,544,24,20},[this]{showInspector("Arp");});
+ toggle("arp.on","ARP",{36,541,60,22});control("arp.mode",102,533,108,40);control("arp.rate",215,533,74,40);button("...",{296,544,24,20},[this]{openArpBoard();});arpMore=buttons.back().get();arpMore->setTooltip("Open the arp and gate board");
  toggle("seq.gate.on","GATE",{338,541,64,22});
  gateGrid=std::make_unique<GateGrid>(proc);gateGrid->setBounds(412,535,496,39);addAndMakeVisible(*gateGrid);
  button("GATE +",{916,544,67,20},[this]{showInspector("gate");});button("LEARN CHORD",{998,544,105,20},[this]{proc.learnChord();});button("CLOCK +",{1114,544,123,20},[this]{showInspector("Clock");});
@@ -108,6 +221,7 @@ Face::Face(SynthAProcessor& p):proc(p),keyboard(p.keyboard,MidiKeyboardComponent
  keyboard.setBounds(118,668,1129,39);keyboard.setAvailableRange(24,108);keyboard.setLowestVisibleKey(36);keyboard.setKeyWidth(20);keyboard.setVelocity(.8f,true);keyboard.setColour(MidiKeyboardComponent::whiteNoteColourId,Colour(0xffd5c5a8));keyboard.setColour(MidiKeyboardComponent::blackNoteColourId,Colour(0xff1c1814));keyboard.setColour(MidiKeyboardComponent::keyDownOverlayColourId,amber().withAlpha(.6f));addAndMakeVisible(keyboard);
  pitch.setSliderStyle(Slider::LinearVertical);pitch.setTextBoxStyle(Slider::NoTextBox,false,0,0);pitch.setRange(-1,1);pitch.setBounds(36,668,28,38);pitch.onValueChange=[this]{proc.uiPitch.store(float(pitch.getValue()));};pitch.onDragEnd=[this]{pitch.setValue(0);};addAndMakeVisible(pitch);
  mod.setSliderStyle(Slider::LinearVertical);mod.setTextBoxStyle(Slider::NoTextBox,false,0,0);mod.setRange(0,127,1);mod.setBounds(77,668,28,38);mod.onValueChange=[this]{proc.uiMod.store(float(mod.getValue()));};addAndMakeVisible(mod);
+ arpBoard=std::make_unique<ArpBoard>(proc,look);arpBoard->setBounds(28,92,1224,568);arpBoard->onClose=[this]{closeArpBoard();};addChildComponent(*arpBoard);
  phosphor=Image(Image::ARGB,160,28,true);browse();timerCallback();startTimerHz(24);
 }
 Face::~Face(){stopTimer();inspectorWindow.reset();setLookAndFeel(nullptr);}
