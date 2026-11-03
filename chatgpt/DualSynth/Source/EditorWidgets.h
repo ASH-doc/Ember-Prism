@@ -1,5 +1,21 @@
 #pragma once
 #include <JuceHeader.h>
+
+namespace ControlBay {
+inline const juce::Colour ink{0xff111211};
+inline const juce::Colour plate{0xff252625};
+inline const juce::Colour border{0xff4b4d45};
+inline const juce::Colour text{0xffe4e1d8};
+inline const juce::Colour secondary{0xffb4b6a9};
+inline const juce::Colour signal{0xffb7cb91};
+
+inline void buttonColours(juce::TextButton& button) {
+ button.setColour(juce::TextButton::buttonColourId, plate);
+ button.setColour(juce::TextButton::buttonOnColourId, signal);
+ button.setColour(juce::TextButton::textColourOffId, text);
+ button.setColour(juce::TextButton::textColourOnId, ink);
+}
+} // namespace ControlBay
 // Small custom components for the host strip: the old-school gain-reduction needle, stereo level bars and the ratio buttons.
 
 // Analog-style gain-reduction meter: cream backlit face, needle at rest on the right (0 dB) and swinging left as the
@@ -60,13 +76,36 @@ public:
   const auto bounds=Rectangle<float>(float(x),float(y),float(width),float(height)).reduced(1.5f);const float diameter=jmin(bounds.getWidth(),bounds.getHeight());
   const auto centre=bounds.getCentre();const float radius=diameter*.5f,angle=startAngle+position*(endAngle-startAngle);const bool on=slider.isEnabled();
   Path track;track.addCentredArc(centre.x,centre.y,radius-2.f,radius-2.f,0.f,startAngle,endAngle,true);
-  g.setColour(Colour(0xff2e3c59));g.strokePath(track,PathStrokeType(3.f,PathStrokeType::curved,PathStrokeType::rounded));
+  g.setColour(ControlBay::border);g.strokePath(track,PathStrokeType(3.f,PathStrokeType::curved,PathStrokeType::rounded));
   Path value;value.addCentredArc(centre.x,centre.y,radius-2.f,radius-2.f,0.f,startAngle,angle,true);
-  g.setColour(on?Colour(0xff4fe3f5):Colour(0xff58627a));g.strokePath(value,PathStrokeType(3.f,PathStrokeType::curved,PathStrokeType::rounded));
-  const float body=radius*.62f;g.setColour(Colour(0xff172238));g.fillEllipse(centre.x-body,centre.y-body,body*2.f,body*2.f);
-  g.setColour(Colour(0xff3a4a6b));g.drawEllipse(centre.x-body,centre.y-body,body*2.f,body*2.f,1.f);
+  g.setColour(on?ControlBay::signal:ControlBay::border);g.strokePath(value,PathStrokeType(3.f,PathStrokeType::curved,PathStrokeType::rounded));
+  const float body = radius * .69f;
+  const auto cap = Rectangle<float>(2 * body, 2 * body).withCentre(centre);
+  g.setColour(Colours::black.withAlpha(.7f));
+  g.fillEllipse(cap.translated(0, 1.4f));
+  g.setGradientFill(ColourGradient(Colour(0xff555650), cap.getX(), cap.getY(),
+                                  ControlBay::ink, cap.getRight(), cap.getBottom(), false));
+  g.fillEllipse(cap);
+  g.setColour(Colour(0xff68695f));
+  g.drawEllipse(cap, .7f);
   const Point<float> from(centre.x+body*.25f*std::sin(angle),centre.y-body*.25f*std::cos(angle)),to(centre.x+body*.92f*std::sin(angle),centre.y-body*.92f*std::cos(angle));
-  g.setColour(Colour(0xffeaf2ff));g.drawLine({from,to},2.f);
+  g.setColour(ControlBay::text);g.drawLine({from,to},1.6f);
+ }
+
+ void drawToggleButton(juce::Graphics& g, juce::ToggleButton& button, bool hover, bool down) override {
+  using namespace juce;
+  const auto face = button.getLocalBounds().toFloat().reduced(.5f, 2.5f);
+  const bool on = button.getToggleState();
+  g.setColour(Colour(on ? 0xff363d2e : 0xff232424).brighter(hover ? .12f : 0).darker(down ? .1f : 0));
+  g.fillRoundedRectangle(face, 4);
+  g.setColour(on ? Colour(0xff737e63) : ControlBay::border);
+  g.drawRoundedRectangle(face, 4, .8f);
+  g.setColour(on ? ControlBay::signal : Colour(0xff5e6158));
+  g.fillEllipse(7, face.getCentreY() - 2, 4, 4);
+  g.setColour(ControlBay::text);
+  g.setFont(FontOptions(10.f, Font::bold));
+  g.drawFittedText(button.getButtonText(), button.getLocalBounds().withTrimmedLeft(16).withTrimmedRight(3),
+                   Justification::centredLeft, 1);
  }
 };
 
@@ -80,10 +119,10 @@ public:
   const auto area=getLocalBounds().toFloat();const float gap=2.f;
   for(int c=0;c<2;++c){
    Rectangle<float> track=horizontal?Rectangle<float>(area.getX(),area.getY()+c*(area.getHeight()+gap)/2.f,area.getWidth(),(area.getHeight()-gap)/2.f):Rectangle<float>(area.getX()+c*(area.getWidth()+gap)/2.f,area.getY(),(area.getWidth()-gap)/2.f,area.getHeight());
-   g.setColour(Colour(0xff0a1222));g.fillRoundedRectangle(track,2.f);
+   g.setColour(ControlBay::ink);g.fillRoundedRectangle(track,2.f);
    const float fill=jlimit(0.f,1.f,(shown[c]+60.f)/60.f);
    Rectangle<float> lit=horizontal?track.withWidth(track.getWidth()*fill):track.withTrimmedTop(track.getHeight()*(1.f-fill));
-   g.setColour(shown[c]>-1.f?Colour(0xffff5a4d):shown[c]>-8.f?Colour(0xffffc24a):Colour(0xff4fe3f5));g.fillRoundedRectangle(lit,2.f);
+   g.setColour(shown[c]>-1.f?Colour(0xffff5a4d):shown[c]>-8.f?Colour(0xffffc24a):ControlBay::signal);g.fillRoundedRectangle(lit,2.f);
   }
  }
 private:
@@ -97,8 +136,7 @@ public:
   auto* parameter=state.getParameter(parameterId);
   for(int i=0;i<labels.size();++i){
    auto button=std::make_unique<juce::TextButton>(labels[i]);button->setClickingTogglesState(false);button->setRadioGroupId(0);
-   button->setColour(juce::TextButton::buttonColourId,juce::Colour(0xff202d49));button->setColour(juce::TextButton::buttonOnColourId,juce::Colour(0xff4fe3f5));
-   button->setColour(juce::TextButton::textColourOffId,juce::Colour(0xffeaf2ff));button->setColour(juce::TextButton::textColourOnId,juce::Colour(0xff0b1020));
+   ControlBay::buttonColours(*button);
    button->setConnectedEdges((i>0?juce::Button::ConnectedOnLeft:0)|(i<labels.size()-1?juce::Button::ConnectedOnRight:0));
    button->onClick=[this,i]{if(attachment)attachment->setValueAsCompleteGesture(float(i));};
    addAndMakeVisible(*button);buttons.push_back(std::move(button));

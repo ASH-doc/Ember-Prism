@@ -301,8 +301,26 @@ void parameterCatalogTest(){
  StringArray baseline;baseline.addLines(baselineFile.loadFileAsString());baseline.removeEmptyStrings();
  auto host=makeHost();const auto current=parameterCatalog(*host);
  std::map<String,String> now;for(const auto& line:current)now[line.upToFirstOccurrenceOf("|",false,false)]=line;
+ auto equivalent = [](const String& expected, const String& actual) {
+  if (expected == actual) return true;
+  const auto oldFields = StringArray::fromTokens(expected, "|", "");
+  const auto newFields = StringArray::fromTokens(actual, "|", "");
+  if (oldFields.size() < 9 || oldFields.size() != newFields.size() || oldFields[3] != "0")
+   return false;
+  for (int field = 0; field < oldFields.size(); ++field) {
+   if (oldFields[field] == newFields[field]) continue;
+   // Continuous defaults and midpoints are computed through JUCE's float normalization.
+   // Allow MSVC/Clang rounding differences while requiring exact metadata and endpoints.
+   if (field != 5 && field != 7) return false;
+   const double oldValue = oldFields[field].getDoubleValue();
+   const double newValue = newFields[field].getDoubleValue();
+   const double tolerance = 3.e-6 + 2.e-7 * std::abs(oldValue);
+   if (!std::isfinite(newValue) || std::abs(oldValue - newValue) > tolerance) return false;
+  }
+  return true;
+ };
  int missing=0,changed=0;
- for(const auto& line:baseline){auto id=line.upToFirstOccurrenceOf("|",false,false);auto found=now.find(id);if(found==now.end()){++missing;std::cerr<<"catalog: missing "<<id<<"\n";}else if(found->second!=line){++changed;std::cerr<<"catalog: changed "<<id<<"\n  was "<<line<<"\n  now "<<found->second<<"\n";}}
+ for(const auto& line:baseline){auto id=line.upToFirstOccurrenceOf("|",false,false);auto found=now.find(id);if(found==now.end()){++missing;std::cerr<<"catalog: missing "<<id<<"\n";}else if(!equivalent(line,found->second)){++changed;std::cerr<<"catalog: changed "<<id<<"\n  was "<<line<<"\n  now "<<found->second<<"\n";}}
  std::cout<<"INFO: parameter catalog: "<<baseline.size()<<" baseline parameters, "<<current.size()<<" now ("<<(current.size()-baseline.size())<<" added), missing "<<missing<<", changed "<<changed<<"\n";
  require(missing==0&&changed==0,"every baseline parameter is still published with the same name, steps, default, range and choices");
 }
