@@ -1,0 +1,96 @@
+{
+  "product": "Prism Flux",
+  "version": "1.0.0",
+  "architecture": "arm64",
+  "date": "2026-11-03",
+  "juce_commit": "f72bad64d29715216226685810c5196bd0d79d77",
+  "files": [
+    {
+      "path": "Mac/Prism Flux.app/Contents/MacOS/Prism Flux",
+      "size": 12227120,
+      "sha256": "705d8fcd04ca5cbcc5a76e0a102c114a2d6a39148c834e0c8f653aed6d690f9d"
+    },
+    {
+      "path": "Mac/Prism Flux.vst3/Contents/MacOS/Prism Flux",
+      "size": 12653280,
+      "sha256": "b94f4b5d85aa343ceb44f23546518b32e79e087ba954112c24a49a84cb1ea804"
+    },
+    {
+      "path": "Presets/factory.json",
+      "size": 1817775,
+      "sha256": "e84947c6b4bf67d470cbed0467fae52eaf9de11d14dd60584a9ee03a295c97da"
+    },
+    {
+      "path": "Source/sb-engine.cpp",
+      "sha256": "62b0810c7a6a916a9c616bf630bbabfafe11beae24784cfebc7439f743afc4f0"
+    },
+    {
+      "path": "Source/sb-engine.h",
+      "sha256": "e84641a9c0940b5bd62a315e1e851bb947a6f9b89a464538f89e7a21009660c7"
+    },
+    {
+      "path": "Source/sb-filters.cpp",
+      "sha256": "a3999da4e17ce1b5f1811a6b01ebf9b76c61fa5c06dde27cc62c5b613ce568c7"
+    },
+    {
+      "path": "Source/sb-filters.h",
+      "sha256": "d22ebc5ec72d0e967445210b21b1db014e269c40ec09d65d7867d9bc186556c8"
+    },
+    {
+      "path": "Source/sb-motion.cpp",
+      "sha256": "12032b769ca054998392d2441c7a77a0e652281b058fd958b3eae20342a8363f"
+    },
+    {
+      "path": "Source/sb-motion.h",
+      "sha256": "6ecaaf7f5f905cad3a34959ebf3fd0a95e3ce8840f6401ef5cbe42e6ac6196ce"
+    },
+    {
+      "path": "Source/sb-patches.cpp",
+      "sha256": "cb2d62d6d9e8f831d89cf735e74659d83e9f45099aa1f31034a500e8283707dc"
+    },
+    {
+      "path": "Source/sb-plugin.cpp",
+      "sha256": "367d9b9e0ab076faaa80718d526b4fe98ce64f016d8c60547a63aa2dc09c6721"
+    },
+    {
+      "path": "Source/sb-plugin.h",
+      "sha256": "bc27e2ba5b7a0a72873f7b934e26579fbb69167ed162266f5e8df1388e391c03"
+    },
+    {
+      "path": "Source/sb-rack.cpp",
+      "sha256": "523b81d20661e1798bae571edbec9d32188aca85286ae5ed73d8450d6184428a"
+    },
+    {
+      "path": "Source/sb-rack.h",
+      "sha256": "6c4de918b16d602c758e327a939e8ae91d9248757247bd9793118b7a55b5b683"
+    },
+    {
+      "path": "Source/sb-schema.cpp",
+      "sha256": "380a34861c96b322682eca9d8a8687c09d021874cef6caf95b7cda66389bdcbd"
+    },
+    {
+      "path": "Source/sb-schema.h",
+      "sha256": "14c634d1cc35a5655b3af8b0cf68f57266704dfab11ca95482abc5b0e1980b18"
+    },
+    {
+      "path": "Source/sb-tables.cpp",
+      "sha256": "76e375a8f285217c889c3ed62656a391a867cd0ceca17a43132c2f72fe5b7d8d"
+    },
+    {
+      "path": "Source/sb-tables.h",
+      "sha256": "4900cd9bed47e66f653d4fafbd4f19d546a56ad44b64b8c1e776d3fd5f4c7af2"
+    },
+    {
+      "path": "Source/sb-ui-motion.cpp",
+      "sha256": "51fa68af160974025c7d90e4942e781f0839d414b0230d75b9483bcb62411fe2"
+    },
+    {
+      "path": "Source/sb-ui.cpp",
+      "sha256": "0c7c463d205543132934bc0fa82d7023cfef3d6d6b93f6e34096d7cf48bb36b4"
+    },
+    {
+      "path": "Source/sb-ui.h",
+      "sha256": "6673e9b17531e935436745d09637391e528086e3d110764e6eded7f531f90d95"
+    }
+  ]
+}

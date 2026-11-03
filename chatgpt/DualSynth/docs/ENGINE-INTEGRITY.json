@@ -1,0 +1,254 @@
+[
+  {
+    "engine": "A",
+    "file": "LICENSE",
+    "original_sha256": "a006de195174b2a1aa315fbbfa4caaa56c6c53e357737c1b3b2c3770a49e3112",
+    "packaged_sha256": "a006de195174b2a1aa315fbbfa4caaa56c6c53e357737c1b3b2c3770a49e3112",
+    "identical": true
+  },
+  {
+    "engine": "A",
+    "file": "Presets/factory.json",
+    "original_sha256": "e4013720fd6c9c40bde1b69cd3683ccd959fa97fbde26eb8dfa53c8cb9c4158e",
+    "packaged_sha256": "e4013720fd6c9c40bde1b69cd3683ccd959fa97fbde26eb8dfa53c8cb9c4158e",
+    "identical": true
+  },
+  {
+    "engine": "A",
+    "file": "Source/sa-dsp.h",
+    "original_sha256": "084e16226b3f141f30ad22c39d89705ed68a96c3db3a11d02fb40b96dbf6077b",
+    "packaged_sha256": "084e16226b3f141f30ad22c39d89705ed68a96c3db3a11d02fb40b96dbf6077b",
+    "identical": true
+  },
+  {
+    "engine": "A",
+    "file": "Source/sa-editor.cpp",
+    "original_sha256": "9ba95ff67205c4e6b300684e6746bfa26e375ee53dd7ca3928163f5f9f9afb81",
+    "packaged_sha256": "9ba95ff67205c4e6b300684e6746bfa26e375ee53dd7ca3928163f5f9f9afb81",
+    "identical": true
+  },
+  {
+    "engine": "A",
+    "file": "Source/sa-editor.h",
+    "original_sha256": "68fda89c40f6f22a05b5b89fbc00ff1d4dc27a63946a47f572056c0b2ad75e45",
+    "packaged_sha256": "68fda89c40f6f22a05b5b89fbc00ff1d4dc27a63946a47f572056c0b2ad75e45",
+    "identical": true
+  },
+  {
+    "engine": "A",
+    "file": "Source/sa-effects.cpp",
+    "original_sha256": "7c2ea9a301283b1619c6a4aee571aeb4e6747af730543a28ab7cbdabf44cb5eb",
+    "packaged_sha256": "7c2ea9a301283b1619c6a4aee571aeb4e6747af730543a28ab7cbdabf44cb5eb",
+    "identical": true
+  },
+  {
+    "engine": "A",
+    "file": "Source/sa-effects.h",
+    "original_sha256": "26ff7dcd2bec1b61d09c4b23304c85fd2f83125b00ec19aa3ac1315faaacc3c6",
+    "packaged_sha256": "26ff7dcd2bec1b61d09c4b23304c85fd2f83125b00ec19aa3ac1315faaacc3c6",
+    "identical": true
+  },
+  {
+    "engine": "A",
+    "file": "Source/sa-engine.cpp",
+    "original_sha256": "82d29feb456b54bacdb2ca997381a21da03021e393c17bc854ca1c9bc8cfe82d",
+    "packaged_sha256": "82d29feb456b54bacdb2ca997381a21da03021e393c17bc854ca1c9bc8cfe82d",
+    "identical": true
+  },
+  {
+    "engine": "A",
+    "file": "Source/sa-engine.h",
+    "original_sha256": "7d16e759f098901b81abe6760fffa76383b70e20ede93a536187bf01d1495467",
+    "packaged_sha256": "7d16e759f098901b81abe6760fffa76383b70e20ede93a536187bf01d1495467",
+    "identical": true
+  },
+  {
+    "engine": "A",
+    "file": "Source/sa-parameters.cpp",
+    "original_sha256": "cee8614c5658b7b30960c89326faebc551fec145c949f4e8cc777316c1e3fce0",
+    "packaged_sha256": "cee8614c5658b7b30960c89326faebc551fec145c949f4e8cc777316c1e3fce0",
+    "identical": true
+  },
+  {
+    "engine": "A",
+    "file": "Source/sa-parameters.h",
+    "original_sha256": "902eacc5e9af88997fc26e047bae09d0fc22be771db1a9ffc2876efe75dc25f2",
+    "packaged_sha256": "902eacc5e9af88997fc26e047bae09d0fc22be771db1a9ffc2876efe75dc25f2",
+    "identical": true
+  },
+  {
+    "engine": "A",
+    "file": "Source/sa-patches.cpp",
+    "original_sha256": "cf0a99e69c09f2b7e6c7add7bfe8586fc721a07efe808e1790b8daf2d54b5d22",
+    "packaged_sha256": "cf0a99e69c09f2b7e6c7add7bfe8586fc721a07efe808e1790b8daf2d54b5d22",
+    "identical": true
+  },
+  {
+    "engine": "A",
+    "file": "Source/sa-processor.cpp",
+    "original_sha256": "c464a0bcfdcc4c54b60aaea020183d878dbc9b92d15b59005c1cfc39a352f873",
+    "packaged_sha256": "79dd1a10b002d850a65aeff9168e454aa4b1320c4803258435a1c484309017ed",
+    "identical": false
+  },
+  {
+    "engine": "A",
+    "file": "Source/sa-processor.h",
+    "original_sha256": "e8a4708dd120f70e88a94ca3e78d38305ced18f9b09ed839b2ce056b3e614ad2",
+    "packaged_sha256": "e8a4708dd120f70e88a94ca3e78d38305ced18f9b09ed839b2ce056b3e614ad2",
+    "identical": true
+  },
+  {
+    "engine": "A",
+    "file": "Source/sa-sequencer.cpp",
+    "original_sha256": "b7af265229c0f08ed6b4babc9a16f6678ae639effedea4c6b4f3b6d38cd55104",
+    "packaged_sha256": "b7af265229c0f08ed6b4babc9a16f6678ae639effedea4c6b4f3b6d38cd55104",
+    "identical": true
+  },
+  {
+    "engine": "A",
+    "file": "Source/sa-sequencer.h",
+    "original_sha256": "52e9207b08de27548bcab2ae623f8b3655ed47c7e10381ab9d53289393832fdd",
+    "packaged_sha256": "52e9207b08de27548bcab2ae623f8b3655ed47c7e10381ab9d53289393832fdd",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "LICENSE",
+    "original_sha256": "e03a68f447dd3d27bfad5ed6ec7ecf6419470b9b55e0a8b5b5d5c83853e2f972",
+    "packaged_sha256": "e03a68f447dd3d27bfad5ed6ec7ecf6419470b9b55e0a8b5b5d5c83853e2f972",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "Presets/factory.json",
+    "original_sha256": "e84947c6b4bf67d470cbed0467fae52eaf9de11d14dd60584a9ee03a295c97da",
+    "packaged_sha256": "e84947c6b4bf67d470cbed0467fae52eaf9de11d14dd60584a9ee03a295c97da",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "Source/sb-engine.cpp",
+    "original_sha256": "62b0810c7a6a916a9c616bf630bbabfafe11beae24784cfebc7439f743afc4f0",
+    "packaged_sha256": "62b0810c7a6a916a9c616bf630bbabfafe11beae24784cfebc7439f743afc4f0",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "Source/sb-engine.h",
+    "original_sha256": "e84641a9c0940b5bd62a315e1e851bb947a6f9b89a464538f89e7a21009660c7",
+    "packaged_sha256": "e84641a9c0940b5bd62a315e1e851bb947a6f9b89a464538f89e7a21009660c7",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "Source/sb-filters.cpp",
+    "original_sha256": "a3999da4e17ce1b5f1811a6b01ebf9b76c61fa5c06dde27cc62c5b613ce568c7",
+    "packaged_sha256": "a3999da4e17ce1b5f1811a6b01ebf9b76c61fa5c06dde27cc62c5b613ce568c7",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "Source/sb-filters.h",
+    "original_sha256": "d22ebc5ec72d0e967445210b21b1db014e269c40ec09d65d7867d9bc186556c8",
+    "packaged_sha256": "d22ebc5ec72d0e967445210b21b1db014e269c40ec09d65d7867d9bc186556c8",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "Source/sb-motion.cpp",
+    "original_sha256": "12032b769ca054998392d2441c7a77a0e652281b058fd958b3eae20342a8363f",
+    "packaged_sha256": "12032b769ca054998392d2441c7a77a0e652281b058fd958b3eae20342a8363f",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "Source/sb-motion.h",
+    "original_sha256": "6ecaaf7f5f905cad3a34959ebf3fd0a95e3ce8840f6401ef5cbe42e6ac6196ce",
+    "packaged_sha256": "6ecaaf7f5f905cad3a34959ebf3fd0a95e3ce8840f6401ef5cbe42e6ac6196ce",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "Source/sb-patches.cpp",
+    "original_sha256": "cb2d62d6d9e8f831d89cf735e74659d83e9f45099aa1f31034a500e8283707dc",
+    "packaged_sha256": "cb2d62d6d9e8f831d89cf735e74659d83e9f45099aa1f31034a500e8283707dc",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "Source/sb-plugin.cpp",
+    "original_sha256": "367d9b9e0ab076faaa80718d526b4fe98ce64f016d8c60547a63aa2dc09c6721",
+    "packaged_sha256": "e76022a9895344108e5ce1947a14f690dd64963908c80c77ae8133e231826c8c",
+    "identical": false
+  },
+  {
+    "engine": "B",
+    "file": "Source/sb-plugin.h",
+    "original_sha256": "bc27e2ba5b7a0a72873f7b934e26579fbb69167ed162266f5e8df1388e391c03",
+    "packaged_sha256": "bc27e2ba5b7a0a72873f7b934e26579fbb69167ed162266f5e8df1388e391c03",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "Source/sb-rack.cpp",
+    "original_sha256": "523b81d20661e1798bae571edbec9d32188aca85286ae5ed73d8450d6184428a",
+    "packaged_sha256": "523b81d20661e1798bae571edbec9d32188aca85286ae5ed73d8450d6184428a",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "Source/sb-rack.h",
+    "original_sha256": "6c4de918b16d602c758e327a939e8ae91d9248757247bd9793118b7a55b5b683",
+    "packaged_sha256": "6c4de918b16d602c758e327a939e8ae91d9248757247bd9793118b7a55b5b683",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "Source/sb-schema.cpp",
+    "original_sha256": "380a34861c96b322682eca9d8a8687c09d021874cef6caf95b7cda66389bdcbd",
+    "packaged_sha256": "380a34861c96b322682eca9d8a8687c09d021874cef6caf95b7cda66389bdcbd",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "Source/sb-schema.h",
+    "original_sha256": "14c634d1cc35a5655b3af8b0cf68f57266704dfab11ca95482abc5b0e1980b18",
+    "packaged_sha256": "14c634d1cc35a5655b3af8b0cf68f57266704dfab11ca95482abc5b0e1980b18",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "Source/sb-tables.cpp",
+    "original_sha256": "76e375a8f285217c889c3ed62656a391a867cd0ceca17a43132c2f72fe5b7d8d",
+    "packaged_sha256": "76e375a8f285217c889c3ed62656a391a867cd0ceca17a43132c2f72fe5b7d8d",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "Source/sb-tables.h",
+    "original_sha256": "4900cd9bed47e66f653d4fafbd4f19d546a56ad44b64b8c1e776d3fd5f4c7af2",
+    "packaged_sha256": "4900cd9bed47e66f653d4fafbd4f19d546a56ad44b64b8c1e776d3fd5f4c7af2",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "Source/sb-ui-motion.cpp",
+    "original_sha256": "51fa68af160974025c7d90e4942e781f0839d414b0230d75b9483bcb62411fe2",
+    "packaged_sha256": "51fa68af160974025c7d90e4942e781f0839d414b0230d75b9483bcb62411fe2",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "Source/sb-ui.cpp",
+    "original_sha256": "0c7c463d205543132934bc0fa82d7023cfef3d6d6b93f6e34096d7cf48bb36b4",
+    "packaged_sha256": "0c7c463d205543132934bc0fa82d7023cfef3d6d6b93f6e34096d7cf48bb36b4",
+    "identical": true
+  },
+  {
+    "engine": "B",
+    "file": "Source/sb-ui.h",
+    "original_sha256": "6673e9b17531e935436745d09637391e528086e3d110764e6eded7f531f90d95",
+    "packaged_sha256": "6673e9b17531e935436745d09637391e528086e3d110764e6eded7f531f90d95",
+    "identical": true
+  }
+]

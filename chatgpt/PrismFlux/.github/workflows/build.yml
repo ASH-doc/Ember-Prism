@@ -1,0 +1,22 @@
+name: Build Prism Flux
+on: [workflow_dispatch]
+jobs:
+  native:
+    strategy:
+      matrix:
+        os: [macos-14, windows-2022]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Compile
+        run: cmake --build build --config Release --parallel 4
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Prism-Flux-${{ matrix.os }}
+          path: |
+            build/PrismFlux_artefacts/Release/Standalone
+            build/PrismFlux_artefacts/Release/VST3

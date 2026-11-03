@@ -1,0 +1,119 @@
+# Ember VA preset bank
+
+114 original synthesis recipes plus Init. These need musical audition; they are not claimed to have been reviewed by ear.
+
+- 000 · Init · Init - Warm Saw
+- 001 · Supersaw leads · Copper Horizon
+- 002 · Supersaw leads · Amber Armada
+- 003 · Supersaw leads · Molten Avenue
+- 004 · Supersaw leads · Afterglow Engine
+- 005 · Supersaw leads · Night Convoy
+- 006 · Supersaw leads · Brass Meridian
+- 007 · Supersaw leads · Solar Furnace
+- 008 · Supersaw leads · Redline Halo
+- 009 · Supersaw leads · Ember Rally
+- 010 · Supersaw leads · Velvet Voltage
+- 011 · Supersaw leads · Saffron Signal
+- 012 · Supersaw leads · Rust Skyline
+- 013 · Supersaw leads · Dusk Anthem
+- 014 · Supersaw leads · Cinder Crown
+- 015 · Trance plucks · Brass Droplet
+- 016 · Trance plucks · Soot Spark
+- 017 · Trance plucks · Copper Pin
+- 018 · Trance plucks · Lantern Step
+- 019 · Trance plucks · Velvet Arrow
+- 020 · Trance plucks · Warm Relay
+- 021 · Trance plucks · Tungsten Rain
+- 022 · Trance plucks · Burnished Echo
+- 023 · Trance plucks · Ochre Current
+- 024 · Trance plucks · Lowlight Pinch
+- 025 · Trance plucks · Midnight Pulse
+- 026 · Trance plucks · Glowing Wire
+- 027 · Trance plucks · Rust Bell
+- 028 · Trance plucks · Apricot Staccato
+- 029 · Gated pads and stabs · Warehouse Lanterns
+- 030 · Gated pads and stabs · Brass Shutters
+- 031 · Gated pads and stabs · Dusk Chopper
+- 032 · Gated pads and stabs · Furnace Steps
+- 033 · Gated pads and stabs · Amber Strobe
+- 034 · Gated pads and stabs · Copper Lattice
+- 035 · Gated pads and stabs · Night Aperture
+- 036 · Gated pads and stabs · Saffron Grid
+- 037 · Gated pads and stabs · Molten Stabs
+- 038 · Gated pads and stabs · Velvet Guillotine
+- 039 · Gated pads and stabs · Ember Tiles
+- 040 · Gated pads and stabs · Warm Transit
+- 041 · Basses · Copper Foundation
+- 042 · Basses · Rust Roller
+- 043 · Basses · Warm Concrete
+- 044 · Basses · Furnace Floor
+- 045 · Basses · Soot Acid
+- 046 · Basses · Tungsten Hook
+- 047 · Basses · Ember Underpass
+- 048 · Basses · Subterranean Brass
+- 049 · Basses · Amber Offbeat
+- 050 · Basses · Midnight Rubber
+- 051 · Basses · Grit Circuit
+- 052 · Basses · Lowlight Anchor
+- 053 · Basses · Cinder Pulse
+- 054 · Basses · Velvet Sub
+- 055 · Basses · Dark Dynamo
+- 056 · Basses · Saffron Drive
+- 057 · Pads and strings · Walnut Sky
+- 058 · Pads and strings · Fading Lantern
+- 059 · Pads and strings · Copper Fog
+- 060 · Pads and strings · Warm Observatory
+- 061 · Pads and strings · Velvet Reservoir
+- 062 · Pads and strings · Ochre Strings
+- 063 · Pads and strings · Ember Cloud
+- 064 · Pads and strings · Night Bloom
+- 065 · Pads and strings · Brass Veil
+- 066 · Pads and strings · Dusk Memory
+- 067 · Pads and strings · Soot Aurora
+- 068 · Pads and strings · Amber Drift
+- 069 · Pads and strings · Lowlight Choir
+- 070 · Pads and strings · Furnace Snow
+- 071 · Arps and sequences · Copper Clockwork
+- 072 · Arps and sequences · Lantern Ladder
+- 073 · Arps and sequences · Saffron Run
+- 074 · Arps and sequences · Dusk Courier
+- 075 · Arps and sequences · Brass Spiral
+- 076 · Arps and sequences · Velvet Transit
+- 077 · Arps and sequences · Night Telegraph
+- 078 · Arps and sequences · Ember Cascade
+- 079 · Arps and sequences · Rust Compass
+- 080 · Arps and sequences · Warm Ratchet
+- 081 · Arps and sequences · Ochre Orbit
+- 082 · Arps and sequences · Furnace Cipher
+- 083 · Analog polys and brass · Walnut Poly
+- 084 · Analog polys and brass · Copper Ensemble
+- 085 · Analog polys and brass · Amber Horns
+- 086 · Analog polys and brass · Dusk Clavinet
+- 087 · Analog polys and brass · Velvet Fifths
+- 088 · Analog polys and brass · Brass Workshop
+- 089 · Analog polys and brass · Ember Orchestra
+- 090 · Analog polys and brass · Saffron Chords
+- 091 · Analog polys and brass · Warm Parliament
+- 092 · Analog polys and brass · Night Satin
+- 093 · Keys and organs · Lantern Keys
+- 094 · Keys and organs · Copper Tines
+- 095 · Keys and organs · Velvet Drawbars
+- 096 · Keys and organs · Ember Reed
+- 097 · Keys and organs · Dusk Console
+- 098 · Keys and organs · Warm Chapel
+- 099 · FX risers and drops · Furnace Ignition
+- 100 · FX risers and drops · Copper Ascent
+- 101 · FX risers and drops · Dusk Pressure
+- 102 · FX risers and drops · Ember Exhaust
+- 103 · FX risers and drops · Soot Meteor
+- 104 · FX risers and drops · Brass Descent
+- 105 · FX risers and drops · Warm Vacuum
+- 106 · FX risers and drops · Lantern Impact
+- 107 · Mono leads and solos · Copper Solo
+- 108 · Mono leads and solos · Velvet Glide
+- 109 · Mono leads and solos · Lantern Ribbon
+- 110 · Mono leads and solos · Dusk Whistle
+- 111 · Mono leads and solos · Warm Messenger
+- 112 · Mono leads and solos · Saffron Soloist
+- 113 · Mono leads and solos · Rust Needle
+- 114 · Mono leads and solos · Ember Monologue

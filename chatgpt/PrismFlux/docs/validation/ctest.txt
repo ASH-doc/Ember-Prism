@@ -1,0 +1,11 @@
+Test project /Users/arashsabouhi/Documents/Codex/2026-11-02/m/work/prism-build
+    Start 1: Core
+1/3 Test #1: Core .............................   Passed    4.28 sec
+    Start 2: Native
+2/3 Test #2: Native ...........................   Passed    3.30 sec
+    Start 3: VST3Binary
+3/3 Test #3: VST3Binary .......................   Passed    0.64 sec
+
+100% tests passed out of 3
+
+Total Test time (real) =   8.22 sec

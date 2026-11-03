@@ -1,0 +1,1 @@
+PASS: actual VST3 discovery, load, MIDI audio, finite output, host state and editor.

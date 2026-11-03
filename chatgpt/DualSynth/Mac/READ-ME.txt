@@ -1,0 +1,15 @@
+DUAL SYNTH — MAC STANDALONE AND VST3
+
+Apple Silicon arm64, macOS11+ target. Use Install-Mac.command or copy the
+app to ~/Applications and the VST3 bundle to ~/Library/Audio/Plug-Ins/VST3.
+Open standalone Options to choose the audio and MIDI device, or rescan
+VST3 plugins in your DAW. The binaries are ad-hoc signed and not notarized.
+
+The A/B tabs switch the editor. Both engines keep playing. Choose Layer,
+Split, A only or B only in the routing panel. The master effects are
+bypassed by default, and the mixer controls only the engine outputs.
+
+The packaged VST3 passed a native host test. Desktop standalone launch
+could not be verified in the build session. The companion complete archive
+includes the corresponding C++ source, JUCE, licenses, Windows build files,
+installation details and validation logs.

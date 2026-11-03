@@ -1,0 +1,16 @@
+Direct executable launch in this automated session: exit -6 (SIGABRT).
+Relevant triggered stack:
+  abort
+  ___RegisterApplication_block_invoke
+  _RegisterApplication
+  GetCurrentProcess
+  _NSInitializeAppContext
+  -[NSApplication init]
+  +[NSApplication sharedApplication]
+  juce::JUCEApplicationBase::main(int, char const**)
+
+This occurs before application initialization and audio-device selection. The
+Mach-O executable exists with executable permissions; Info.plist names it
+correctly; codesign verification succeeds. Native processor/editor and VST3
+host tests succeed in the same session. Desktop launch remains unverified;
+the stack alone does not guarantee launch on a normal user desktop.

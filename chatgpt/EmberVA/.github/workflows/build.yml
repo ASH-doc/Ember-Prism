@@ -1,0 +1,22 @@
+name: Native builds
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --config Release --parallel 3
+      - name: Tests
+        run: ctest --test-dir build -C Release --output-on-failure
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Ember-VA-${{ matrix.os }}
+          path: |
+            build/EmberVA_artefacts/Release/Standalone/*
+            build/EmberVA_artefacts/Release/VST3/*

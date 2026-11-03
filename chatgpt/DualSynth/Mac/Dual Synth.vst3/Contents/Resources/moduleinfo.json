@@ -1,0 +1,48 @@
+{
+  "Name": "Dual Synth",
+  "Version": "1.0.0",
+  "Factory Info": {
+    "Vendor": "Dual Synth Studio",
+    "URL": "",
+    "E-Mail": "",
+    "Flags": {
+      "Unicode": true,
+      "Classes Discardable": false,
+      "Component Non Discardable": false,
+    },
+  },
+  "Classes": [
+    {
+      "CID": "ABCDEF019182FAEB4479737444753031",
+      "Category": "Audio Module Class",
+      "Name": "Dual Synth",
+      "Vendor": "Dual Synth Studio",
+      "Version": "1.0.0",
+      "SDKVersion": "VST 3.7.12",
+      "Sub Categories": [
+        "Instrument",
+        "Synth",
+      ],
+      "Class Flags": 2,
+      "Cardinality": 2147483647,
+      "Snapshots": [
+      ],
+    },
+    {
+      "CID": "ABCDEF011234ABCD4479737444753031",
+      "Category": "Component Controller Class",
+      "Name": "Dual Synth",
+      "Vendor": "Dual Synth Studio",
+      "Version": "1.0.0",
+      "SDKVersion": "VST 3.7.12",
+      "Sub Categories": [
+        "Instrument",
+        "Synth",
+      ],
+      "Class Flags": 2,
+      "Cardinality": 2147483647,
+      "Snapshots": [
+      ],
+    },
+  ],
+}

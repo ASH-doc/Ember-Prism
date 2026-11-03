@@ -1,0 +1,9 @@
+EMBER VA — Synth A
+
+Mac Apple Silicon: open Mac/Ember VA.app.
+VST3: copy Mac/Ember VA.vst3 to ~/Library/Audio/Plug-Ins/VST3/ or run Mac/Install-Mac.command.
+Windows: complete source and bundled JUCE are included. See Build-Windows.bat and scripts/build-windows.ps1.
+
+Read README.md for setup and controls. Read docs/KNOWN-ISSUES.md for unverified desktop launch, Windows and acoustic limits.
+
+Preview/ contains actual native screenshots and a 36-second audio demo.

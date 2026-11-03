@@ -1,0 +1,1 @@
+PASS: real VST3 discovery, instantiation, MIDI/audio, finite output, state, and editor.

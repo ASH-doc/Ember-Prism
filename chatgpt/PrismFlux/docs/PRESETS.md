@@ -1,0 +1,121 @@
+# Prism Flux bank
+
+116 original synthesis recipes + Init. Render-tested; producer audition remains outstanding.
+
+- 000: Init / Init / Crystal
+- 001: Plucks / Glacial Pin
+- 002: Plucks / Crystal Relay
+- 003: Plucks / Ion Droplet
+- 004: Plucks / Diamond Circuit
+- 005: Plucks / Polar Staccato
+- 006: Plucks / Prism Needle
+- 007: Plucks / Glass Satellite
+- 008: Plucks / Quartz Spark
+- 009: Plucks / Neon Pebble
+- 010: Plucks / Skyline Plink
+- 011: Plucks / Azure Keys
+- 012: Plucks / Laser Dew
+- 013: Plucks / Silver Pulse
+- 014: Plucks / Frozen Orbit
+- 015: Leads / Prismatic Flight
+- 016: Leads / Chrome Horizon
+- 017: Leads / Aurora Vector
+- 018: Leads / Photon Rally
+- 019: Leads / Ultraviolet Arc
+- 020: Leads / Diamond Wake
+- 021: Leads / Ion Front
+- 022: Leads / Lucent Blade
+- 023: Leads / Spectral Summit
+- 024: Leads / Mirror Anthem
+- 025: Leads / Violet Overdrive
+- 026: Leads / Digital Comet
+- 027: Leads / Skyline Laser
+- 028: Leads / Radiant Motion
+- 029: Basses / Ion Foundation
+- 030: Basses / Digital Undertow
+- 031: Basses / Chrome Roller
+- 032: Basses / Prism Teeth
+- 033: Basses / Neon Root
+- 034: Basses / Polar Engine
+- 035: Basses / Circuit Depth
+- 036: Basses / Violet Rubber
+- 037: Basses / Laser Current
+- 038: Basses / Quartz Lowline
+- 039: Basses / Glacial Pulse
+- 040: Basses / Spectral Bite
+- 041: Basses / Cobalt Floor
+- 042: Basses / Mirror Sub
+- 043: Pads and atmospheres / Cloud Geometry
+- 044: Pads and atmospheres / Aurora Lagoon
+- 045: Pads and atmospheres / Crystal Expanse
+- 046: Pads and atmospheres / Polar Veil
+- 047: Pads and atmospheres / Skyglass Field
+- 048: Pads and atmospheres / Violet Canopy
+- 049: Pads and atmospheres / Prism Aurora
+- 050: Pads and atmospheres / Airborne Choir
+- 051: Pads and atmospheres / Frozen Cathedral
+- 052: Pads and atmospheres / Neon Nebula
+- 053: Pads and atmospheres / Silver Stratosphere
+- 054: Pads and atmospheres / Lucent Ocean
+- 055: Pads and atmospheres / Diamond Haze
+- 056: Pads and atmospheres / Orbital Light
+- 057: Textures and movement / Liquid Pixels
+- 058: Textures and movement / Spectral Loom
+- 059: Textures and movement / Photon Rain
+- 060: Textures and movement / Crystal Tides
+- 061: Textures and movement / Vowel Mosaic
+- 062: Textures and movement / Mirror Leaves
+- 063: Textures and movement / Polar Fragments
+- 064: Textures and movement / Ion Garden
+- 065: Textures and movement / Violet Network
+- 066: Textures and movement / Air Geometry
+- 067: Arps and sequences / Photon Staircase
+- 068: Arps and sequences / Quartz Courier
+- 069: Arps and sequences / Prism Switches
+- 070: Arps and sequences / Chrome Carousel
+- 071: Arps and sequences / Ion Sequence
+- 072: Arps and sequences / Digital Raindrops
+- 073: Arps and sequences / Crystal Compass
+- 074: Arps and sequences / Violet Raceway
+- 075: Arps and sequences / Polar Telegraph
+- 076: Arps and sequences / Mirror Steps
+- 077: Arps and sequences / Skyglass Ratchet
+- 078: Arps and sequences / Neon Circuitry
+- 079: Arps and sequences / Aurora Numbers
+- 080: Arps and sequences / Cobalt Clock
+- 081: Keys bells and mallets / Crystal Tines
+- 082: Keys bells and mallets / Photon Bell
+- 083: Keys bells and mallets / Quartz Mallet
+- 084: Keys bells and mallets / Glass Cathedral
+- 085: Keys bells and mallets / Ion Celesta
+- 086: Keys bells and mallets / Digital Harp
+- 087: Keys bells and mallets / Polar Chimes
+- 088: Keys bells and mallets / Mirror Marimba
+- 089: Keys bells and mallets / Violet Gong
+- 090: Keys bells and mallets / Silver Keys
+- 091: Vocal and formant / Vowel Spectrum
+- 092: Vocal and formant / Prism Choir
+- 093: Vocal and formant / Digital Whisper
+- 094: Vocal and formant / Ion Throat
+- 095: Vocal and formant / Aurora Mouth
+- 096: Vocal and formant / Chrome Vowels
+- 097: Vocal and formant / Polar Voices
+- 098: Vocal and formant / Lucent Syllables
+- 099: Chords and stabs / Quartz Chord
+- 100: Chords and stabs / Prism Strike
+- 101: Chords and stabs / Neon Emblem
+- 102: Chords and stabs / Chrome Fan
+- 103: Chords and stabs / Polar Stamp
+- 104: Chords and stabs / Violet Assembly
+- 105: Chords and stabs / Crystal Impact
+- 106: Chords and stabs / Aurora Stabs
+- 107: Chords and stabs / Ion Polygon
+- 108: Chords and stabs / Mirror Chords
+- 109: FX risers and impacts / Photon Launch
+- 110: FX risers and impacts / Crystal Fracture
+- 111: FX risers and impacts / Ion Ascent
+- 112: FX risers and impacts / Polar Vacuum
+- 113: FX risers and impacts / Spectral Drop
+- 114: FX risers and impacts / Chrome Meteor
+- 115: FX risers and impacts / Aurora Surge
+- 116: FX risers and impacts / Digital Collapse

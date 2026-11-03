@@ -1,0 +1,48 @@
+{
+  "Name": "Prism Flux",
+  "Version": "1.0.0",
+  "Factory Info": {
+    "Vendor": "Synth B Studio",
+    "URL": "",
+    "E-Mail": "",
+    "Flags": {
+      "Unicode": true,
+      "Classes Discardable": false,
+      "Component Non Discardable": false,
+    },
+  },
+  "Classes": [
+    {
+      "CID": "ABCDEF019182FAEB5379627350726678",
+      "Category": "Audio Module Class",
+      "Name": "Prism Flux",
+      "Vendor": "Synth B Studio",
+      "Version": "1.0.0",
+      "SDKVersion": "VST 3.7.12",
+      "Sub Categories": [
+        "Instrument",
+        "Synth",
+      ],
+      "Class Flags": 2,
+      "Cardinality": 2147483647,
+      "Snapshots": [
+      ],
+    },
+    {
+      "CID": "ABCDEF011234ABCD5379627350726678",
+      "Category": "Component Controller Class",
+      "Name": "Prism Flux",
+      "Vendor": "Synth B Studio",
+      "Version": "1.0.0",
+      "SDKVersion": "VST 3.7.12",
+      "Sub Categories": [
+        "Instrument",
+        "Synth",
+      ],
+      "Class Flags": 2,
+      "Cardinality": 2147483647,
+      "Snapshots": [
+      ],
+    },
+  ],
+}

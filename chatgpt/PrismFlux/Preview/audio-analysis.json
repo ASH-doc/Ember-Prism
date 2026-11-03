@@ -1,0 +1,45 @@
+{
+  "sample_rate": 48000,
+  "channels": 2,
+  "bits": 24,
+  "duration_seconds": 42.0,
+  "peak_dbfs": -18.182219669812472,
+  "rms_dbfs": -38.784240183501815,
+  "segments": [
+    {
+      "category": "Pluck",
+      "start_seconds": 0,
+      "rms_dbfs": -45.97036646715185
+    },
+    {
+      "category": "Lead",
+      "start_seconds": 6,
+      "rms_dbfs": -37.3325567721613
+    },
+    {
+      "category": "Bass",
+      "start_seconds": 12,
+      "rms_dbfs": -40.988698513790176
+    },
+    {
+      "category": "Pad",
+      "start_seconds": 18,
+      "rms_dbfs": -38.49238098796219
+    },
+    {
+      "category": "Arp",
+      "start_seconds": 24,
+      "rms_dbfs": -38.9650197850553
+    },
+    {
+      "category": "Key",
+      "start_seconds": 30,
+      "rms_dbfs": -36.92486424692988
+    },
+    {
+      "category": "Vocal",
+      "start_seconds": 36,
+      "rms_dbfs": -37.826078420001956
+    }
+  ]
+}

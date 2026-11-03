@@ -1,0 +1,1 @@
+PASS: layer/split/ranges/channels, note ownership, sample offsets, output mutes preserve voices, both engines exact unity output (B four-sample alignment), complete host+engine recall, prefixed automation, master effects finite, editor lifecycle.

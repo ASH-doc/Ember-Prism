@@ -1,0 +1,1 @@
+PASS: 117 factory recipes, native audio, host/JSON recall, invalid-patch atomicity, locked randomizer, route creation, rack reorder, four WAV import modes and embedded-table recall, 44.1/48/96 kHz, variable block sizes, native editor lifecycle.

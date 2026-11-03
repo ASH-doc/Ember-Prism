@@ -1,0 +1,9 @@
+Test project /Users/arashsabouhi/Documents/Codex/2026-11-02/m/work/dual-build
+    Start 1: HostIntegration
+1/2 Test #1: HostIntegration ..................   Passed    1.68 sec
+    Start 2: ActualVST3
+2/2 Test #2: ActualVST3 .......................   Passed    0.58 sec
+
+100% tests passed out of 2
+
+Total Test time (real) =   2.26 sec

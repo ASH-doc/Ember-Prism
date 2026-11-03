@@ -1,0 +1,4 @@
+PASS: 264 parameters; silence, voices, pedal, mono, arp, tuning, filters and matrix bounds.
+16 voices x 3 oscillators x 1 unison, 48k / 256: 0.228386 s per 1.003 s audio (22.7702% of one core offline)
+16 voices x 3 oscillators x 4 unison, 48k / 256: 0.282631 s per 1.003 s audio (28.1786% of one core offline)
+16 voices x 3 oscillators x 7 unison, 48k / 256: 0.332876 s per 1.003 s audio (33.188% of one core offline)

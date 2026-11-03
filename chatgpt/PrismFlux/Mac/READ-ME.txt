@@ -1,0 +1,19 @@
+PRISM FLUX 1.0.0 — MAC APP + VST3
+
+Apple Silicon arm64; macOS11+ target. The complete source package also includes
+Windows build files, JUCE and a manual.
+
+Double-click Install-Mac.command to copy the app to ~/Applications and the
+plugin to ~/Library/Audio/Plug-Ins/VST3. It asks before replacing existing files.
+You can also copy those bundles manually. In the standalone Options menu,
+choose audio output, buffer and MIDI input. In your DAW, rescan VST3 instruments.
+
+These are ad-hoc signed local builds, without Apple notarization. If a downloaded
+copy is blocked, review it and use the app-specific Open Anyway option in System
+Settings. Intel Macs and Rosetta DAWs need an Intel/universal rebuild from source.
+
+The VST3 binary passed an independent host audio/state/editor check. Standalone
+desktop playback was not verified: this automated session aborts in macOS
+application registration before app initialization. See the complete package's
+docs/VALIDATION.md for details. No commercial DAW compatibility certification
+is claimed.

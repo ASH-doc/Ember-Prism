@@ -1,0 +1,1 @@
+PASS: 115 factory patches, host-state round trips, invalid input, actual processor render, editor lifecycle.

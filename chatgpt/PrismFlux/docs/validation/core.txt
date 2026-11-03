@@ -1,0 +1,6 @@
+PASS: 519 parameters; 30 x 64-frame tables; 10 mip levels; MIDI, sustain, legato, stealing, 9 filters, 12 warp selections, arp/seq, WAV-table pitch, all modulation destinations.
+Wavetable generation: 0.30155 seconds, once per process.
+16 notes x 2 oscillators x 1 unison, 48k/256: 0.230088 s for 1.003 s audio, 22.94% of a core offline.
+16 notes x 2 oscillators x 4 unison, 48k/256: 0.359988 s for 1.003 s audio, 35.8912% of a core offline.
+16 notes x 2 oscillators x 8 unison, 48k/256: 0.548543 s for 1.003 s audio, 54.6902% of a core offline.
+16 notes x 2 oscillators x 16 unison, 48k/256: 0.926633 s for 1.003 s audio, 92.3862% of a core offline.
