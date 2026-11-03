@@ -4,14 +4,14 @@ Revision under test: branch `integration/dual-synth`, commit `a600249c02748f6dfd
 
 | Gate (contract item 8) | Windows | macOS | Owner | Status |
 |---|---|---|---|---|
-| Clean-clone Release build, standalone + VST3 | **PASS** — fresh `git clone --depth 1` of GitHub `a600249`, configured and built from scratch (MSVC 19.44, JUCE 8.0.9, Release x64); the 42 JUCE build files are present | PASS reported by GPT (arm64) | Claude / GPT | done |
+| Clean-clone Release build, standalone + VST3 | **PASS** — fresh `git clone --depth 1` of GitHub `a600249`, configured and built from scratch (MSVC 19.44, JUCE 8.0.9, Release x64); the 42 JUCE build files are present | **PASS** — GPT clean clone, arm64 Release, exact a600249 product source plus manifest correction | Claude / GPT | done |
 | Host tests on the default stack | **PASS** (`DualTests`, from the clean clone) | PASS reported by GPT | Claude / GPT | done |
 | Original-engine bypass comparison (sample-exact) | **PASS** | PASS reported by GPT | GPT test, Claude re-ran | done |
 | VST3 discovery / render / state / editor probe | **PASS** (`DualProbe` on the clean-clone VST3) | PASS reported by GPT | Claude / GPT | done |
-| Standalone launch | alive after 6 s | LaunchServices -10827, unverified (GPT) | Claude / GPT | **open on Mac** |
+| Standalone launch | alive after 6 s | LaunchServices -10827, direct launch aborts at macOS application registration before synth initialization (reproduced in clean build) | Claude / GPT | **open on Mac** |
 | Standalone **device playback** | not run | not run | Arash | **open** |
 | Overlapping channels, repeated notes, sustain, bend, pressure, panic, CC120/123, routing changes, mute/solo with held notes | **PASS** (host and engine tests) | PASS reported | Claude / GPT | done |
-| Callback allocations and slice boundaries | **PASS** (0 allocations in `routeMidi` and steady-state `processBlock`; 40000-sample block renders sample-identical to one block) | not run by Claude | Claude | done on Windows |
+| Callback allocations and slice boundaries | **PASS** (0 allocations in `routeMidi` and steady-state `processBlock`; 40000-sample block renders sample-identical to one block) | **PASS** — allocation counter reported zero on tested paths and the 40000-sample sliced render matched exactly | Claude / GPT | done |
 | Malformed and oversized sessions, atomic rejection | **PASS** | PASS reported | Claude | done |
 | Legacy recall (pre-Phase-2 states) | **PASS** (state without the new controls loads on the baseline Glue compressor; golden master-effects render difference exactly 0) | PASS reported | Claude | done |
 | Imported assets and preset mapping | **PASS** (Claude PRISM bank 63, Claude EMBER bank 65, Signal Studies 16: all load, finite, non-silent; factory presets unchanged) | PASS reported | GPT / Claude | done (objective only) |
@@ -21,7 +21,7 @@ Revision under test: branch `integration/dual-synth`, commit `a600249c02748f6dfd
 | **Matched listening** for new DSP and imported presets | not run | not run | **Arash** | **open** |
 | Display name | — | — | **Arash** | **open** (working name "Dual Synth") |
 | JUCE licence route (commercial vs open-source terms) | — | — | **Arash** | **open** (gates any distribution) |
-| `docs/ENGINE-INTEGRITY.json` refresh after the bank merge | — | — | GPT | **open** (GPT reported it) |
+| `docs/ENGINE-INTEGRITY.json` refresh after the bank merge | — | — | GPT | **done** — all 36 listed hashes match |
 
 ## What Arash needs to do (nothing below has been done by Claude or GPT)
 1. Install the Windows VST3 and standalone from the clean-clone build (folder `Desktop\Dual-Synth-Windows-a600249`) and load it in the DAW.
@@ -32,8 +32,12 @@ Revision under test: branch `integration/dual-synth`, commit `a600249c02748f6dfd
 ## Known behaviour to be aware of during the DAW pass
 - Loading a saved state while playing briefly outputs silence and drops incoming notes in that moment.
 - Prism's modulation source list gained a 25th entry (Pitch Bend); a DAW that stored automation of those source selectors as a normalised value could map to a different source.
-- An instance keeps at most 32 distinct imported wavetables (the Claude PRISM tables count against this).
+- An instance keeps at most 32 distinct imported wavetables (factory Claude PRISM tables are stored separately).
 - Compressor type switching (Glue / FET 76) is a hard switch, not a crossfade.
+
+## Mac verification follow-up
+
+GPT configured and built from a fresh clone of dc2f7ab, which differs from a600249 only by the Ember wrapper manifest hash. HostIntegration passed in 19.58 s and ActualVST3 in 1.27 s. The catalog found 828 parameters with zero missing or unexpected baseline changes. The golden render differed by at most 4.84288e-7. The tested callback paths reported zero allocations. No DSP, preset, parameter, or UI source changes were included. Commercial DAW behavior, listening, and standalone device playback remain open.
 
 ## Working name and install (added after the first Windows install)
 Arash asked for the working name **AEther v4.0** and for the VST3 in `C:\Program Files\VST`. The plugin's registered name, the standalone window title, the editor title and `getName()` now read AEther v4.0 (`PRODUCT_NAME` in `CMakeLists.txt`). The bundle ID, manufacturer code and plugin code are unchanged, so the plugin identity for recall is the same as before; no project had been saved with the earlier `Dual Synth` build. Installed by Claude: `C:\Program Files\VST\AEther v4.0.vst3` (byte-identical to the tested build; Windows asked for administrator approval). The earlier per-user test copy `Dual Synth.vst3` was removed so only one plugin shows up. Re-tested on the renamed build: `DualTests` PASS, `DualProbe` PASS, standalone alive, plugin name AEther v4.0 in the module info. `scripts/*` and `Build-Windows.bat` still mention `Dual Synth.vst3`; they were not changed.
