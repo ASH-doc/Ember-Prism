@@ -8,6 +8,8 @@
 #include <cstdint>
 namespace SynthB {
 constexpr int capacity=768, voiceLimit=16, routes=24;
+// Append sources so legacy patch indices keep their meaning.
+constexpr int pitchBendSource = 24, modulationSourceCount = pitchBendSource + 1;
 constexpr double tau=6.283185307179586476925;
 template<typename T> T bounded(T x,T lo,T hi){return std::min(hi,std::max(lo,x));}
 using State=std::array<float,capacity>;
