@@ -16,6 +16,18 @@ public:
  void parameterGestureChanged(int,bool begin)override{if(begin)beginChangeGesture();else endChangeGesture();}
 };
 }
+
+Optional<AudioPlayHead::PositionInfo> SliceTransport::getPosition()const{
+ if(source==nullptr)return {};
+ auto position=source->getPosition();
+ if(!position||offset==0)return position;
+ const double seconds=double(offset)/sampleRate;
+ if(position->getIsPlaying())if(auto bpm=position->getBpm())if(auto ppq=position->getPpqPosition())position->setPpqPosition(*ppq+seconds*(*bpm)/60.0);
+ if(auto samples=position->getTimeInSamples())position->setTimeInSamples(*samples+offset);
+ if(auto time=position->getTimeInSeconds())position->setTimeInSeconds(*time+seconds);
+ return position;
+}
+
 AudioProcessorValueTreeState::ParameterLayout DualProcessor::layout(){
  AudioProcessorValueTreeState::ParameterLayout l;
  auto number=[&](String id,String title,float lo,float hi,float initial){l.add(std::make_unique<AudioParameterFloat>(ParameterID(id,1),title,NormalisableRange<float>(lo,hi),initial));};
@@ -31,6 +43,12 @@ AudioProcessorValueTreeState::ParameterLayout DualProcessor::layout(){
 }
 DualProcessor::DualProcessor():AudioProcessor(BusesProperties().withOutput("Dual stereo",AudioChannelSet::stereo(),true)),state(*this,nullptr,"DualHost",layout()){
  for(auto* child:{static_cast<AudioProcessor*>(&a),static_cast<AudioProcessor*>(&b)})for(auto* parameter:child->getParameters())if(auto* ranged=dynamic_cast<RangedAudioParameter*>(parameter))addParameter(new Bridge(child==&a?"A.":"B.",*ranged));
+ // Resolve every host parameter once. The audio thread never looks parameters up by name.
+ static const char* const ids[IdCount]={"routing","split","a.low","a.high","a.channel","a.gain","a.mute","b.low","b.high","b.channel","b.gain","b.mute","master","glue","comp","verb","eq","threshold","ratio","attack","release","room","damp","wet","width","low","air"};
+ for(int i=0;i<IdCount;++i)cached[size_t(i)]=state.getRawParameterValue(ids[i]);
+ // Storage is sized up front so the audio callback never allocates, even before the first prepareToPlay.
+ bufferA.setSize(2,32768);bufferB.setSize(2,32768);
+ a.setPlayHead(&transport);b.setPlayHead(&transport);
  setLatencySamples(16);
 }
 DualProcessor::~DualProcessor(){for(auto* param:getParameters())if(auto* bridge=dynamic_cast<Bridge*>(param))bridge->detach();}
@@ -38,35 +56,120 @@ DualProcessor::~DualProcessor(){for(auto* param:getParameters())if(auto* bridge=
 float DualProcessor::value(const String& id)const{return state.getRawParameterValue(id)->load();}
 void DualProcessor::write(const String& id,float v){auto* param=state.getParameter(id);param->beginChangeGesture();param->setValueNotifyingHost(param->convertTo0to1(v));param->endChangeGesture();}
 bool DualProcessor::isBusesLayoutSupported(const BusesLayout& l)const{return l.getMainInputChannelSet().isDisabled()&&l.getMainOutputChannelSet()==AudioChannelSet::stereo();}
-void DualProcessor::prepareToPlay(double sr,int block){sampleRate=sr;a.setRateAndBufferSizeDetails(sr,block);b.setRateAndBufferSizeDetails(sr,block);a.prepareToPlay(sr,block);b.prepareToPlay(sr,block);bufferA.setSize(2,std::max(32768,block));bufferB.setSize(2,std::max(32768,block));midiA.ensureSize(65536);midiB.ensureSize(65536);owners={};alignB={};alignHead=0;keyboard.reset();reverb.setSampleRate(sr);reverb.reset();compressor.prepare({sr,uint32(std::max(block,32768)),2});toneLow[0]=toneLow[1]=toneHigh[0]=toneHigh[1]=0;
+void DualProcessor::prepareToPlay(double sr,int block){
+ sampleRate=sr;a.setRateAndBufferSizeDetails(sr,block);b.setRateAndBufferSizeDetails(sr,block);a.prepareToPlay(sr,block);b.prepareToPlay(sr,block);
+ const int capacity=std::max(32768,block);
+ bufferA.setSize(2,capacity);bufferB.setSize(2,capacity);midiA.ensureSize(65536);midiB.ensureSize(65536);sliceMidi.ensureSize(65536);
+ owners={};alignB={};alignHead=0;keyboard.reset();reverb.setSampleRate(sr);reverb.reset();compressor.prepare({sr,uint32(capacity),2});toneLow[0]=toneLow[1]=toneHigh[0]=toneHigh[1]=0;
  for(auto* smooth:{&gainA,&gainB,&master,&width,&fxBlend,&verbWet})smooth->reset(sr,.02);
- gainA.setCurrentAndTargetValue(value("a.mute")>.5f?0:mixerGain(value("a.gain")));gainB.setCurrentAndTargetValue(value("b.mute")>.5f?0:mixerGain(value("b.gain")));master.setCurrentAndTargetValue(mixerGain(value("master")));width.setCurrentAndTargetValue(value("width"));fxBlend.setCurrentAndTargetValue(value("glue"));verbWet.setCurrentAndTargetValue(value("verb")>.5f?value("wet"):0);
+ gainA.setCurrentAndTargetValue(get(AMute)>.5f?0:mixerGain(get(AGain)));gainB.setCurrentAndTargetValue(get(BMute)>.5f?0:mixerGain(get(BGain)));master.setCurrentAndTargetValue(mixerGain(get(Master)));width.setCurrentAndTargetValue(get(Width));fxBlend.setCurrentAndTargetValue(get(Glue));verbWet.setCurrentAndTargetValue(get(Verb)>.5f?get(Wet):0);
 }
 void DualProcessor::releaseResources(){a.releaseResources();b.releaseResources();}
+
 void DualProcessor::routeMidi(const MidiBuffer& input,MidiBuffer& ma,MidiBuffer& mb){
- ma.clear();mb.clear();int mode=int(value("routing")),split=int(value("split"));
- for(const auto event:input){auto m=event.getMessage();int mask=3;if(m.isNoteOn()||m.isNoteOff()){int n=m.getNoteNumber(),c=jlimit(0,15,m.getChannel()-1);auto& owner=owners[size_t(c)][size_t(n)];if(m.isNoteOn()){mask=0;bool ra=mode!=3&&(mode!=1||n<split),rb=mode!=2&&(mode!=1||n>=split);if(ra&&n>=value("a.low")&&n<=value("a.high")&&(value("a.channel")==0||m.getChannel()==int(value("a.channel"))))mask|=1;if(rb&&n>=value("b.low")&&n<=value("b.high")&&(value("b.channel")==0||m.getChannel()==int(value("b.channel"))))mask|=2;owner=static_cast<unsigned char>(owner|mask);}else{mask=owner;owner=0;}}
- if(m.isAllNotesOff()||m.isAllSoundOff())owners={};if(mask&1)ma.addEvent(m,event.samplePosition);if(mask&2)mb.addEvent(m,event.samplePosition);
+ ma.clear();mb.clear();
+ // One snapshot of the routing controls for the whole buffer.
+ const int mode=int(get(Routing)),split=int(get(Split));
+ const int low[2]={int(get(ALow)),int(get(BLow))},high[2]={int(get(AHigh)),int(get(BHigh))},channel[2]={int(get(AChannel)),int(get(BChannel))};
+ auto accepts=[&](int engine,int note,int midiChannel){return note>=low[engine]&&note<=high[engine]&&(channel[engine]==0||midiChannel==channel[engine]);};
+ MidiBuffer* const lane[2]={&ma,&mb};
+ for(const auto event:input){
+  auto m=event.getMessage();int mask=3;
+  const int midiChannel=m.getChannel(),c=jlimit(0,15,midiChannel-1);
+  if(m.isNoteOn()||m.isNoteOff()){
+   const int n=m.getNoteNumber();auto& owner=owners[size_t(c)][size_t(n)];
+   if(m.isNoteOn()){
+    // The same channel and pitch struck again before its note-off: release the earlier note on whichever
+    // engine(s) own it, at this sample position and before the new note, then take fresh ownership.
+    for(int engine=0;engine<2;++engine)if(owner&(1<<engine))lane[engine]->addEvent(MidiMessage::noteOff(midiChannel,n),event.samplePosition);
+    const bool toA=mode!=3&&(mode!=1||n<split),toB=mode!=2&&(mode!=1||n>=split);
+    mask=0;if(toA&&accepts(0,n,midiChannel))mask|=1;if(toB&&accepts(1,n,midiChannel))mask|=2;
+    owner=static_cast<unsigned char>(mask);
+   }else{mask=owner;owner=0;}
+  }
+  // CC120 / CC123 are per-channel messages: they forget only that channel's held notes. A host panic clears everything.
+  if(m.isAllNotesOff()||m.isAllSoundOff())owners[size_t(c)].fill(0);
+  if(mask&1)ma.addEvent(m,event.samplePosition);if(mask&2)mb.addEvent(m,event.samplePosition);
+ }
+}
+
+void DualProcessor::renderSlice(AudioBuffer<float>& audio,int start,int length,const MidiBuffer& midi,Peaks& peak){
+ routeMidi(midi,midiA,midiB);
+ // Use sub-buffers without changing either child's block length or processing algorithm.
+ AudioBuffer<float> outA(bufferA.getArrayOfWritePointers(),2,length),outB(bufferB.getArrayOfWritePointers(),2,length);
+ a.processBlock(outA,midiA);b.processBlock(outB,midiB);
+ // One snapshot of the mixer and master controls for the slice.
+ gainA.setTargetValue(get(AMute)>.5f?0:mixerGain(get(AGain)));gainB.setTargetValue(get(BMute)>.5f?0:mixerGain(get(BGain)));master.setTargetValue(mixerGain(get(Master)));width.setTargetValue(get(Width));fxBlend.setTargetValue(get(Glue));verbWet.setTargetValue(get(Verb)>.5f?get(Wet):0);
+ compressor.setThreshold(get(Threshold));compressor.setRatio(get(Ratio));compressor.setAttack(get(Attack));compressor.setRelease(get(Release));
+ Reverb::Parameters rv;rv.roomSize=get(Room);rv.damping=get(Damp);rv.wetLevel=1;rv.dryLevel=0;rv.width=1;reverb.setParameters(rv);
+ const float lowCoefficient=1-std::exp(-MathConstants<float>::twoPi*200/float(sampleRate)),highCoefficient=1-std::exp(-MathConstants<float>::twoPi*6500/float(sampleRate));
+ const float lowGain=Decibels::decibelsToGain(get(Low)),airGain=Decibels::decibelsToGain(get(Air));
+ const bool eqOn=get(Eq)>.5f,compOn=get(Comp)>.5f;
+ for(int i=0;i<length;++i){
+  const float ga=gainA.getNextValue(),gb=gainB.getNextValue();float dry[2],wet[2];
+  for(int c=0;c<2;++c){
+   const float sa=outA.getSample(c,i),sb=alignB[size_t(c)][size_t(alignHead)];
+   alignB[size_t(c)][size_t(alignHead)]=outB.getSample(c,i);
+   dry[c]=sa*ga+sb*gb;wet[c]=dry[c];
+   peak.a=std::max(peak.a,std::abs(sa*ga));peak.b=std::max(peak.b,std::abs(sb*gb));
+  }
+  alignHead=(alignHead+1)%4;
+  for(int c=0;c<2;++c){toneLow[c]+=lowCoefficient*(dry[c]-toneLow[c]);toneHigh[c]+=highCoefficient*(dry[c]-toneHigh[c]);if(eqOn)wet[c]+=toneLow[c]*(lowGain-1)+(dry[c]-toneHigh[c])*(airGain-1);}
+  const float detector=std::max(std::abs(wet[0]),std::abs(wet[1]));const float compressed=compressor.processSample(0,detector);
+  if(compOn&&detector>1.e-12f){const float reduction=compressed/detector;wet[0]*=reduction;wet[1]*=reduction;}
+  float reverbL=wet[0],reverbR=wet[1];reverb.processStereo(&reverbL,&reverbR,1);
+  const float vw=verbWet.getNextValue();wet[0]+=vw*(reverbL-wet[0]);wet[1]+=vw*(reverbR-wet[1]);
+  const float mid=(wet[0]+wet[1])*.5f,side=(wet[0]-wet[1])*.5f*width.getNextValue();wet[0]=mid+side;wet[1]=mid-side;
+  const float blend=fxBlend.getNextValue(),mg=master.getNextValue();
+  for(int c=0;c<2;++c){const float result=(dry[c]+blend*(wet[c]-dry[c]))*mg;audio.setSample(c,start+i,result);peak.master=std::max(peak.master,std::abs(result));}
  }
 }
 void DualProcessor::processBlock(AudioBuffer<float>& audio,MidiBuffer& midi){
- ScopedNoDenormals guard;int n=audio.getNumSamples();if(n>bufferA.getNumSamples()) {bufferA.setSize(2,n,false,false,true);bufferB.setSize(2,n,false,false,true);} // normal callbacks reuse prepared storage
+ ScopedNoDenormals guard;const int n=audio.getNumSamples();
  if(panic.exchange(false)){a.panicRequested.store(true);b.silence.store(true);owners={};keyboard.reset();alignB={};reverb.reset();compressor.reset();toneLow[0]=toneLow[1]=toneHigh[0]=toneHigh[1]=0;}
  keyboard.processNextMidiBuffer(midi,0,n,true);float pb=bend.exchange(-2),mw=wheel.exchange(-1);if(pb>=-1)midi.addEvent(MidiMessage::pitchWheel(1,jlimit(0,16383,int(pb*8192+8192))),0);if(mw>=0)midi.addEvent(MidiMessage::controllerEvent(1,1,int(mw)),0);
- routeMidi(midi,midiA,midiB);a.setPlayHead(getPlayHead());b.setPlayHead(getPlayHead());
- // Use sub-buffers without changing either child's block length or processing algorithm.
- AudioBuffer<float> outA(bufferA.getArrayOfWritePointers(),2,n),outB(bufferB.getArrayOfWritePointers(),2,n);a.processBlock(outA,midiA);b.processBlock(outB,midiB);audio.clear();
- gainA.setTargetValue(value("a.mute")>.5f?0:mixerGain(value("a.gain")));gainB.setTargetValue(value("b.mute")>.5f?0:mixerGain(value("b.gain")));master.setTargetValue(mixerGain(value("master")));width.setTargetValue(value("width"));fxBlend.setTargetValue(value("glue"));verbWet.setTargetValue(value("verb")>.5f?value("wet"):0);
- compressor.setThreshold(value("threshold"));compressor.setRatio(value("ratio"));compressor.setAttack(value("attack"));compressor.setRelease(value("release"));Reverb::Parameters rv;rv.roomSize=value("room");rv.damping=value("damp");rv.wetLevel=1;rv.dryLevel=0;rv.width=1;reverb.setParameters(rv);
- float pa=0,pbPeak=0,pm=0,lowCoefficient=1-std::exp(-MathConstants<float>::twoPi*200/float(sampleRate)),highCoefficient=1-std::exp(-MathConstants<float>::twoPi*6500/float(sampleRate));float lowGain=Decibels::decibelsToGain(value("low")),airGain=Decibels::decibelsToGain(value("air"));
- const bool eqOn=value("eq")>.5f,compOn=value("comp")>.5f;
- for(int i=0;i<n;++i){float ga=gainA.getNextValue(),gb=gainB.getNextValue();float dry[2],wet[2];for(int c=0;c<2;++c){float sa=outA.getSample(c,i),sb=alignB[size_t(c)][size_t(alignHead)];alignB[size_t(c)][size_t(alignHead)]=outB.getSample(c,i);dry[c]=sa*ga+sb*gb;wet[c]=dry[c];pa=std::max(pa,std::abs(sa*ga));pbPeak=std::max(pbPeak,std::abs(sb*gb));}alignHead=(alignHead+1)%4;
- for(int c=0;c<2;++c){toneLow[c]+=lowCoefficient*(dry[c]-toneLow[c]);toneHigh[c]+=highCoefficient*(dry[c]-toneHigh[c]);if(eqOn)wet[c]+=toneLow[c]*(lowGain-1)+(dry[c]-toneHigh[c])*(airGain-1);}
- const float detector=std::max(std::abs(wet[0]),std::abs(wet[1]));const float compressed=compressor.processSample(0,detector);if(compOn&&detector>1.e-12f){const float reduction=compressed/detector;wet[0]*=reduction;wet[1]*=reduction;}
- float reverbL=wet[0],reverbR=wet[1];reverb.processStereo(&reverbL,&reverbR,1);float vw=verbWet.getNextValue();wet[0]+=vw*(reverbL-wet[0]);wet[1]+=vw*(reverbR-wet[1]);float mid=(wet[0]+wet[1])*.5f,side=(wet[0]-wet[1])*.5f*width.getNextValue();wet[0]=mid+side;wet[1]=mid-side;float blend=fxBlend.getNextValue(),mg=master.getNextValue();for(int c=0;c<2;++c){float result=(dry[c]+blend*(wet[c]-dry[c]))*mg;audio.setSample(c,i,result);pm=std::max(pm,std::abs(result));}}
- peaks[0].store(pa);peaks[1].store(pbPeak);peaks[2].store(pm);midi.clear();
+ audio.clear();
+ Peaks peak;const int capacity=sliceCapacity();
+ if(n<=capacity){
+  transport.set(getPlayHead(),0,sampleRate);renderSlice(audio,0,n,midi,peak);
+ }else{
+  // A host block longer than the prepared storage is rendered in bounded slices. Each slice gets its own
+  // block-relative MIDI offsets and a transport position advanced by the samples already rendered.
+  for(int start=0;start<n;start+=capacity){
+   const int length=std::min(capacity,n-start);sliceMidi.clear();
+   for(const auto event:midi)if(event.samplePosition>=start&&event.samplePosition<start+length)sliceMidi.addEvent(event.getMessage(),event.samplePosition-start);
+   transport.set(getPlayHead(),start,sampleRate);renderSlice(audio,start,length,sliceMidi,peak);
+  }
+ }
+ peaks[0].store(peak.a);peaks[1].store(peak.b);peaks[2].store(peak.master);midi.clear();
 }
 void DualProcessor::getStateInformation(MemoryBlock& block){ValueTree tree=state.copyState();MemoryBlock sa,sb;a.getStateInformation(sa);b.getStateInformation(sb);tree.setProperty("engineA",sa.toBase64Encoding(),nullptr);tree.setProperty("engineB",sb.toBase64Encoding(),nullptr);tree.setProperty("panel",panel.load(),nullptr);MemoryOutputStream output(block,false);tree.writeToStream(output);}
-void DualProcessor::setStateInformation(const void* data,int length){if(length<=0||length>8*1024*1024)return;auto tree=ValueTree::readFromData(data,size_t(length));if(!tree.hasType("DualHost"))return;MemoryBlock sa,sb;if(!sa.fromBase64Encoding(tree["engineA"].toString())||!sb.fromBase64Encoding(tree["engineB"].toString()))return;a.setStateInformation(sa.getData(),int(sa.getSize()));b.setStateInformation(sb.getData(),int(sb.getSize()));panel.store(jlimit(0,1,int(tree["panel"])));state.replaceState(tree);panic.store(true);}
+
+Result DualProcessor::loadPerformance(const void* data,int length){
+ // Stage and validate everything first. Nothing below the "publish" line runs unless every check passed.
+ if(data==nullptr||length<=0)return Result::fail("The performance file is empty.");
+ if(length>maxPerformanceBytes)return Result::fail("The performance is larger than "+String(maxPerformanceBytes/(1024*1024))+" MB.");
+ auto tree=ValueTree::readFromData(data,size_t(length));
+ if(!tree.isValid()||!tree.hasType("DualHost"))return Result::fail("This is not a Dual Synth performance.");
+ var patch[2];
+ for(int engine=0;engine<2;++engine){
+  const String name=engine==0?"Synth A":"Synth B";MemoryBlock payload;
+  if(!payload.fromBase64Encoding(tree[engine==0?"engineA":"engineB"].toString())||payload.getSize()==0)return Result::fail(name+" data is missing or damaged.");
+  if(payload.getSize()>size_t(2*1024*1024))return Result::fail(name+" data is larger than 2 MB.");
+  if(JSON::parse(String::fromUTF8(static_cast<const char*>(payload.getData()),int(payload.getSize())),patch[engine]).failed())return Result::fail(name+" data is not a valid patch.");
+ }
+ if(auto checked=a.setPatch(patch[0],false);checked.failed())return Result::fail("Synth A: "+checked.getErrorMessage());
+ if(auto checked=b.restore(patch[1],false);checked.failed())return Result::fail("Synth B: "+checked.getErrorMessage());
+ // Publish.
+ if(auto applied=a.setPatch(patch[0]);applied.failed())return applied;
+ if(auto applied=b.restore(patch[1]);applied.failed())return applied;
+ panel.store(jlimit(0,1,int(tree["panel"])));state.replaceState(tree);panic.store(true);
+ return Result::ok();
+}
+void DualProcessor::setStateInformation(const void* data,int length){
+ const auto result=loadPerformance(data,length);
+ const ScopedLock lock(loadErrorLock);loadError=result.failed()?result.getErrorMessage():String();
+}
+String DualProcessor::lastLoadError()const{const ScopedLock lock(loadErrorLock);return loadError;}
 AudioProcessorEditor* DualProcessor::createEditor(){return new DualEditor(*this);}
 AudioProcessor* JUCE_CALLTYPE createPluginFilter(){return new DualProcessor;}

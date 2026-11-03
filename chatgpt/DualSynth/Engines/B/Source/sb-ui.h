@@ -63,6 +63,8 @@ class RackCell final:public juce::Component,public juce::DragAndDropTarget {
 };
 class Surface final:public juce::Component,public juce::DragAndDropContainer,private juce::Timer {
  public:Surface(PrismProcessor&);~Surface()override;void paint(juce::Graphics&)override;
+ // Embedded mode: the host owns the shared keyboard and wheels, so this panel hides its own.
+ void setEmbedded(bool embedded){keyboard.setVisible(!embedded);wheel.setVisible(!embedded);bend.setVisible(!embedded);}
  private:PrismProcessor& processor;Style style;juce::TooltipWindow tips{this,500};
  std::vector<std::unique_ptr<Dial>> controls;std::vector<std::unique_ptr<SourceChip>> chips;std::vector<std::unique_ptr<juce::TextButton>> buttons;
  std::array<std::unique_ptr<WaveView>,2> waves;std::array<std::unique_ptr<FilterView>,2> filters;std::array<std::unique_ptr<RackCell>,10> rack;
@@ -75,7 +77,7 @@ class Surface final:public juce::Component,public juce::DragAndDropContainer,pri
 };
 }
 class PrismEditor final:public juce::AudioProcessorEditor {
- public:explicit PrismEditor(PrismProcessor&);void resized()override;
+ public:explicit PrismEditor(PrismProcessor&);void resized()override;void setEmbedded(bool embedded){surface.setEmbedded(embedded);}
  private:PrismUI::Surface surface;juce::ComponentBoundsConstrainer bounds;
  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrismEditor)
 };

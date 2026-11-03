@@ -17,7 +17,7 @@ class SynthAProcessor final : public juce::AudioProcessor, private juce::AsyncUp
     void changeProgramName(int,const juce::String&)override{}
     void getStateInformation(juce::MemoryBlock&)override;void setStateInformation(const void*,int)override;
     float getParam(const juce::String&)const;void setParam(const juce::String&,float);
-    juce::var getPatch()const;juce::Result setPatch(const juce::var&);
+    juce::var getPatch()const;juce::Result setPatch(const juce::var&,bool commit=true);
     juce::Result loadPatchFile(const juce::File&);juce::Result savePatchFile(const juce::File&);
     int presetCount()const{return bank.size();}juce::var preset(int n)const{return bank[n];}
     void loadPreset(int);void mutate();void compare();void learnChord();

@@ -13,7 +13,7 @@ class PrismProcessor final:public juce::AudioProcessor,private juce::AsyncUpdate
  const juce::String getProgramName(int)override{return {};};void changeProgramName(int,const juce::String&)override{}
  void getStateInformation(juce::MemoryBlock&)override;void setStateInformation(const void*,int)override;
  float read(int)const;float read(const juce::String&)const;void write(int,float);void write(const juce::String&,float);
- juce::var patch()const;juce::Result restore(const juce::var&);juce::Result open(const juce::File&);juce::Result save(const juce::File&);
+ juce::var patch()const;juce::Result restore(const juce::var&,bool commit=true);juce::Result open(const juce::File&);juce::Result save(const juce::File&);
  int factoryCount()const{return factory.size();}juce::var factoryPatch(int i)const{return factory[i];}void selectFactory(int);
  juce::Result importWave(const juce::File&,int oscillator,int cycleLength=2048);const SynthB::WaveSet* importedTable()const;
  juce::String title()const;juce::String macroTitle(int)const;void nameMacro(int,const juce::String&);

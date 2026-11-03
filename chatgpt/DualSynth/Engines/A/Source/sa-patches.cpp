@@ -12,7 +12,7 @@ juce::var SynthAProcessor::getPatch()const{
  auto* mappings=new juce::DynamicObject;for(int cc=0;cc<128;++cc){int i=ccMap[size_t(cc)].load();if(i>=0)mappings->setProperty(juce::String(cc),juce::String(SynthA::parameters()[size_t(i)].id));}root->setProperty("midiLearn",juce::var(mappings));
  return juce::var(root);
 }
-juce::Result SynthAProcessor::setPatch(const juce::var& patch){
+juce::Result SynthAProcessor::setPatch(const juce::var& patch,bool commit){
  if(!patch.isObject()||patch["format"].toString()!="dualsynth-patch"||int(patch["version"])!=1||patch["engine"].toString()!="A")return juce::Result::fail("Not a version 1 Synth A patch.");
  auto* params=patch["params"].getDynamicObject();if(!params)return juce::Result::fail("Patch has no parameter object.");
  SynthA::Values values=SynthA::defaults();const auto& defs=SynthA::parameters();
@@ -33,6 +33,7 @@ juce::Result SynthAProcessor::setPatch(const juce::var& patch){
  }
  if(auto* effects=patch["fx"].getArray())for(auto& effect:*effects){auto prefix="fx."+effect["type"].toString()+".";const int enabled=SynthA::indexOf((prefix+"on").toStdString());if(enabled<0)return juce::Result::fail("Unknown effect.");if(!params->hasProperty(prefix+"on")){values[size_t(enabled)]=bool(effect["on"])?1.f:0.f;if(auto* props=effect["params"].getDynamicObject())for(const auto& prop:props->getProperties()){auto id=prefix+prop.name.toString();int index=SynthA::indexOf(id.toStdString());float value=float(prop.value);if(index<0||!std::isfinite(value)||value<defs[size_t(index)].min||value>defs[size_t(index)].max)return juce::Result::fail("Invalid effect parameter.");values[size_t(index)]=value;}}}
  std::array<int,128> mappings;mappings.fill(-1);if(auto* map=patch["midiLearn"].getDynamicObject())for(auto& pair:map->getProperties()){auto key=pair.name.toString();int cc=key.getIntValue();int index=SynthA::indexOf(pair.value.toString().toStdString());if(key!=juce::String(cc)||cc<0||cc>127||index<0)return juce::Result::fail("Invalid MIDI mapping.");mappings[size_t(cc)]=index;}
+ if(!commit)return juce::Result::ok(); // validation only: nothing above touched any state
  panicRequested.store(true);undo.beginNewTransaction("Load patch");
  for(size_t i=0;i<defs.size();++i){auto* parameter=state.getParameter(defs[i].id);parameter->setValueNotifyingHost(parameter->convertTo0to1(values[i]));}
  for(int cc=0;cc<128;++cc)ccMap[size_t(cc)].store(mappings[size_t(cc)]);

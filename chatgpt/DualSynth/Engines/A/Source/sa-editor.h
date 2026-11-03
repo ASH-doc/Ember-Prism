@@ -30,6 +30,8 @@ class GateGrid final:public juce::Component {
 };
 class Face final:public juce::Component,private juce::Timer {
  public:explicit Face(SynthAProcessor&);~Face()override;void paint(juce::Graphics&)override;
+ // Embedded mode: the host owns the shared keyboard and wheels, so this panel hides its own.
+ void setEmbedded(bool embedded){keyboard.setVisible(!embedded);pitch.setVisible(!embedded);mod.setVisible(!embedded);}
  private:
  SynthAProcessor& proc;HardwareLook look;juce::TooltipWindow tooltips{this,600};
  std::vector<std::unique_ptr<Control>> controls;std::vector<std::unique_ptr<juce::TextButton>> buttons;
@@ -50,7 +52,7 @@ class Face final:public juce::Component,private juce::Timer {
 };
 }
 class SynthAEditor final:public juce::AudioProcessorEditor {
- public:explicit SynthAEditor(SynthAProcessor&);void resized()override;
+ public:explicit SynthAEditor(SynthAProcessor&);void resized()override;void setEmbedded(bool embedded){face.setEmbedded(embedded);}
  private:SynthAUI::Face face;juce::ComponentBoundsConstrainer ratio;
  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthAEditor)
 };

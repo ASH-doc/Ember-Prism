@@ -14,7 +14,7 @@ var PrismProcessor::patch()const{
  if(const auto* asset=currentWave.load(std::memory_order_acquire)){auto* wave=new DynamicObject;wave->setProperty("name",asset->name);wave->setProperty("frames",asset->frames);wave->setProperty("encoding","float32-le-base64");wave->setProperty("data",Base64::toBase64(asset->raw.data(),asset->raw.size()*sizeof(float)));object->setProperty("wavetable",var(wave));}
  return var(object.release());
 }
-Result PrismProcessor::restore(const var& incoming){
+Result PrismProcessor::restore(const var& incoming,bool commit){
  if(!incoming.isObject()||incoming["format"].toString()!="dualsynth-patch"||incoming["engine"].toString()!="B"||int(incoming["version"])!=1)return Result::fail("Choose a version 1 Synth B patch.");
  auto* properties=incoming["params"].getDynamicObject();if(!properties)return Result::fail("Missing parameter object.");const auto& schema=SynthB::Schema::get();auto state=schema.initial();
  for(const auto& entry:properties->getProperties()){int index=schema.find(entry.name.toString().toStdString());if(index<0)return Result::fail("Unknown parameter: "+entry.name.toString());const auto& spec=schema.specs[size_t(index)];float value=0;
@@ -43,6 +43,7 @@ Result PrismProcessor::restore(const var& incoming){
   if(!asset){pending->table=SynthB::WaveSet::fromFrames(pending->raw,frames,pending->name.toStdString());asset=pending.get();}
  }
  if((int(state[size_t(schema.loc.osc[0])])==30||int(state[size_t(schema.loc.osc[1])])==30)&&!asset)return Result::fail("This patch requires an embedded wavetable.");
+ if(!commit)return Result::ok(); // validation only: nothing above touched any state
  silence.store(true);undo.beginNewTransaction("Recall patch");for(size_t i=0;i<schema.specs.size();++i){auto* param=parameters.getParameter(schema.specs[i].key);param->setValueNotifyingHost(param->convertTo0to1(state[i]));}for(int cc=0;cc<128;++cc)ccAssignments[size_t(cc)].store(mappings[size_t(cc)]);
  {const ScopedLock lock(metadata);if(pending&&asset==pending.get())waveAssets.push_back(std::move(pending));currentWave.store(asset,std::memory_order_release);patchTitle=incoming["name"].toString().substring(0,80);category=incoming["category"].toString();tags.clear();if(auto* list=incoming["tags"].getArray())for(const auto& tag:*list)tags.add(tag.toString().substring(0,40));if(auto* names=incoming["macros"].getArray())for(int i=0;i<std::min(8,names->size());++i)macroTitles.set(i,names->getReference(i).toString().substring(0,20));}
  return Result::ok();
