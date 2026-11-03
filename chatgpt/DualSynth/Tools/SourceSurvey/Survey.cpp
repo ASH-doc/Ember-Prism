@@ -49,9 +49,27 @@ void spireDecode(const StringArray& folders){
  std::cout<<"files "<<files<<" decoded "<<ok<<" blocked "<<blocked<<" (decoded files with warnings: "<<withWarnings<<", all of them the ignored icon unless listed below)\n";
  for(const auto& [reason,count]:reasons)std::cout<<"blocked: "<<reason<<" x"<<count<<"\n";
 }
+// Tallies which list indexes the matrix sources and targets and the envelope / LFO targets use (aggregate counts only).
+void spireTargets(const StringArray& folders){
+ std::map<int,int> sources,targets,envLfoTargets;int files=0,slotsUsed=0;std::map<int,int> routesPerFile;
+ auto index=[](const var& v){return int(double(v)*999.0+0.5);};
+ for(const auto& folder:folders)for(const auto& entry:RangedDirectoryIterator(File(folder),true,"*.spf2",File::findFiles)){
+  var parsed;if(JSON::parse(entry.getFile().loadFileAsString(),parsed).failed())continue;auto* values=parsed["parameters"].getDynamicObject();if(values==nullptr)continue;++files;int routes=0;
+  for(int slot=1;slot<=15;++slot){const String prefix="slot"+String(slot)+"_";const int src1=index(values->getProperty(prefix+"Src1")),src2=index(values->getProperty(prefix+"Src2"));if(src1==0&&src2==0)continue;++slotsUsed;
+   if(src1>0)sources[src1]++;if(src2>0)sources[src2]++;
+   for(int t=1;t<=4;++t){const int target=index(values->getProperty(prefix+"Trg"+String(t)));if(target>0){targets[target]++;++routes;}}}
+  routesPerFile[std::min(routes,40)]++;
+  for(int e=1;e<=4;++e)for(int t=1;t<=2;++t){const int target=index(values->getProperty("env"+String(e)+"_target"+String(t)));if(target>0)envLfoTargets[target]++;}
+  for(int l=1;l<=4;++l)for(int t=1;t<=2;++t){const int target=index(values->getProperty("lfo"+String(l)+"_target"+String(t)));if(target>0)envLfoTargets[1000+target]++;}
+ }
+ auto top=[&](const char* title,const std::map<int,int>& m,int n){std::vector<std::pair<int,int>> r;for(const auto& [k,c]:m)r.push_back({c,k});std::sort(r.rbegin(),r.rend());std::cout<<title<<" (files "<<files<<")\n";for(size_t i=0;i<std::min<size_t>(size_t(n),r.size());++i)std::cout<<"  index "<<r[i].second<<" : "<<r[i].first<<"\n";};
+ top("matrix sources",sources,20);top("matrix targets",targets,40);top("env (index) and lfo (1000+index) targets",envLfoTargets,30);
+ std::cout<<"matrix routes per file (target fields set): ";for(const auto& [k,c]:routesPerFile)std::cout<<k<<"x"<<c<<" ";std::cout<<"\nslots with a source: "<<slotsUsed<<"\n";
+}
 int main(int argc,char** argv){
  if(argc<3){std::cerr<<"usage: DualSurvey spire|serum1 <folder> ...\n";return 2;}
  const String mode(argv[1]);if(mode=="spire"){StringArray folders;for(int i=2;i<argc;++i)folders.add(argv[i]);spire(folders);return 0;}
+ if(mode=="spire-targets"){StringArray folders;for(int i=2;i<argc;++i)folders.add(argv[i]);spireTargets(folders);return 0;}
  if(mode=="spire-decode"){StringArray folders;for(int i=2;i<argc;++i)folders.add(argv[i]);spireDecode(folders);return 0;}
  if(mode=="serum1"){serum1(argv[2]);return 0;}return 2;
 }

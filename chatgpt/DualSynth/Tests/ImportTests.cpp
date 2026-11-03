@@ -1,8 +1,10 @@
 // ImportTests.cpp — Decoder tests on synthetic data only (contract v1: no third-party preset content in the repo).
 #include "Import/SpireDecoder.h"
+#include "Import/SpireTables.h"
 #include <juce_core/juce_core.h>
 #include <iostream>
 using namespace aether::import;
+namespace spire = aether::import::spire;
 namespace {
 int failures = 0, checks = 0;
 void require(bool ok, const std::string& what) { ++checks; if (!ok) { ++failures; std::cerr << "FAIL: " << what << "\n"; } }
@@ -46,6 +48,18 @@ int main() {
         require(!r.patch.warnings.empty(), "the ignored icon is mentioned as a warning");
         require(spireEnumIndex(0.002002) == 2 && spireEnumIndex(0.017017) == 17 && spireEnumIndex(0) == 0, "list choices decode as index / 999");
         require(spireOnEnumLattice(0.007007) && !spireOnEnumLattice(0.5) && !spireOnEnumLattice(0.47) && !spireOnEnumLattice(1.5), "lattice check");
+    }
+    // The menu tables agree with every list position that was confirmed from presets saved by the real Spire (S01 to S05).
+    {
+        auto source = [](const char* name) { for (const auto& e : spire::kModulationSources) if (std::string(e.name) == name) return e.id; return -1; };
+        auto target = [](const char* name) { for (const auto& e : spire::kModulationTargets) if (std::string(e.name) == name) return e.id; return -1; };
+        require(spire::kModulationSourceCount == 33 && spire::kModulationTargetCount == 230, "table sizes: 33 sources, 230 targets");
+        require(source("Env1") == 5 && source("LFO1") == 9 && source("Velocity") == 13 && source("KeyFollow") == 14 && source("Random_Bipolar") == 15, "source ids confirmed by saved presets (1)");
+        require(source("PitchWheel") == 16 && source("ModWheel") == 17 && source("Stepper1") == 23 && source("Stepper2") == 24 && source("ArpStep") == 25, "source ids confirmed by saved presets (2)");
+        require(source("Mod1") == 26 && source("Mod4") == 29 && source("Random_Unipolar") == 30 && source("Constant_10%") == 31 && source("Constant_50%") == 32, "source ids confirmed by saved presets (3)");
+        bool unique = true; for (size_t i = 0; i < spire::kModulationTargetCount; ++i) for (size_t j = i + 1; j < spire::kModulationTargetCount; ++j) if (spire::kModulationTargets[i].id == spire::kModulationTargets[j].id) unique = false;
+        require(unique, "every target id is unique");
+        require(target("Cutoff_1") == 45 && target("Reso_1") == 46 && target("Cutoff_2") == 47 && target("Osc1_Pitch") == 5 && target("Rev_DryWet") == 143 && target("Main_Volume") == 145, "target ids match the most used targets in the library");
     }
     // A byte-order mark is accepted.
     require(decode(std::string("\xEF\xBB\xBF") + good).ok, "a UTF-8 byte-order mark is accepted");
