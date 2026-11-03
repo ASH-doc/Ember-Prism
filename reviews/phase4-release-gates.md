@@ -34,3 +34,7 @@ Revision under test: branch `integration/dual-synth`, commit `a600249c02748f6dfd
 - Prism's modulation source list gained a 25th entry (Pitch Bend); a DAW that stored automation of those source selectors as a normalised value could map to a different source.
 - An instance keeps at most 32 distinct imported wavetables (the Claude PRISM tables count against this).
 - Compressor type switching (Glue / FET 76) is a hard switch, not a crossfade.
+
+## Working name and install (added after the first Windows install)
+Arash asked for the working name **AEther v4.0** and for the VST3 in `C:\Program Files\VST`. The plugin's registered name, the standalone window title, the editor title and `getName()` now read AEther v4.0 (`PRODUCT_NAME` in `CMakeLists.txt`). The bundle ID, manufacturer code and plugin code are unchanged, so the plugin identity for recall is the same as before; no project had been saved with the earlier `Dual Synth` build. Installed by Claude: `C:\Program Files\VST\AEther v4.0.vst3` (byte-identical to the tested build; Windows asked for administrator approval). The earlier per-user test copy `Dual Synth.vst3` was removed so only one plugin shows up. Re-tested on the renamed build: `DualTests` PASS, `DualProbe` PASS, standalone alive, plugin name AEther v4.0 in the module info. `scripts/*` and `Build-Windows.bat` still mention `Dual Synth.vst3`; they were not changed.
+

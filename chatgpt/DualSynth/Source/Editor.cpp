@@ -52,7 +52,7 @@ DualEditor::DualEditor(DualProcessor& processor):AudioProcessorEditor(processor)
 DualEditor::~DualEditor(){stopTimer();editorB.reset();editorA.reset();setLookAndFeel(nullptr);}
 void DualEditor::select(int which){p.panel.store(which);editorA->setVisible(which==0);editorB->setVisible(which==1);showA.setToggleState(which==0,dontSendNotification);showB.setToggleState(which==1,dontSendNotification);repaint();}
 void DualEditor::resized(){surface.setBounds(0,0,1600,840);surface.setTransform(AffineTransform::scale(float(getWidth())/1600,float(getHeight())/840));}
-void DualEditor::paint(Graphics& g){g.fillAll(navy());g.addTransform(AffineTransform::scale(float(getWidth())/1600,float(getHeight())/840));g.setColour(ice());g.setFont(FontOptions(23.f,Font::bold));g.drawText("DUAL / SYNTH",26,13,218,35,Justification::centredLeft);g.setColour(aqua());g.setFont(FontOptions(10.f));g.drawText("TWO ENGINES  /  ONE PERFORMANCE",26,47,300,12,Justification::centredLeft);
+void DualEditor::paint(Graphics& g){g.fillAll(navy());g.addTransform(AffineTransform::scale(float(getWidth())/1600,float(getHeight())/840));g.setColour(ice());g.setFont(FontOptions(23.f,Font::bold));g.drawText("AETHER v4.0",26,13,218,35,Justification::centredLeft);g.setColour(aqua());g.setFont(FontOptions(10.f));g.drawText("TWO ENGINES  /  ONE PERFORMANCE",26,47,300,12,Justification::centredLeft);
  const Rectangle<float> bay(1290, 76, 298, 752);
  g.setColour(Colours::black.withAlpha(.5f));
  g.fillRoundedRectangle(bay.translated(0, 3), 12);
@@ -77,7 +77,7 @@ void DualEditor::paint(Graphics& g){g.fillAll(navy());g.addTransform(AffineTrans
  g.drawText("CONTROL BAY", 1318, 20, 160, 22, Justification::centredLeft);
  g.setColour(ControlBay::secondary);
  g.setFont(FontOptions(9.f));
- g.drawText("DUAL SYNTH / SIGNAL PATH", 1318, 41, 230, 13, Justification::centredLeft);
+ g.drawText("AETHER v4.0 / SIGNAL PATH", 1318, 41, 230, 13, Justification::centredLeft);
  g.drawText("01 / 03", 1510, 22, 58, 17, Justification::centredRight);
 
  auto section = [&](int y, int height, const String& number, const String& title) {
