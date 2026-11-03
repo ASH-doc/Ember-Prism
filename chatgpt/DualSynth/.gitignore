@@ -1,4 +1,4 @@
-build/
+/build/
 dist/
 work/
 .DS_Store
