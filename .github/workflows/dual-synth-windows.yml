@@ -1,0 +1,24 @@
+name: Dual Synth Windows test package
+on:
+  push:
+    branches: [build/windows-9663db0]
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 9663db0c24d2284a5b2e1b8968b5bf7722f3b2b0
+      - name: Build and test Windows x64 Release
+        working-directory: chatgpt/DualSynth
+        shell: pwsh
+        run: ./scripts/build-windows.ps1 -Jobs 4
+      - name: Upload VST3 and standalone
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dual-Synth-Windows-x64-9663db0
+          path: chatgpt/DualSynth/dist/Windows/
+          if-no-files-found: error
