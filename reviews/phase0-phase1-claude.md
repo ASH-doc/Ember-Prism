@@ -36,3 +36,8 @@ Engine wrappers (no DSP, no parameters, no presets touched): `Engines/A/Source/s
 4. The 1300 bridged automation parameters were not touched or profiled.
 5. Phase 1 in a real DAW and by ear: not run. macOS: not run.
 6. `chatgpt/EmberVA` and `chatgpt/PrismFlux` ignore rules not fixed.
+
+## Addendum — macOS result reported by GPT, and the fix
+GPT ran commit `158b3fc` on macOS (Apple Clang): the clean Release build and the VST3 probe passed; `HostIntegration` stopped at "allocation counter sees a deliberate allocation" because the compiler removed the `new int` / `delete` pair (allowed by the C++ standard). Claude had not seen this because MSVC kept the allocation. GPT supplied a test-only patch; Claude applied it: the probe now calls `::operator new(sizeof(int))` / `::operator delete(probe)` directly, which cannot be elided. No product code changed.
+Re-run on Windows after the patch (default stack, Release): `DualTests` PASS (all INFO lines and original checks as above, 949 loads during 601 blocks), `DualProbe` on the rebuilt VST3 PASS. macOS result for the new commit: **not run by Claude; GPT to verify the same revision.**
+Still open (GPT's review agrees): channel-scoped MIDI handling inside the engines; coherent state publication at an audio block boundary.

@@ -49,7 +49,7 @@ void routeMidiAllocationTest(){
  auto host=makeHost();host->prepareToPlay(48000,256);MidiBuffer in,ma,mb;
  for(int i=0;i<20;++i){in.addEvent(MidiMessage::noteOn(1,40+i,.7f),i);in.addEvent(MidiMessage::noteOff(1,40+i),100+i);}
  host->routeMidi(in,ma,mb);
- allocationCount=0;countAllocations=true;{auto* probe=new int(1);delete probe;}countAllocations=false;require(allocationCount.load()==1,"allocation counter sees a deliberate allocation");
+ allocationCount=0;countAllocations=true;{void* probe = ::operator new(sizeof(int)); ::operator delete(probe);}countAllocations=false;require(allocationCount.load()==1,"allocation counter sees a deliberate allocation");
  allocationCount=0;countAllocations=true;for(int i=0;i<200;++i)host->routeMidi(in,ma,mb);countAllocations=false;
  std::cout<<"INFO: heap allocations in 200 routeMidi calls with 40 events each: "<<allocationCount.load()<<"\n";
  require(allocationCount.load()==0,"host MIDI routing allocates nothing");
