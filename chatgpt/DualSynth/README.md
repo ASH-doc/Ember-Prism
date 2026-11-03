@@ -22,6 +22,15 @@ The `Mac` folder contains the compiled Apple Silicon app and VST3. Run `Install-
 
 The optional section processes only the summed stereo output: a stereo-linked compressor (threshold, ratio, attack, release), algorithmic stereo reverb (size, damping, mix), stereo width, and optional low/air tone EQ. Individual Comp/Verb/EQ switches let you choose the glue. Width1 and EQ0dB are neutral. Master bypass crossfades smoothly to avoid an abrupt discontinuity. Effects can intentionally change the final mixed sound when enabled; neither engine's own patch, DSP or effects are edited by these controls.
 
+## Mixer, routing and master additions (Phase 2)
+
+- **Mixer:** each strip has level, pan (centre is exactly unity), mute, **solo** and a stereo level bar; the output has its own stereo bar. Muted and solo-excluded engines keep processing.
+- **Routing:** **Swap** puts A on the high keys and B on the low keys in Split mode. **TAP** sets tempo from your taps (average of up to 8, restarts after 2 s) on both engines, A or B (menu next to it) and turns their *Follow host* off.
+- **Master compressor:** choose **FET 76** or **Glue** (the original compressor, unchanged). FET 76 is a fast peak compressor in the style of classic FET limiting amplifiers: Input drives the signal into a fixed threshold, Output trims, Attack 20-800 us, Release 50-1100 ms, ratio buttons 4 / 8 / 12 / 20 and ALL, parallel Mix and a 90 Hz sidechain filter. An analog-style needle meter shows gain reduction for both types. It adds no latency. New instances start on FET 76; performances saved before Phase 2 reload on Glue.
+- **Reverb:** added **pre-delay** (0-100 ms) and **low cut** (20-600 Hz) on the reverb send; at their defaults the reverb is bit-for-bit what it was.
+- The master section has three tabs: COMP, REVERB and TONE (EQ and width). **Master FX is still off by default.**
+- FET 76 values were set by measurement, not by ear. See `reviews/phase2-claude.md` for the numbers and for what was not tested.
+
 ## Presets, automation and recall
 
 Both synths retain their own original preset banks, patch import/export, macros and editors. `Save performance` saves both complete engine states, host routing/mixer/effects, MIDI maps, embedded Prism wavetable assets, and the selected panel as one `.dualsynth` file. Your DAW project stores the same complete state. Ordinary MIDI keys and active effect tails are not serialized.

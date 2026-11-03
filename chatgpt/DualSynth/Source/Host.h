@@ -3,6 +3,7 @@
 #include "sa-processor.h"
 #include "sb-plugin.h"
 #include "MasterDsp.h"
+#include "EditorWidgets.h"
 
 // Hands a child the host transport shifted forward by `samples`, so a child that renders one slice of an
 // oversized host block sees tempo and PPQ for the start of that slice rather than the start of the block.
@@ -87,8 +88,10 @@ private:
 };
 class DualEditor final:public juce::AudioProcessorEditor,private juce::Timer {
 public:explicit DualEditor(DualProcessor&);~DualEditor()override;void resized()override;void paint(juce::Graphics&)override;void select(int);
+ // Master section tab: 0 compressor, 1 reverb, 2 tone and width.
+ void showMasterTab(int);
 private:
- DualProcessor& p;juce::LookAndFeel_V4 look;juce::Component surface,clip;
+ DualProcessor& p;HostLook look;juce::Component surface,clip;
  std::unique_ptr<juce::AudioProcessorEditor> editorA,editorB;
  juce::MidiKeyboardComponent keys;
  juce::TextButton showA{"A  /  EMBER VA"},showB{"B  /  PRISM FLUX"},panicButton{"PANIC"},save{"Save performance"},load{"Load"};
@@ -98,6 +101,14 @@ private:
  std::vector<std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment>> choices;
  juce::Slider pitch,mod;juce::Label meter,status;
  std::unique_ptr<juce::FileChooser> chooser;
- void dial(juce::String,int,int,int,int);void toggle(juce::String,juce::String,int,int,int);void menu(juce::String,juce::StringArray,int,int,int);
+ // Master section: three tabs (compressor, reverb, tone/width). Each control is tagged with the tab it belongs to.
+ enum Group{Always,CompShared,CompFet,CompGlue,ReverbTab,ToneTab};
+ Group currentGroup=Always;int masterTab=0;std::vector<std::pair<juce::Component*,Group>> grouped;
+ std::array<juce::TextButton,3> tabButtons;
+ GainReductionMeter reductionMeter;LevelBars barsA,barsB,barsOut{true};
+ std::unique_ptr<RatioButtons> ratioButtons;
+ juce::TextButton tapButton{"TAP"};juce::Label tapLabel;
+ void dial(juce::String,int,int,int,int);void toggle(juce::String,juce::String,int,int,int);void menu(juce::String,juce::StringArray,int,int,int,int height=28);
+ void refreshMasterTabs();
  void file(bool);void timerCallback()override;
 };

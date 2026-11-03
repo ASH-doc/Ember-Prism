@@ -16,16 +16,36 @@ DualEditor::DualEditor(DualProcessor& processor):AudioProcessorEditor(processor)
  showA.setBounds(247,15,192,34);showB.setBounds(449,15,192,34);showA.onClick=[this]{select(0);};showB.onClick=[this]{select(1);};save.setBounds(823,18,142,28);load.setBounds(975,18,68,28);panicButton.setBounds(1177,18,85,28);save.onClick=[this]{file(true);};load.onClick=[this]{file(false);};panicButton.onClick=[this]{p.panic.store(true);};
  keys.setBounds(114,750,1148,32);keys.setAvailableRange(24,108);keys.setLowestVisibleKey(36);keys.setKeyWidth(20);keys.setVelocity(.8f,true);keys.setColour(MidiKeyboardComponent::whiteNoteColourId,Colour(0xffc8d5ed));keys.setColour(MidiKeyboardComponent::blackNoteColourId,Colour(0xff101b30));keys.setColour(MidiKeyboardComponent::keyDownOverlayColourId,aqua().withAlpha(.6f));surface.addAndMakeVisible(keys);
  for(auto* slider:{&pitch,&mod}){slider->setSliderStyle(Slider::LinearVertical);slider->setTextBoxStyle(Slider::NoTextBox,false,0,0);surface.addAndMakeVisible(slider);}pitch.setRange(-1,1);pitch.setBounds(28,749,28,34);pitch.onValueChange=[this]{p.bend.store(float(pitch.getValue()));};pitch.onDragEnd=[this]{pitch.setValue(0);};mod.setRange(0,127,1);mod.setBounds(70,749,28,34);mod.onValueChange=[this]{p.wheel.store(float(mod.getValue()));};
- menu("routing",{"Layer","Split","A only","B only"},1308,106,264);dial("split",1308,145,264,46);
- dial("a.low",1308,220,74,52);dial("a.high",1390,220,74,52);dial("a.channel",1472,220,100,52);
- dial("b.low",1308,298,74,52);dial("b.high",1390,298,74,52);dial("b.channel",1472,298,100,52);
- dial("a.gain",1308,388,86,80);toggle("a.mute","MUTE A",1308,473,100);dial("b.gain",1490,388,86,80);toggle("b.mute","MUTE B",1490,473,86);
- toggle("glue","MASTER FX",1308,540,128);toggle("comp","Comp",1444,540,75);toggle("verb","Verb",1522,540,60);
- dial("threshold",1308,573,62,68);dial("ratio",1375,573,62,68);dial("attack",1442,573,62,68);dial("release",1509,573,65,68);
- dial("room",1308,650,62,68);dial("damp",1375,650,62,68);dial("wet",1442,650,62,68);dial("width",1509,650,65,68);
- toggle("eq","Tone EQ",1308,727,95);dial("low",1410,720,70,65);dial("air",1490,720,70,65);dial("master",1077,8,76,49);
- meter.setBounds(1308,791,264,24);meter.setColour(Label::textColourId,aqua());meter.setFont(FontOptions(10.f));surface.addAndMakeVisible(meter);
- status.setBounds(28,796,1235,24);status.setFont(FontOptions(11.f));status.setColour(Label::textColourId,Colour(0xff94a6c7));surface.addAndMakeVisible(status);
+ dial("master",1077,8,76,49);
+ // ---- Keyboard routing: mode, split note and swap, tap tempo -------------------------------------------------------------
+ menu("routing",{"Layer","Split","A only","B only"},1308,102,264,26);
+ dial("split",1308,132,170,44);toggle("swap","SWAP",1488,142,84);
+ surface.addAndMakeVisible(tapButton);tapButton.setBounds(1308,181,56,24);tapButton.onClick=[this]{p.tapTempo();};
+ surface.addAndMakeVisible(tapLabel);tapLabel.setBounds(1368,181,76,24);tapLabel.setFont(FontOptions(10.f));tapLabel.setColour(Label::textColourId,Colour(0xff94a6c7));tapLabel.setJustificationType(Justification::centredLeft);
+ menu("tap.target",{"Tap: both","Tap: A","Tap: B"},1448,181,124,24);
+ // ---- Per-engine note range and channel ------------------------------------------------------------------------------------
+ dial("a.low",1308,224,74,50);dial("a.high",1390,224,74,50);dial("a.channel",1472,224,100,50);
+ dial("b.low",1308,292,74,50);dial("b.high",1390,292,74,50);dial("b.channel",1472,292,100,50);
+ // ---- Output mixer: gain, pan, mute, solo and level bars for each strip ----------------------------------------------------
+ dial("a.gain",1308,384,86,72);surface.addAndMakeVisible(barsA);barsA.setBounds(1402,388,30,64);dial("a.pan",1308,456,128,44);toggle("a.mute","MUTE",1308,502,62);toggle("a.solo","SOLO",1374,502,62);
+ dial("b.gain",1444,384,86,72);surface.addAndMakeVisible(barsB);barsB.setBounds(1538,388,30,64);dial("b.pan",1444,456,128,44);toggle("b.mute","MUTE",1444,502,62);toggle("b.solo","SOLO",1510,502,62);
+ // ---- Master section: switch, then three tabs ------------------------------------------------------------------------------
+ toggle("glue","MASTER FX",1420,530,152);
+ const char* tabNames[3]={"COMP","REVERB","TONE"};
+ for(int i=0;i<3;++i){auto& tab=tabButtons[size_t(i)];tab.setButtonText(tabNames[i]);tab.setClickingTogglesState(false);tab.setBounds(1308+i*89,558,86,22);tab.setColour(TextButton::buttonOnColourId,Colour(0xff4fe3f5));tab.setColour(TextButton::textColourOnId,navy());surface.addAndMakeVisible(tab);tab.onClick=[this,i]{showMasterTab(i);};}
+ currentGroup=CompShared;menu("comp.mode",{"Glue","FET 76"},1308,586,100,24);toggle("comp","COMP ON",1414,586,100);
+ surface.addAndMakeVisible(reductionMeter);reductionMeter.setBounds(1308,614,264,80);grouped.push_back({&reductionMeter,CompShared});
+ currentGroup=CompFet;
+ ratioButtons=std::make_unique<RatioButtons>(p.state,"fet.ratio",StringArray{"4","8","12","20","ALL"});surface.addAndMakeVisible(*ratioButtons);ratioButtons->setBounds(1308,698,264,22);grouped.push_back({ratioButtons.get(),CompFet});
+ dial("fet.input",1308,724,52,70);dial("fet.output",1361,724,52,70);dial("fet.attack",1414,724,52,70);dial("fet.release",1467,724,52,70);dial("fet.mix",1520,724,52,70);
+ currentGroup=CompGlue;dial("threshold",1308,724,62,70);dial("ratio",1375,724,62,70);dial("attack",1442,724,62,70);dial("release",1509,724,63,70);
+ currentGroup=ReverbTab;toggle("verb","REVERB ON",1308,586,120);dial("room",1308,618,84,72);dial("damp",1398,618,84,72);dial("wet",1488,618,84,72);dial("verb.predelay",1308,698,84,72);dial("verb.lowcut",1398,698,84,72);
+ currentGroup=ToneTab;toggle("eq","TONE EQ ON",1308,586,130);dial("low",1308,618,84,72);dial("air",1398,618,84,72);dial("width",1488,618,84,72);
+ currentGroup=Always;
+ surface.addAndMakeVisible(barsOut);barsOut.setBounds(1334,800,238,16);
+ meter.setBounds(880,796,382,24);meter.setColour(Label::textColourId,aqua());meter.setFont(FontOptions(10.f));meter.setJustificationType(Justification::centredRight);surface.addAndMakeVisible(meter);
+ status.setBounds(28,796,830,24);status.setFont(FontOptions(11.f));status.setColour(Label::textColourId,Colour(0xff94a6c7));surface.addAndMakeVisible(status);
+ showMasterTab(0);
  select(p.panel.load());setResizable(true,true);setResizeLimits(1000,525,1920,1008);getConstrainer()->setFixedAspectRatio(1600.0/840.0);setSize(1440,756);timerCallback();startTimerHz(24);
 }
 DualEditor::~DualEditor(){stopTimer();editorB.reset();editorA.reset();setLookAndFeel(nullptr);}
@@ -33,12 +53,35 @@ void DualEditor::select(int which){p.panel.store(which);editorA->setVisible(whic
 void DualEditor::resized(){surface.setBounds(0,0,1600,840);surface.setTransform(AffineTransform::scale(float(getWidth())/1600,float(getHeight())/840));}
 void DualEditor::paint(Graphics& g){g.fillAll(navy());g.addTransform(AffineTransform::scale(float(getWidth())/1600,float(getHeight())/840));g.setColour(ice());g.setFont(FontOptions(23.f,Font::bold));g.drawText("DUAL / SYNTH",26,13,218,35,Justification::centredLeft);g.setColour(aqua());g.setFont(FontOptions(10.f));g.drawText("TWO ENGINES  /  ONE PERFORMANCE",26,47,300,12,Justification::centredLeft);
  // Children paint above this backing; the shared keys cover the former local keyboard area.
- g.setColour(Colour(0xff131b30));g.fillRoundedRectangle(1290,76,298,744,16);g.setColour(ice());g.setFont(FontOptions(12.f,Font::bold));g.drawText("KEYBOARD ROUTING",1308,80,264,22,Justification::centredLeft);g.drawText("A / EMBER VA   /   NOTE RANGE + CHANNEL",1308,196,270,19,Justification::centredLeft);g.drawText("B / PRISM FLUX   /   NOTE RANGE + CHANNEL",1308,277,270,19,Justification::centredLeft);g.drawText("OUTPUT MIXER",1308,363,264,20,Justification::centredLeft);g.drawText("MASTER GLUE",1308,514,264,20,Justification::centredLeft);g.setColour(Colour(0xff7387ab));g.setFont(FontOptions(10.f));g.drawText("0 = all MIDI channels   /   B starts at Split note",1308,350,270,12,Justification::centredLeft);
+ g.setColour(Colour(0xff131b30));g.fillRoundedRectangle(1290,76,298,744,16);g.setColour(ice());g.setFont(FontOptions(12.f,Font::bold));
+ g.drawText("KEYBOARD ROUTING",1308,80,264,20,Justification::centredLeft);g.drawText("A / EMBER VA   /   NOTE RANGE + CHANNEL",1308,207,270,17,Justification::centredLeft);g.drawText("B / PRISM FLUX   /   NOTE RANGE + CHANNEL",1308,275,270,17,Justification::centredLeft);
+ g.drawText("OUTPUT MIXER",1308,362,264,20,Justification::centredLeft);g.drawText("MASTER",1308,531,100,22,Justification::centredLeft);g.setFont(FontOptions(10.f,Font::bold));g.drawText("OUT",1308,798,26,20,Justification::centredLeft);
+ g.setColour(Colour(0xff7387ab));g.setFont(FontOptions(10.f));g.drawText("0 = all MIDI channels   /   B starts at Split note",1308,343,270,12,Justification::centredLeft);
 }
-void DualEditor::dial(String id,int x,int y,int w,int h){auto label=std::make_unique<Label>();auto* param=p.state.getParameter(id);String title=param->name;if(id.endsWith(".channel"))title="Channel";else if(id.endsWith(".low"))title="Low note";else if(id.endsWith(".high"))title="High note";else if(id=="room")title="Size";else if(id=="damp")title="Damping";else if(id=="width")title="Width";label->setText(title,dontSendNotification);label->setFont(FontOptions(9.f));label->setJustificationType(Justification::centred);label->setBounds(x,y,w,16);surface.addAndMakeVisible(*label);controls.push_back(std::move(label));auto slider=std::make_unique<Slider>();slider->setSliderStyle(h<60?Slider::LinearHorizontal:Slider::RotaryHorizontalVerticalDrag);slider->setTextBoxStyle(Slider::TextBoxBelow,false,w,16);slider->setBounds(x,y+16,w,h-16);surface.addAndMakeVisible(*slider);sliders.push_back(std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(p.state,id,*slider));slider->textFromValueFunction=[integer=param->isDiscrete()](double v){return String(std::abs(v)<.0001?0:v,integer?0:2);};slider->updateText();controls.push_back(std::move(slider));}
-void DualEditor::toggle(String id,String name,int x,int y,int w){auto button=std::make_unique<ToggleButton>(name);button->setBounds(x,y,w,26);surface.addAndMakeVisible(*button);toggles.push_back(std::make_unique<AudioProcessorValueTreeState::ButtonAttachment>(p.state,id,*button));controls.push_back(std::move(button));}
-void DualEditor::menu(String id,StringArray labels,int x,int y,int w){auto combo=std::make_unique<ComboBox>();combo->addItemList(labels,1);combo->setBounds(x,y,w,28);surface.addAndMakeVisible(*combo);choices.push_back(std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment>(p.state,id,*combo));controls.push_back(std::move(combo));}
-void DualEditor::timerCallback(){if(editorA->isVisible()!=(p.panel.load()==0))select(p.panel.load());auto db=[](float x){return x>1.e-7f?String(Decibels::gainToDecibels(x),1):String("-inf");};float out=p.peaks[2].load();meter.setText("A "+db(p.peaks[0].load())+"   B "+db(p.peaks[1].load())+"   OUT "+db(out)+" dB",dontSendNotification);meter.setColour(Label::textColourId,out>1?Colours::salmon:aqua());String route=p.value("routing")==0?"LAYER":p.value("routing")==1?"SPLIT at "+MidiMessage::getMidiNoteName(int(p.value("split")),true,true,4):p.value("routing")==2?"A ONLY":"B ONLY";status.setText(route+"    /    Shared MIDI keyboard    /    Master FX "+String(p.value("glue")>.5f?"ON":"BYPASSED"),dontSendNotification);}
+void DualEditor::dial(String id,int x,int y,int w,int h){auto label=std::make_unique<Label>();auto* param=p.state.getParameter(id);String title=param->name;
+ if(id.endsWith(".channel"))title="Channel";else if(id.endsWith(".low")&&id!="verb.lowcut")title="Low note";else if(id.endsWith(".high"))title="High note";else if(id=="room")title="Size";else if(id=="damp")title="Damping";else if(id=="width")title="Width";
+ else if(id=="a.pan"||id=="b.pan")title=id.startsWithChar('a')?"A pan":"B pan";else if(id=="a.gain"||id=="b.gain")title=id.startsWithChar('a')?"A level dB":"B level dB";
+ else if(id=="fet.input")title="Input";else if(id=="fet.output")title="Output";else if(id=="fet.attack")title="Attack us";else if(id=="fet.release")title="Release ms";else if(id=="fet.mix")title="Mix";
+ else if(id=="verb.predelay")title="Pre-delay ms";else if(id=="verb.lowcut")title="Low cut Hz";else if(id=="low")title="Low shelf dB";else if(id=="air")title="Air shelf dB";else if(id=="wet")title="Mix";
+ label->setText(title,dontSendNotification);label->setFont(FontOptions(9.f));label->setJustificationType(Justification::centred);label->setBounds(x,y,w,16);surface.addAndMakeVisible(*label);grouped.push_back({label.get(),currentGroup});controls.push_back(std::move(label));
+ auto slider=std::make_unique<Slider>();slider->setSliderStyle(h<60?Slider::LinearHorizontal:Slider::RotaryHorizontalVerticalDrag);slider->setTextBoxStyle(Slider::TextBoxBelow,false,w,16);slider->setBounds(x,y+16,w,h-16);surface.addAndMakeVisible(*slider);sliders.push_back(std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(p.state,id,*slider));
+ slider->textFromValueFunction=[integer=param->isDiscrete(),pan=id.endsWith(".pan")](double v){if(pan){const int percent=int(std::lround(std::abs(v)*100));return percent==0?String("C"):String(v<0?"L":"R")+String(percent);}return String(std::abs(v)<.0001?0:v,integer?0:2);};slider->updateText();grouped.push_back({slider.get(),currentGroup});controls.push_back(std::move(slider));}
+void DualEditor::toggle(String id,String name,int x,int y,int w){auto button=std::make_unique<ToggleButton>(name);button->setBounds(x,y,w,24);surface.addAndMakeVisible(*button);toggles.push_back(std::make_unique<AudioProcessorValueTreeState::ButtonAttachment>(p.state,id,*button));grouped.push_back({button.get(),currentGroup});controls.push_back(std::move(button));}
+void DualEditor::menu(String id,StringArray labels,int x,int y,int w,int height){auto combo=std::make_unique<ComboBox>();combo->addItemList(labels,1);combo->setBounds(x,y,w,height);surface.addAndMakeVisible(*combo);choices.push_back(std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment>(p.state,id,*combo));grouped.push_back({combo.get(),currentGroup});controls.push_back(std::move(combo));}
+void DualEditor::showMasterTab(int which){masterTab=which;for(size_t i=0;i<tabButtons.size();++i)tabButtons[i].setToggleState(int(i)==which,dontSendNotification);refreshMasterTabs();}
+void DualEditor::refreshMasterTabs(){
+ const bool fet=int(p.get(DualProcessor::CompMode))==DualProcessor::Fet76;
+ for(auto& entry:grouped){bool show=true;switch(entry.second){case Always:show=true;break;case CompShared:show=masterTab==0;break;case CompFet:show=masterTab==0&&fet;break;case CompGlue:show=masterTab==0&&!fet;break;case ReverbTab:show=masterTab==1;break;case ToneTab:show=masterTab==2;break;}
+  if(entry.first->isVisible()!=show)entry.first->setVisible(show);}
+}
+void DualEditor::timerCallback(){if(editorA->isVisible()!=(p.panel.load()==0))select(p.panel.load());
+ auto db=[](float x){return x>1.e-7f?String(Decibels::gainToDecibels(x),1):String("-inf");};float out=p.peaks[2].load();meter.setText("A "+db(p.peaks[0].load())+"   B "+db(p.peaks[1].load())+"   OUT "+db(out)+" dB   /   GR "+String(p.gainReduction.load(),1)+" dB",dontSendNotification);meter.setColour(Label::textColourId,out>1?Colours::salmon:aqua());
+ barsA.setLevels(p.levels[0].load(),p.levels[1].load());barsB.setLevels(p.levels[2].load(),p.levels[3].load());barsOut.setLevels(p.levels[4].load(),p.levels[5].load());
+ reductionMeter.setTitle(int(p.get(DualProcessor::CompMode))==DualProcessor::Fet76?"FET 76":"GLUE");reductionMeter.setReduction(p.gainReduction.load());reductionMeter.tick();
+ const float bpm=p.lastTapBpm();tapLabel.setText(bpm>0?String(bpm,1)+" BPM":"tap tempo",dontSendNotification);
+ refreshMasterTabs();
+ String route=p.value("routing")==0?"LAYER":p.value("routing")==1?"SPLIT at "+MidiMessage::getMidiNoteName(int(p.value("split")),true,true,4)+(p.value("swap")>.5f?" (swapped)":""):p.value("routing")==2?"A ONLY":"B ONLY";
+ status.setText(route+"    /    Shared MIDI keyboard    /    Master FX "+String(p.value("glue")>.5f?"ON":"BYPASSED"),dontSendNotification);}
 void DualEditor::file(bool saving){chooser=std::make_unique<FileChooser>(saving?"Save dual performance":"Load dual performance",File::getSpecialLocation(File::userDocumentsDirectory).getChildFile("Dual Performance.dualsynth"),"*.dualsynth");Component::SafePointer<DualEditor> safe(this);chooser->launchAsync(saving?FileBrowserComponent::saveMode|FileBrowserComponent::canSelectFiles|FileBrowserComponent::warnAboutOverwriting:FileBrowserComponent::openMode|FileBrowserComponent::canSelectFiles,[safe,saving](const FileChooser& chosen){if(!safe||chosen.getResult()==File())return;auto file=chosen.getResult();if(saving){MemoryBlock block;safe->p.getStateInformation(block);if(!file.withFileExtension("dualsynth").replaceWithData(block.getData(),block.getSize()))AlertWindow::showMessageBoxAsync(MessageBoxIconType::WarningIcon,"Performance","Could not save performance.");}else{
   auto warn=[](const String& why){AlertWindow::showMessageBoxAsync(MessageBoxIconType::WarningIcon,"Performance not loaded",why+"\nNothing was changed.");};
   if(file.getSize()>DualProcessor::maxPerformanceBytes){warn("The file is larger than 8 MB.");return;}
