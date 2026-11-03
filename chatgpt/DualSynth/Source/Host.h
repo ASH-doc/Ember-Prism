@@ -2,6 +2,7 @@
 #include <JuceHeader.h>
 #include "sa-processor.h"
 #include "sb-plugin.h"
+#include "MasterDsp.h"
 
 // Hands a child the host transport shifted forward by `samples`, so a child that renders one slice of an
 // oversized host block sees tempo and PPQ for the start of that slice rather than the start of the block.
@@ -36,12 +37,24 @@ public:
  juce::String lastLoadError()const;
  // By-name access for the editor and tests. The audio thread uses the cached get() below instead.
  float value(const juce::String&)const;void write(const juce::String&,float);
- enum Id{Routing,Split,ALow,AHigh,AChannel,AGain,AMute,BLow,BHigh,BChannel,BGain,BMute,Master,Glue,Comp,Verb,Eq,Threshold,Ratio,Attack,Release,Room,Damp,Wet,Width,Low,Air,IdCount};
+ // Host parameters read on the audio thread. Everything up to Air is the ChatGPT baseline set; the rest was added in
+ // Phase 2 and only ever appended (no existing ID, range, default or choice index changed).
+ enum Id{Routing,Split,ALow,AHigh,AChannel,AGain,AMute,BLow,BHigh,BChannel,BGain,BMute,Master,Glue,Comp,Verb,Eq,Threshold,Ratio,Attack,Release,Room,Damp,Wet,Width,Low,Air,
+  APan,BPan,ASolo,BSolo,Swap,TapTarget,CompMode,FetInput,FetOutput,FetAttack,FetRelease,FetRatio,FetMix,FetSidechain,PreDelay,LowCut,IdCount};
+ enum CompressorMode{GlueCompressor=0,Fet76=1};
  float get(Id id)const{return cached[size_t(id)]->load(std::memory_order_relaxed);}
  SynthAProcessor a;PrismProcessor b;
  juce::AudioProcessorValueTreeState state;juce::MidiKeyboardState keyboard;
  std::atomic<bool> panic{false};std::atomic<int> panel{0};
  std::array<std::atomic<float>,3> peaks{};
+ // Stereo level meters (peak, linear): A left/right, B left/right, output left/right. Written by the audio thread.
+ std::array<std::atomic<float>,6> levels{};
+ // Largest compressor gain reduction in the last block, dB (>= 0), for the gain-reduction meter.
+ std::atomic<float> gainReduction{0};
+ // Tap tempo is a UI gesture: each call adds a tap. With two or more taps the average tempo is written to the engine(s)
+ // chosen by the "tap.target" parameter and their "follow host" switch is turned off. Returns the tempo or 0 for the first tap.
+ float tapTempo();
+ float lastTapBpm()const{return tapBpm.load();}
  std::atomic<float> bend{-2},wheel{-1};
  // Ownership is retained until key-up, even when the user changes the split while playing.
  void routeMidi(const juce::MidiBuffer&,juce::MidiBuffer&,juce::MidiBuffer&);
@@ -49,14 +62,20 @@ public:
  int sliceCapacity()const{return bufferA.getNumSamples();}
 private:
  static juce::AudioProcessorValueTreeState::ParameterLayout layout();
- struct Peaks{float a=0,b=0,master=0;};
+ struct Peaks{float a=0,b=0,master=0,level[6]{};float reduction=0;};
+ float panGain(float pan,int side)const;float stripGain(int strip)const;
  void renderSlice(juce::AudioBuffer<float>&,int start,int length,const juce::MidiBuffer&,Peaks&);
  std::array<std::atomic<float>*,IdCount> cached{};
  juce::AudioBuffer<float> bufferA,bufferB;juce::MidiBuffer midiA,midiB,sliceMidi;
  SliceTransport transport;
  std::array<std::array<unsigned char,128>,16> owners{};
  juce::SmoothedValue<float> gainA,gainB,master,width,fxBlend,verbWet;
+ juce::SmoothedValue<float> panLeftA,panRightA,panLeftB,panRightB;
  juce::dsp::Compressor<float> compressor;juce::Reverb reverb;
+ masterdsp::FetCompressor fet;masterdsp::ReverbInputStage reverbInput;
+ // Per-slice scratch for the master section (allocated up front, never on the audio thread).
+ std::vector<float> dryL,dryR,wetL,wetR;
+ std::array<double,8> tapTimes{};int tapCount=0;std::atomic<float> tapBpm{0};
  std::array<std::array<float,4>,2> alignB{};int alignHead=0;
  float toneLow[2]{},toneHigh[2]{};double sampleRate=48000;
  // Recall publication is exclusive with a complete host audio block.

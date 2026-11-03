@@ -1,0 +1,810 @@
+routing|Keyboard routing|4|1|0|Layer|Layer|A only|B only|Layer;Split;A only;B only
+split|Split note: B starts here|128|0|0|60|0|64|127
+a.low|A key low|128|0|0|0|0|64|127
+a.high|A key high|128|0|0|127|0|64|127
+a.channel|A MIDI channel (0=all)|17|0|0|0|0|8|16
+a.gain|A output dB|2147483647|0|0|-6.0000000|-60.0000000|-27.0000000|6.0000000
+a.mute|A mute|2|1|1|Off|Off|On|On|Off;On
+b.low|B key low|128|0|0|0|0|64|127
+b.high|B key high|128|0|0|127|0|64|127
+b.channel|B MIDI channel (0=all)|17|0|0|0|0|8|16
+b.gain|B output dB|2147483647|0|0|-6.0000000|-60.0000000|-27.0000000|6.0000000
+b.mute|B mute|2|1|1|Off|Off|On|On|Off;On
+master|Master dB|2147483647|0|0|0.0000000|-60.0000000|-27.0000000|6.0000000
+glue|Master effects|2|1|1|Off|Off|On|On|Off;On
+comp|Compressor|2|1|1|On|Off|On|On|Off;On
+verb|Reverb|2|1|1|On|Off|On|On|Off;On
+eq|Tone EQ|2|1|1|Off|Off|On|On|Off;On
+threshold|Threshold dB|2147483647|0|0|-18.0000000|-48.0000000|-24.0000000|0.0000000
+ratio|Ratio|2147483647|0|0|2.0000000|1.0000000|5.5000000|10.0000000
+attack|Attack ms|2147483647|0|0|20.0000000|1.0000000|50.5000000|100.0000000
+release|Release ms|2147483647|0|0|180.0000000|20.0000000|510.0000000|1000.0000000
+room|Reverb size|2147483647|0|0|0.6500000|0.0000000|0.5000000|1.0000000
+damp|Reverb damping|2147483647|0|0|0.4000000|0.0000000|0.5000000|1.0000000
+wet|Reverb mix|2147483647|0|0|0.1500000|0.0000000|0.3000000|0.6000000
+width|Stereo width|2147483647|0|0|1.0000000|0.0000000|0.7500000|1.5000000
+low|Low EQ dB|2147483647|0|0|0.0000000|-12.0000000|0.0000000|12.0000000
+air|Air EQ dB|2147483647|0|0|0.0000000|-12.0000000|0.0000000|12.0000000
+A.osc1.wave|A.Oscillator 1 / Wave|5|1|0|Saw|Saw|Triangle|Hypersaw|Saw;Pulse;Triangle;Sine;Hypersaw
+A.osc1.flavor|A.Oscillator 1 / Character|4|1|0|Velvet|Velvet|Reed|Cinder|Velvet;Copper;Reed;Cinder
+A.osc1.octave|A.Oscillator 1 / Octave|7|0|0|0|-3|0|3
+A.osc1.coarse|A.Oscillator 1 / Tune|49|0|0|0|-24|0|24
+A.osc1.fine|A.Oscillator 1 / Fine|2147483647|0|0|0.0000000|-100.0000000|0.0000000|100.0000000
+A.osc1.pw|A.Oscillator 1 / Width|2147483647|0|0|0.5000000|0.0500000|0.5000000|0.9500000
+A.osc1.level|A.Oscillator 1 / Level|2147483647|0|0|0.8000000|0.0000000|0.5000000|1.0000000
+A.osc1.phase|A.Oscillator 1 / Phase|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+A.osc1.free|A.Oscillator 1 / Free run|2|1|0|On|Off|Off|On|Off;On
+A.osc1.uni.voices|A.Oscillator 1 / Voices|8|0|0|1|1|4|8
+A.osc1.uni.detune|A.Oscillator 1 / Detune|2147483647|0|0|0.2000000|0.0000000|0.5000000|1.0000000
+A.osc1.uni.spread|A.Oscillator 1 / Spread|2147483647|0|0|0.7500000|0.0000000|0.5000000|1.0000000
+A.osc1.uni.blend|A.Oscillator 1 / Blend|2147483647|0|0|0.7000000|0.0000000|0.5000000|1.0000000
+A.osc2.wave|A.Oscillator 2 / Wave|5|1|0|Saw|Saw|Triangle|Hypersaw|Saw;Pulse;Triangle;Sine;Hypersaw
+A.osc2.flavor|A.Oscillator 2 / Character|4|1|0|Velvet|Velvet|Reed|Cinder|Velvet;Copper;Reed;Cinder
+A.osc2.octave|A.Oscillator 2 / Octave|7|0|0|0|-3|0|3
+A.osc2.coarse|A.Oscillator 2 / Tune|49|0|0|0|-24|0|24
+A.osc2.fine|A.Oscillator 2 / Fine|2147483647|0|0|7.0000076|-100.0000000|0.0000000|100.0000000
+A.osc2.pw|A.Oscillator 2 / Width|2147483647|0|0|0.5000000|0.0500000|0.5000000|0.9500000
+A.osc2.level|A.Oscillator 2 / Level|2147483647|0|0|0.3500000|0.0000000|0.5000000|1.0000000
+A.osc2.phase|A.Oscillator 2 / Phase|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+A.osc2.free|A.Oscillator 2 / Free run|2|1|0|On|Off|Off|On|Off;On
+A.osc2.uni.voices|A.Oscillator 2 / Voices|8|0|0|1|1|4|8
+A.osc2.uni.detune|A.Oscillator 2 / Detune|2147483647|0|0|0.2000000|0.0000000|0.5000000|1.0000000
+A.osc2.uni.spread|A.Oscillator 2 / Spread|2147483647|0|0|0.7500000|0.0000000|0.5000000|1.0000000
+A.osc2.uni.blend|A.Oscillator 2 / Blend|2147483647|0|0|0.7000000|0.0000000|0.5000000|1.0000000
+A.osc3.wave|A.Oscillator 3 / Wave|5|1|0|Saw|Saw|Triangle|Hypersaw|Saw;Pulse;Triangle;Sine;Hypersaw
+A.osc3.flavor|A.Oscillator 3 / Character|4|1|0|Velvet|Velvet|Reed|Cinder|Velvet;Copper;Reed;Cinder
+A.osc3.octave|A.Oscillator 3 / Octave|7|0|0|0|-3|0|3
+A.osc3.coarse|A.Oscillator 3 / Tune|49|0|0|0|-24|0|24
+A.osc3.fine|A.Oscillator 3 / Fine|2147483647|0|0|0.0000000|-100.0000000|0.0000000|100.0000000
+A.osc3.pw|A.Oscillator 3 / Width|2147483647|0|0|0.5000000|0.0500000|0.5000000|0.9500000
+A.osc3.level|A.Oscillator 3 / Level|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+A.osc3.phase|A.Oscillator 3 / Phase|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+A.osc3.free|A.Oscillator 3 / Free run|2|1|0|On|Off|Off|On|Off;On
+A.osc3.uni.voices|A.Oscillator 3 / Voices|8|0|0|1|1|4|8
+A.osc3.uni.detune|A.Oscillator 3 / Detune|2147483647|0|0|0.2000000|0.0000000|0.5000000|1.0000000
+A.osc3.uni.spread|A.Oscillator 3 / Spread|2147483647|0|0|0.7500000|0.0000000|0.5000000|1.0000000
+A.osc3.uni.blend|A.Oscillator 3 / Blend|2147483647|0|0|0.7000000|0.0000000|0.5000000|1.0000000
+A.osc2.sync|A.Mixer / Hard sync|2|1|0|Off|Off|Off|On|Off;On
+A.osc1.fm|A.Mixer / FM|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+A.mix.ring|A.Mixer / Ring|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+A.mix.sub|A.Mixer / Sub|2147483647|0|0|0.1800000|0.0000000|0.5000000|1.0000000
+A.mix.sub.wave|A.Mixer / Sub wave|2|1|0|Sine|Sine|Sine|Square|Sine;Square
+A.mix.sub.octave|A.Mixer / Sub octave|2|1|0|-1|-1|-1|-2|-1;-2
+A.mix.noise|A.Mixer / Noise|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+A.mix.noise.type|A.Mixer / Noise type|2|1|0|Pink|White|White|Pink|White;Pink
+A.analog.age|A.Character / Age|2147483647|0|0|0.2000000|0.0000000|0.5000000|1.0000000
+A.macro.warmth|A.Macros / Warmth|2147483647|0|0|0.3500000|0.0000000|0.5000000|1.0000000
+A.macro.saturation|A.Macros / Saturation|2147483647|0|0|0.1500000|0.0000000|0.5000000|1.0000000
+A.flt1.on|A.Filter 1 / Enabled|2|1|0|On|Off|Off|On|Off;On
+A.flt1.model|A.Filter 1 / Model|4|1|0|Ember 24|Ember 24|Snarl 12|Forge SVF|Ember 24;Silk 12;Snarl 12;Forge SVF
+A.flt1.mode|A.Filter 1 / Response|4|1|0|Low pass|Low pass|Band pass|Notch|Low pass;High pass;Band pass;Notch
+A.flt1.cutoff|A.Filter 1 / Cutoff|2147483647|0|0|4499.9995117|20.0000000|1001.2269287|20000.0000000
+A.flt1.res|A.Filter 1 / Resonance|2147483647|0|0|0.1800000|0.0000000|0.5000000|1.0000000
+A.flt1.drive|A.Filter 1 / Drive|2147483647|0|0|0.1200000|0.0000000|0.5000000|1.0000000
+A.flt1.key|A.Filter 1 / Key track|2147483647|0|0|0.3500000|0.0000000|0.5000000|1.0000000
+A.flt1.env|A.Filter 1 / Env 2|2147483647|0|0|0.3000000|-1.0000000|0.0000000|1.0000000
+A.flt1.velocity|A.Filter 1 / Velocity|2147483647|0|0|0.1500000|-1.0000000|0.0000000|1.0000000
+A.flt1.fm|A.Filter 1 / Filter FM|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+A.flt2.on|A.Filter 2 / Enabled|2|1|0|Off|Off|Off|On|Off;On
+A.flt2.model|A.Filter 2 / Model|4|1|0|Ember 24|Ember 24|Snarl 12|Forge SVF|Ember 24;Silk 12;Snarl 12;Forge SVF
+A.flt2.mode|A.Filter 2 / Response|4|1|0|Low pass|Low pass|Band pass|Notch|Low pass;High pass;Band pass;Notch
+A.flt2.cutoff|A.Filter 2 / Cutoff|2147483647|0|0|8999.9990234|20.0000000|1001.2269287|20000.0000000
+A.flt2.res|A.Filter 2 / Resonance|2147483647|0|0|0.1800000|0.0000000|0.5000000|1.0000000
+A.flt2.drive|A.Filter 2 / Drive|2147483647|0|0|0.1200000|0.0000000|0.5000000|1.0000000
+A.flt2.key|A.Filter 2 / Key track|2147483647|0|0|0.3500000|0.0000000|0.5000000|1.0000000
+A.flt2.env|A.Filter 2 / Env 2|2147483647|0|0|0.3000000|-1.0000000|0.0000000|1.0000000
+A.flt2.velocity|A.Filter 2 / Velocity|2147483647|0|0|0.1500000|-1.0000000|0.0000000|1.0000000
+A.flt2.fm|A.Filter 2 / Filter FM|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+A.filter.routing|A.Filter routing / Routing|3|1|0|Serial|Serial|Parallel|Split|Serial;Parallel;Split
+A.filter.balance|A.Filter routing / Balance|2147483647|0|0|0.5000000|0.0000000|0.5000000|1.0000000
+A.env1.attack|A.Envelope 1 / Attack|2147483647|0|0|0.0080000|0.0010000|0.9930264|10.0000000
+A.env1.decay|A.Envelope 1 / Decay|2147483647|0|0|0.3999999|0.0050000|0.9966296|10.0000000
+A.env1.sustain|A.Envelope 1 / Sustain|2147483647|0|0|0.8000000|0.0000000|0.5000000|1.0000000
+A.env1.release|A.Envelope 1 / Release|2147483647|0|0|0.3000000|0.0050000|1.4926924|15.0000000
+A.env1.curve|A.Envelope 1 / Curve|2147483647|0|0|1.3999999|0.3000000|1.6500001|3.0000000
+A.env2.attack|A.Envelope 2 / Attack|2147483647|0|0|0.0080000|0.0010000|0.9930264|10.0000000
+A.env2.decay|A.Envelope 2 / Decay|2147483647|0|0|0.3999999|0.0050000|0.9966296|10.0000000
+A.env2.sustain|A.Envelope 2 / Sustain|2147483647|0|0|0.2500000|0.0000000|0.5000000|1.0000000
+A.env2.release|A.Envelope 2 / Release|2147483647|0|0|0.3000000|0.0050000|1.4926924|15.0000000
+A.env2.curve|A.Envelope 2 / Curve|2147483647|0|0|1.3999999|0.3000000|1.6500001|3.0000000
+A.env3.attack|A.Envelope 3 / Attack|2147483647|0|0|0.0080000|0.0010000|0.9930264|10.0000000
+A.env3.decay|A.Envelope 3 / Decay|2147483647|0|0|0.3999999|0.0050000|0.9966296|10.0000000
+A.env3.sustain|A.Envelope 3 / Sustain|2147483647|0|0|0.2500000|0.0000000|0.5000000|1.0000000
+A.env3.release|A.Envelope 3 / Release|2147483647|0|0|0.3000000|0.0050000|1.4926924|15.0000000
+A.env3.curve|A.Envelope 3 / Curve|2147483647|0|0|1.3999999|0.3000000|1.6500001|3.0000000
+A.lfo1.shape|A.LFO 1 / Shape|6|1|0|Sine|Sine|Saw|Smooth random|Sine;Triangle;Saw;Square;Hold;Smooth random
+A.lfo1.rate|A.LFO 1 / Rate|2147483647|0|0|1.0000001|0.0100000|2.9853847|30.0000000
+A.lfo1.sync|A.LFO 1 / Tempo sync|2|1|0|Off|Off|Off|On|Off;On
+A.lfo1.division|A.LFO 1 / Division|10|1|0|1/4|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+A.lfo1.retrigger|A.LFO 1 / Key sync|2|1|0|On|Off|Off|On|Off;On
+A.lfo1.fade|A.LFO 1 / Fade in|2147483647|0|0|0.0000000|0.0000000|1.7677670|10.0000000
+A.lfo1.polarity|A.LFO 1 / Polarity|3|1|0|Bipolar|Bipolar|Positive|Negative|Bipolar;Positive;Negative
+A.lfo2.shape|A.LFO 2 / Shape|6|1|0|Sine|Sine|Saw|Smooth random|Sine;Triangle;Saw;Square;Hold;Smooth random
+A.lfo2.rate|A.LFO 2 / Rate|2147483647|0|0|0.2500000|0.0100000|2.9853847|30.0000000
+A.lfo2.sync|A.LFO 2 / Tempo sync|2|1|0|Off|Off|Off|On|Off;On
+A.lfo2.division|A.LFO 2 / Division|10|1|0|1/4|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+A.lfo2.retrigger|A.LFO 2 / Key sync|2|1|0|On|Off|Off|On|Off;On
+A.lfo2.fade|A.LFO 2 / Fade in|2147483647|0|0|0.0000000|0.0000000|1.7677670|10.0000000
+A.lfo2.polarity|A.LFO 2 / Polarity|3|1|0|Bipolar|Bipolar|Positive|Negative|Bipolar;Positive;Negative
+A.lfo3.shape|A.LFO 3 / Shape|6|1|0|Sine|Sine|Saw|Smooth random|Sine;Triangle;Saw;Square;Hold;Smooth random
+A.lfo3.rate|A.LFO 3 / Rate|2147483647|0|0|0.2500000|0.0100000|2.9853847|30.0000000
+A.lfo3.sync|A.LFO 3 / Tempo sync|2|1|0|Off|Off|Off|On|Off;On
+A.lfo3.division|A.LFO 3 / Division|10|1|0|1/4|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+A.lfo3.retrigger|A.LFO 3 / Key sync|2|1|0|On|Off|Off|On|Off;On
+A.lfo3.fade|A.LFO 3 / Fade in|2147483647|0|0|0.0000000|0.0000000|1.7677670|10.0000000
+A.lfo3.polarity|A.LFO 3 / Polarity|3|1|0|Bipolar|Bipolar|Positive|Negative|Bipolar;Positive;Negative
+A.macro.1|A.Macros / Macro 1|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+A.macro.2|A.Macros / Macro 2|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+A.macro.3|A.Macros / Macro 3|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+A.macro.4|A.Macros / Macro 4|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+A.voice.mode|A.Performance / Voice mode|3|1|0|Poly|Poly|Mono|Legato|Poly;Mono;Legato
+A.voice.glide|A.Performance / Glide|2147483647|0|0|0.0000000|0.0000000|0.3535534|2.0000000
+A.voice.bend|A.Performance / Bend range|24|0|0|2|1|12|24
+A.voice.velocity|A.Performance / Velocity curve|2147483647|0|0|1.0000000|0.3000000|1.6500001|3.0000000
+A.chord.on|A.Performance / Chord memory|2|1|0|Off|Off|Off|On|Off;On
+A.chord.1|A.Performance / Interval 1|49|0|0|0|-24|0|24
+A.chord.2|A.Performance / Interval 2|49|0|0|7|-24|0|24
+A.chord.3|A.Performance / Interval 3|49|0|0|12|-24|0|24
+A.chord.4|A.Performance / Interval 4|49|0|0|16|-24|0|24
+A.clock.bpm|A.Clock / Tempo|2147483647|0|0|138.0000000|30.0000000|165.0000000|300.0000000
+A.clock.host|A.Clock / Follow host|2|1|0|On|Off|Off|On|Off;On
+A.arp.on|A.Arpeggiator / Arpeggiator|2|1|0|Off|Off|Off|On|Off;On
+A.arp.mode|A.Arpeggiator / Pattern|6|1|0|Up|Up|Up-down|Chord|Up;Down;Up-down;Random;As played;Chord
+A.arp.octaves|A.Arpeggiator / Octaves|4|0|0|1|1|2|4
+A.arp.rate|A.Arpeggiator / Rate|10|1|0|1/16|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+A.arp.swing|A.Arpeggiator / Swing|2147483647|0|0|0.0000000|0.0000000|0.3250000|0.6500000
+A.arp.gate|A.Arpeggiator / Length|2147483647|0|0|0.6000000|0.0500000|0.5000000|0.9500000
+A.arp.hold|A.Arpeggiator / Hold|2|1|0|Off|Off|Off|On|Off;On
+A.arp.velocity1|A.Arp velocity / Velocity 1|2147483647|0|0|1.0000000|0.0500000|0.5250000|1.0000000
+A.arp.velocity2|A.Arp velocity / Velocity 2|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+A.arp.velocity3|A.Arp velocity / Velocity 3|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+A.arp.velocity4|A.Arp velocity / Velocity 4|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+A.arp.velocity5|A.Arp velocity / Velocity 5|2147483647|0|0|1.0000000|0.0500000|0.5250000|1.0000000
+A.arp.velocity6|A.Arp velocity / Velocity 6|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+A.arp.velocity7|A.Arp velocity / Velocity 7|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+A.arp.velocity8|A.Arp velocity / Velocity 8|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+A.arp.velocity9|A.Arp velocity / Velocity 9|2147483647|0|0|1.0000000|0.0500000|0.5250000|1.0000000
+A.arp.velocity10|A.Arp velocity / Velocity 10|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+A.arp.velocity11|A.Arp velocity / Velocity 11|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+A.arp.velocity12|A.Arp velocity / Velocity 12|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+A.arp.velocity13|A.Arp velocity / Velocity 13|2147483647|0|0|1.0000000|0.0500000|0.5250000|1.0000000
+A.arp.velocity14|A.Arp velocity / Velocity 14|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+A.arp.velocity15|A.Arp velocity / Velocity 15|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+A.arp.velocity16|A.Arp velocity / Velocity 16|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+A.seq.gate.on|A.Trance gate / Trance gate|2|1|0|Off|Off|Off|On|Off;On
+A.seq.gate.rate|A.Trance gate / Rate|10|1|0|1/16|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+A.seq.gate.depth|A.Trance gate / Depth|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+A.seq.gate.smooth|A.Trance gate / Smooth|2147483647|0|0|0.0040000|0.0010000|0.0185009|0.1000000
+A.seq.gate.shape|A.Trance gate / Shape|2147483647|0|0|0.2000000|0.0000000|0.5000000|1.0000000
+A.seq.gate.restart|A.Trance gate / Key restart|2|1|0|On|Off|Off|On|Off;On
+A.seq.gate.step1|A.Gate steps / Step 1|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+A.seq.gate.tie1|A.Gate ties / Tie 1|2|1|0|Off|Off|Off|On|Off;On
+A.seq.gate.step2|A.Gate steps / Step 2|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+A.seq.gate.tie2|A.Gate ties / Tie 2|2|1|0|Off|Off|Off|On|Off;On
+A.seq.gate.step3|A.Gate steps / Step 3|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+A.seq.gate.tie3|A.Gate ties / Tie 3|2|1|0|Off|Off|Off|On|Off;On
+A.seq.gate.step4|A.Gate steps / Step 4|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+A.seq.gate.tie4|A.Gate ties / Tie 4|2|1|0|Off|Off|Off|On|Off;On
+A.seq.gate.step5|A.Gate steps / Step 5|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+A.seq.gate.tie5|A.Gate ties / Tie 5|2|1|0|Off|Off|Off|On|Off;On
+A.seq.gate.step6|A.Gate steps / Step 6|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+A.seq.gate.tie6|A.Gate ties / Tie 6|2|1|0|Off|Off|Off|On|Off;On
+A.seq.gate.step7|A.Gate steps / Step 7|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+A.seq.gate.tie7|A.Gate ties / Tie 7|2|1|0|Off|Off|Off|On|Off;On
+A.seq.gate.step8|A.Gate steps / Step 8|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+A.seq.gate.tie8|A.Gate ties / Tie 8|2|1|0|Off|Off|Off|On|Off;On
+A.seq.gate.step9|A.Gate steps / Step 9|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+A.seq.gate.tie9|A.Gate ties / Tie 9|2|1|0|Off|Off|Off|On|Off;On
+A.seq.gate.step10|A.Gate steps / Step 10|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+A.seq.gate.tie10|A.Gate ties / Tie 10|2|1|0|Off|Off|Off|On|Off;On
+A.seq.gate.step11|A.Gate steps / Step 11|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+A.seq.gate.tie11|A.Gate ties / Tie 11|2|1|0|Off|Off|Off|On|Off;On
+A.seq.gate.step12|A.Gate steps / Step 12|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+A.seq.gate.tie12|A.Gate ties / Tie 12|2|1|0|Off|Off|Off|On|Off;On
+A.seq.gate.step13|A.Gate steps / Step 13|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+A.seq.gate.tie13|A.Gate ties / Tie 13|2|1|0|Off|Off|Off|On|Off;On
+A.seq.gate.step14|A.Gate steps / Step 14|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+A.seq.gate.tie14|A.Gate ties / Tie 14|2|1|0|Off|Off|Off|On|Off;On
+A.seq.gate.step15|A.Gate steps / Step 15|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+A.seq.gate.tie15|A.Gate ties / Tie 15|2|1|0|Off|Off|Off|On|Off;On
+A.seq.gate.step16|A.Gate steps / Step 16|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+A.seq.gate.tie16|A.Gate ties / Tie 16|2|1|0|Off|Off|Off|On|Off;On
+A.fx.drive.on|A.FX drive / Enabled|2|1|0|Off|Off|Off|On|Off;On
+A.fx.drive.mix|A.FX drive / Mix|2147483647|0|0|0.2500000|0.0000000|0.5000000|1.0000000
+A.fx.chorus.on|A.FX chorus / Enabled|2|1|0|Off|Off|Off|On|Off;On
+A.fx.chorus.mix|A.FX chorus / Mix|2147483647|0|0|0.2500000|0.0000000|0.5000000|1.0000000
+A.fx.flanger.on|A.FX flanger / Enabled|2|1|0|Off|Off|Off|On|Off;On
+A.fx.flanger.mix|A.FX flanger / Mix|2147483647|0|0|0.2500000|0.0000000|0.5000000|1.0000000
+A.fx.phaser.on|A.FX phaser / Enabled|2|1|0|Off|Off|Off|On|Off;On
+A.fx.phaser.mix|A.FX phaser / Mix|2147483647|0|0|0.2500000|0.0000000|0.5000000|1.0000000
+A.fx.delay.on|A.FX delay / Enabled|2|1|0|Off|Off|Off|On|Off;On
+A.fx.delay.mix|A.FX delay / Mix|2147483647|0|0|0.2500000|0.0000000|0.5000000|1.0000000
+A.fx.reverb.on|A.FX reverb / Enabled|2|1|0|Off|Off|Off|On|Off;On
+A.fx.reverb.mix|A.FX reverb / Mix|2147483647|0|0|0.2500000|0.0000000|0.5000000|1.0000000
+A.fx.eq.on|A.FX eq / Enabled|2|1|0|Off|Off|Off|On|Off;On
+A.fx.eq.mix|A.FX eq / Mix|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+A.fx.pump.on|A.FX pump / Enabled|2|1|0|Off|Off|Off|On|Off;On
+A.fx.pump.mix|A.FX pump / Mix|2147483647|0|0|0.2500000|0.0000000|0.5000000|1.0000000
+A.fx.drive.mode|A.FX drive / Circuit|3|1|0|Tube|Tube|Tape|Hard|Tube;Tape;Hard
+A.fx.drive.amount|A.FX drive / Drive|2147483647|0|0|0.3000000|0.0000000|0.5000000|1.0000000
+A.fx.drive.tone|A.FX drive / Tone|2147483647|0|0|5499.9990234|200.0000000|1965.9836426|18000.0000000
+A.fx.chorus.rate|A.FX chorus / Rate|2147483647|0|0|0.3000000|0.0200000|1.4306780|8.0000000
+A.fx.chorus.depth|A.FX chorus / Depth|2147483647|0|0|0.5000000|0.0000000|0.5000000|1.0000000
+A.fx.chorus.feedback|A.FX chorus / Feedback|2147483647|0|0|0.2500000|0.0000000|0.4250000|0.8500000
+A.fx.flanger.rate|A.FX flanger / Rate|2147483647|0|0|0.3000000|0.0200000|1.4306780|8.0000000
+A.fx.flanger.depth|A.FX flanger / Depth|2147483647|0|0|0.5000000|0.0000000|0.5000000|1.0000000
+A.fx.flanger.feedback|A.FX flanger / Feedback|2147483647|0|0|0.2500000|0.0000000|0.4250000|0.8500000
+A.fx.phaser.rate|A.FX phaser / Rate|2147483647|0|0|0.3000000|0.0200000|1.4306780|8.0000000
+A.fx.phaser.depth|A.FX phaser / Depth|2147483647|0|0|0.5000000|0.0000000|0.5000000|1.0000000
+A.fx.phaser.feedback|A.FX phaser / Feedback|2147483647|0|0|0.2500000|0.0000000|0.4250000|0.8500000
+A.fx.delay.sync|A.FX delay / Sync|2|1|0|On|Off|Off|On|Off;On
+A.fx.delay.division|A.FX delay / Division|10|1|0|1/8 D|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+A.fx.delay.time|A.FX delay / Time|2147483647|0|0|0.3750000|0.0100000|0.5075000|2.0000000
+A.fx.delay.feedback|A.FX delay / Feedback|2147483647|0|0|0.3500000|0.0000000|0.4400000|0.8800000
+A.fx.delay.tone|A.FX delay / Tone|2147483647|0|0|3500.0000000|200.0000000|1767.5584717|16000.0000000
+A.fx.delay.pingpong|A.FX delay / Ping pong|2|1|0|On|Off|Off|On|Off;On
+A.fx.reverb.mode|A.FX reverb / Space|2|1|0|Dark plate|Dark plate|Dark plate|Dark hall|Dark plate;Dark hall
+A.fx.reverb.size|A.FX reverb / Size|2147483647|0|0|0.6500000|0.0000000|0.5000000|1.0000000
+A.fx.reverb.damp|A.FX reverb / Damping|2147483647|0|0|0.6500000|0.0000000|0.5000000|1.0000000
+A.fx.eq.low|A.FX eq / Low shelf|2147483647|0|0|0.0000000|-12.0000000|0.0000000|12.0000000
+A.fx.eq.high|A.FX eq / High shelf|2147483647|0|0|-1.5000000|-12.0000000|0.0000000|12.0000000
+A.fx.pump.rate|A.FX pump / Rate|10|1|0|1/4|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+A.fx.pump.depth|A.FX pump / Depth|2147483647|0|0|0.6500000|0.0000000|0.5000000|1.0000000
+A.fx.pump.curve|A.FX pump / Curve|2147483647|0|0|1.5000000|0.3000000|2.1500001|4.0000000
+A.master.volume|A.Master / Volume|2147483647|0|0|-9.0000000|-60.0000000|-30.0000000|0.0000000
+A.master.pan|A.Master / Pan|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+A.mod.1.source|A.Modulation matrix / Source|16|1|0|Off|Off|LFO 1|Macro 4|Off;Velocity;Key;Mod wheel;Pressure;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;Random;Macro 1;Macro 2;Macro 3;Macro 4
+A.mod.1.dest|A.Modulation matrix / Destination|265|1|0|None|None|arp.velocity2|mod.12.amount
+A.mod.1.amount|A.Modulation matrix / Amount|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+A.mod.2.source|A.Modulation matrix / Source|16|1|0|Off|Off|LFO 1|Macro 4|Off;Velocity;Key;Mod wheel;Pressure;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;Random;Macro 1;Macro 2;Macro 3;Macro 4
+A.mod.2.dest|A.Modulation matrix / Destination|265|1|0|None|None|arp.velocity2|mod.12.amount
+A.mod.2.amount|A.Modulation matrix / Amount|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+A.mod.3.source|A.Modulation matrix / Source|16|1|0|Off|Off|LFO 1|Macro 4|Off;Velocity;Key;Mod wheel;Pressure;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;Random;Macro 1;Macro 2;Macro 3;Macro 4
+A.mod.3.dest|A.Modulation matrix / Destination|265|1|0|None|None|arp.velocity2|mod.12.amount
+A.mod.3.amount|A.Modulation matrix / Amount|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+A.mod.4.source|A.Modulation matrix / Source|16|1|0|Off|Off|LFO 1|Macro 4|Off;Velocity;Key;Mod wheel;Pressure;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;Random;Macro 1;Macro 2;Macro 3;Macro 4
+A.mod.4.dest|A.Modulation matrix / Destination|265|1|0|None|None|arp.velocity2|mod.12.amount
+A.mod.4.amount|A.Modulation matrix / Amount|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+A.mod.5.source|A.Modulation matrix / Source|16|1|0|Off|Off|LFO 1|Macro 4|Off;Velocity;Key;Mod wheel;Pressure;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;Random;Macro 1;Macro 2;Macro 3;Macro 4
+A.mod.5.dest|A.Modulation matrix / Destination|265|1|0|None|None|arp.velocity2|mod.12.amount
+A.mod.5.amount|A.Modulation matrix / Amount|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+A.mod.6.source|A.Modulation matrix / Source|16|1|0|Off|Off|LFO 1|Macro 4|Off;Velocity;Key;Mod wheel;Pressure;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;Random;Macro 1;Macro 2;Macro 3;Macro 4
+A.mod.6.dest|A.Modulation matrix / Destination|265|1|0|None|None|arp.velocity2|mod.12.amount
+A.mod.6.amount|A.Modulation matrix / Amount|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+A.mod.7.source|A.Modulation matrix / Source|16|1|0|Off|Off|LFO 1|Macro 4|Off;Velocity;Key;Mod wheel;Pressure;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;Random;Macro 1;Macro 2;Macro 3;Macro 4
+A.mod.7.dest|A.Modulation matrix / Destination|265|1|0|None|None|arp.velocity2|mod.12.amount
+A.mod.7.amount|A.Modulation matrix / Amount|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+A.mod.8.source|A.Modulation matrix / Source|16|1|0|Off|Off|LFO 1|Macro 4|Off;Velocity;Key;Mod wheel;Pressure;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;Random;Macro 1;Macro 2;Macro 3;Macro 4
+A.mod.8.dest|A.Modulation matrix / Destination|265|1|0|None|None|arp.velocity2|mod.12.amount
+A.mod.8.amount|A.Modulation matrix / Amount|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+A.mod.9.source|A.Modulation matrix / Source|16|1|0|Off|Off|LFO 1|Macro 4|Off;Velocity;Key;Mod wheel;Pressure;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;Random;Macro 1;Macro 2;Macro 3;Macro 4
+A.mod.9.dest|A.Modulation matrix / Destination|265|1|0|None|None|arp.velocity2|mod.12.amount
+A.mod.9.amount|A.Modulation matrix / Amount|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+A.mod.10.source|A.Modulation matrix / Source|16|1|0|Off|Off|LFO 1|Macro 4|Off;Velocity;Key;Mod wheel;Pressure;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;Random;Macro 1;Macro 2;Macro 3;Macro 4
+A.mod.10.dest|A.Modulation matrix / Destination|265|1|0|None|None|arp.velocity2|mod.12.amount
+A.mod.10.amount|A.Modulation matrix / Amount|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+A.mod.11.source|A.Modulation matrix / Source|16|1|0|Off|Off|LFO 1|Macro 4|Off;Velocity;Key;Mod wheel;Pressure;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;Random;Macro 1;Macro 2;Macro 3;Macro 4
+A.mod.11.dest|A.Modulation matrix / Destination|265|1|0|None|None|arp.velocity2|mod.12.amount
+A.mod.11.amount|A.Modulation matrix / Amount|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+A.mod.12.source|A.Modulation matrix / Source|16|1|0|Off|Off|LFO 1|Macro 4|Off;Velocity;Key;Mod wheel;Pressure;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;Random;Macro 1;Macro 2;Macro 3;Macro 4
+A.mod.12.dest|A.Modulation matrix / Destination|265|1|0|None|None|arp.velocity2|mod.12.amount
+A.mod.12.amount|A.Modulation matrix / Amount|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.osc1.table|B.Oscillator 1 / Table|31|1|0|Glass Mesh|Vector Saw|Fluid Cell|Imported|Vector Saw;Pulse Atlas;Harmonic Fold;Prism Ramp;Triangle Orbit;Glass Mesh;Chrome Grid;Crystal Teeth;Ion Shards;Digital Silk;Vowel Arc;Formant Lane;Choir Vector;Whisper Mouth;Vocal Prism;Fluid Cell;Coral Thread;Grain Current;Plasma Ribbon;Organic Lattice;Bell Spectrum;FM Crown;Chime Matrix;Metal Rain;Orbital Gong;Air Spectrum;Frozen Hiss;Cloud Comb;White Halo;Spectral Dust;Imported
+B.osc1.pos|B.Oscillator 1 / Position|2147483647|0|0|0.2500000|0.0000000|0.5000000|1.0000000
+B.osc1.octave|B.Oscillator 1 / Octave|7|0|0|0|-3|0|3
+B.osc1.tune|B.Oscillator 1 / Semitone|49|0|0|0|-24|0|24
+B.osc1.fine|B.Oscillator 1 / Fine|2147483647|0|0|0.0000000|-100.0000000|0.0000000|100.0000000
+B.osc1.level|B.Oscillator 1 / Level|2147483647|0|0|0.7500000|0.0000000|0.5000000|1.0000000
+B.osc1.pan|B.Oscillator 1 / Pan|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.osc1.phase|B.Oscillator 1 / Phase|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+B.osc1.random|B.Oscillator 1 / Phase random|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.osc1.uni.voices|B.Oscillator 1 / Unison|16|0|0|3|1|8|16
+B.osc1.uni.detune|B.Oscillator 1 / Detune|2147483647|0|0|0.1800000|0.0000000|0.5000000|1.0000000
+B.osc1.uni.spread|B.Oscillator 1 / Width|2147483647|0|0|0.8000000|0.0000000|0.5000000|1.0000000
+B.osc1.uni.blend|B.Oscillator 1 / Blend|2147483647|0|0|0.7000000|0.0000000|0.5000000|1.0000000
+B.osc1.uni.wtspread|B.Oscillator 1 / WT spread|2147483647|0|0|0.1500000|0.0000000|0.5000000|1.0000000
+B.osc1.uni.curve|B.Oscillator 1 / Detune curve|3|1|0|Prism|Linear|Exponential|Prism|Linear;Exponential;Prism
+B.osc1.warp1.type|B.Oscillator 1 / Warp A|12|1|0|None|None|FM|Flip|None;Sync;Bend +;Bend -;Mirror;Asymmetry;FM;AM;Ring;PWM;Quantize;Flip
+B.osc1.warp1.amount|B.Oscillator 1 / Warp A amount|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+B.osc1.warp2.type|B.Oscillator 1 / Warp B|12|1|0|None|None|FM|Flip|None;Sync;Bend +;Bend -;Mirror;Asymmetry;FM;AM;Ring;PWM;Quantize;Flip
+B.osc1.warp2.amount|B.Oscillator 1 / Warp B amount|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+B.osc1.fm.source|B.Oscillator 1 / FM source|2|1|0|Other oscillator|Other oscillator|Other oscillator|Sub|Other oscillator;Sub
+B.osc2.table|B.Oscillator 2 / Table|31|1|0|Vector Saw|Vector Saw|Fluid Cell|Imported|Vector Saw;Pulse Atlas;Harmonic Fold;Prism Ramp;Triangle Orbit;Glass Mesh;Chrome Grid;Crystal Teeth;Ion Shards;Digital Silk;Vowel Arc;Formant Lane;Choir Vector;Whisper Mouth;Vocal Prism;Fluid Cell;Coral Thread;Grain Current;Plasma Ribbon;Organic Lattice;Bell Spectrum;FM Crown;Chime Matrix;Metal Rain;Orbital Gong;Air Spectrum;Frozen Hiss;Cloud Comb;White Halo;Spectral Dust;Imported
+B.osc2.pos|B.Oscillator 2 / Position|2147483647|0|0|0.2500000|0.0000000|0.5000000|1.0000000
+B.osc2.octave|B.Oscillator 2 / Octave|7|0|0|0|-3|0|3
+B.osc2.tune|B.Oscillator 2 / Semitone|49|0|0|0|-24|0|24
+B.osc2.fine|B.Oscillator 2 / Fine|2147483647|0|0|7.0000076|-100.0000000|0.0000000|100.0000000
+B.osc2.level|B.Oscillator 2 / Level|2147483647|0|0|0.3000000|0.0000000|0.5000000|1.0000000
+B.osc2.pan|B.Oscillator 2 / Pan|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.osc2.phase|B.Oscillator 2 / Phase|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+B.osc2.random|B.Oscillator 2 / Phase random|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.osc2.uni.voices|B.Oscillator 2 / Unison|16|0|0|1|1|8|16
+B.osc2.uni.detune|B.Oscillator 2 / Detune|2147483647|0|0|0.1800000|0.0000000|0.5000000|1.0000000
+B.osc2.uni.spread|B.Oscillator 2 / Width|2147483647|0|0|0.8000000|0.0000000|0.5000000|1.0000000
+B.osc2.uni.blend|B.Oscillator 2 / Blend|2147483647|0|0|0.7000000|0.0000000|0.5000000|1.0000000
+B.osc2.uni.wtspread|B.Oscillator 2 / WT spread|2147483647|0|0|0.1500000|0.0000000|0.5000000|1.0000000
+B.osc2.uni.curve|B.Oscillator 2 / Detune curve|3|1|0|Prism|Linear|Exponential|Prism|Linear;Exponential;Prism
+B.osc2.warp1.type|B.Oscillator 2 / Warp A|12|1|0|None|None|FM|Flip|None;Sync;Bend +;Bend -;Mirror;Asymmetry;FM;AM;Ring;PWM;Quantize;Flip
+B.osc2.warp1.amount|B.Oscillator 2 / Warp A amount|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+B.osc2.warp2.type|B.Oscillator 2 / Warp B|12|1|0|None|None|FM|Flip|None;Sync;Bend +;Bend -;Mirror;Asymmetry;FM;AM;Ring;PWM;Quantize;Flip
+B.osc2.warp2.amount|B.Oscillator 2 / Warp B amount|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+B.osc2.fm.source|B.Oscillator 2 / FM source|2|1|0|Other oscillator|Other oscillator|Other oscillator|Sub|Other oscillator;Sub
+B.mix.sub|B.Sources / Sub level|2147483647|0|0|0.1000000|0.0000000|0.5000000|1.0000000
+B.mix.sub.octave|B.Sources / Sub octave|2|1|0|-1|-1|-1|-2|-1;-2
+B.mix.sub.wave|B.Sources / Sub wave|2|1|0|Sine|Sine|Sine|Triangle|Sine;Triangle
+B.mix.noise|B.Sources / Noise|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+B.mix.noise.color|B.Sources / Noise color|2147483647|0|0|0.8000000|0.0000000|0.5000000|1.0000000
+B.flt1.on|B.Filter 1 / Power|2|1|0|On|Off|Off|On|Off;On
+B.flt1.type|B.Filter 1 / Type|9|1|0|LP 12|LP 12|Notch|Low shelf|LP 12;LP 24;High pass;Band pass;Notch;Comb;Vowel;Air shelf;Low shelf
+B.flt1.cutoff|B.Filter 1 / Cutoff|2147483647|0|0|14000.0009766|20.0000000|1001.2269287|20000.0000000
+B.flt1.res|B.Filter 1 / Resonance|2147483647|0|0|0.1200000|0.0000000|0.5000000|1.0000000
+B.flt1.drive|B.Filter 1 / Drive|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+B.flt1.mix|B.Filter 1 / Mix|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.flt1.key|B.Filter 1 / Key tracking|2147483647|0|0|0.2500000|0.0000000|0.5000000|1.0000000
+B.flt1.env|B.Filter 1 / Env 2|2147483647|0|0|0.1000000|-1.0000000|0.0000000|1.0000000
+B.flt1.velocity|B.Filter 1 / Velocity|2147483647|0|0|0.1000000|-1.0000000|0.0000000|1.0000000
+B.flt1.vowel|B.Filter 1 / Vowel|2147483647|0|0|0.3500000|0.0000000|0.5000000|1.0000000
+B.flt2.on|B.Filter 2 / Power|2|1|0|Off|Off|Off|On|Off;On
+B.flt2.type|B.Filter 2 / Type|9|1|0|LP 12|LP 12|Notch|Low shelf|LP 12;LP 24;High pass;Band pass;Notch;Comb;Vowel;Air shelf;Low shelf
+B.flt2.cutoff|B.Filter 2 / Cutoff|2147483647|0|0|14000.0009766|20.0000000|1001.2269287|20000.0000000
+B.flt2.res|B.Filter 2 / Resonance|2147483647|0|0|0.1200000|0.0000000|0.5000000|1.0000000
+B.flt2.drive|B.Filter 2 / Drive|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+B.flt2.mix|B.Filter 2 / Mix|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.flt2.key|B.Filter 2 / Key tracking|2147483647|0|0|0.2500000|0.0000000|0.5000000|1.0000000
+B.flt2.env|B.Filter 2 / Env 2|2147483647|0|0|0.1000000|-1.0000000|0.0000000|1.0000000
+B.flt2.velocity|B.Filter 2 / Velocity|2147483647|0|0|0.1000000|-1.0000000|0.0000000|1.0000000
+B.flt2.vowel|B.Filter 2 / Vowel|2147483647|0|0|0.3500000|0.0000000|0.5000000|1.0000000
+B.filter.route|B.Routing / Routing|4|1|0|Serial|Serial|Per oscillator|Both to both|Serial;Parallel;Per oscillator;Both to both
+B.filter.balance|B.Routing / Balance|2147483647|0|0|0.5000000|0.0000000|0.5000000|1.0000000
+B.env1.attack|B.Envelope 1 / Attack|2147483647|0|0|0.0060000|0.0010000|1.1914515|12.0000000
+B.env1.hold|B.Envelope 1 / Hold|2147483647|0|0|0.0000000|0.0000000|0.6900558|5.0000000
+B.env1.decay|B.Envelope 1 / Decay|2147483647|0|0|0.4500000|0.0050000|1.1950547|12.0000000
+B.env1.sustain|B.Envelope 1 / Sustain|2147483647|0|0|0.8000000|0.0000000|0.5000000|1.0000000
+B.env1.release|B.Envelope 1 / Release|2147483647|0|0|0.4499998|0.0050000|1.9887553|20.0000000
+B.env1.curve|B.Envelope 1 / Curve|2147483647|0|0|1.3000000|0.2500000|2.1250000|4.0000000
+B.env2.attack|B.Envelope 2 / Attack|2147483647|0|0|0.0060000|0.0010000|1.1914515|12.0000000
+B.env2.hold|B.Envelope 2 / Hold|2147483647|0|0|0.0000000|0.0000000|0.6900558|5.0000000
+B.env2.decay|B.Envelope 2 / Decay|2147483647|0|0|0.4500000|0.0050000|1.1950547|12.0000000
+B.env2.sustain|B.Envelope 2 / Sustain|2147483647|0|0|0.3000000|0.0000000|0.5000000|1.0000000
+B.env2.release|B.Envelope 2 / Release|2147483647|0|0|0.4499998|0.0050000|1.9887553|20.0000000
+B.env2.curve|B.Envelope 2 / Curve|2147483647|0|0|1.3000000|0.2500000|2.1250000|4.0000000
+B.env3.attack|B.Envelope 3 / Attack|2147483647|0|0|0.0060000|0.0010000|1.1914515|12.0000000
+B.env3.hold|B.Envelope 3 / Hold|2147483647|0|0|0.0000000|0.0000000|0.6900558|5.0000000
+B.env3.decay|B.Envelope 3 / Decay|2147483647|0|0|0.4500000|0.0050000|1.1950547|12.0000000
+B.env3.sustain|B.Envelope 3 / Sustain|2147483647|0|0|0.3000000|0.0000000|0.5000000|1.0000000
+B.env3.release|B.Envelope 3 / Release|2147483647|0|0|0.4499998|0.0050000|1.9887553|20.0000000
+B.env3.curve|B.Envelope 3 / Curve|2147483647|0|0|1.3000000|0.2500000|2.1250000|4.0000000
+B.lfo1.rate|B.LFO 1 / Rate|2147483647|0|0|0.4999999|0.0100000|3.9775107|40.0000000
+B.lfo1.sync|B.LFO 1 / Sync|2|1|0|On|Off|Off|On|Off;On
+B.lfo1.division|B.LFO 1 / Division|10|1|0|1/2|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+B.lfo1.restart|B.LFO 1 / Key restart|2|1|0|On|Off|Off|On|Off;On
+B.lfo1.fade|B.LFO 1 / Fade|2147483647|0|0|0.0000000|0.0000000|1.6561341|12.0000000
+B.lfo1.interpolation|B.LFO 1 / Curve|3|1|0|Smooth|Smooth|Linear|Steps|Smooth;Linear;Steps
+B.lfo1.point1|B.LFO 1 / Point 1|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.lfo1.point2|B.LFO 1 / Point 2|2147483647|0|0|0.3826834|-1.0000000|0.0000000|1.0000000
+B.lfo1.point3|B.LFO 1 / Point 3|2147483647|0|0|0.7071068|-1.0000000|0.0000000|1.0000000
+B.lfo1.point4|B.LFO 1 / Point 4|2147483647|0|0|0.9238795|-1.0000000|0.0000000|1.0000000
+B.lfo1.point5|B.LFO 1 / Point 5|2147483647|0|0|1.0000000|-1.0000000|0.0000000|1.0000000
+B.lfo1.point6|B.LFO 1 / Point 6|2147483647|0|0|0.9238795|-1.0000000|0.0000000|1.0000000
+B.lfo1.point7|B.LFO 1 / Point 7|2147483647|0|0|0.7071068|-1.0000000|0.0000000|1.0000000
+B.lfo1.point8|B.LFO 1 / Point 8|2147483647|0|0|0.3826834|-1.0000000|0.0000000|1.0000000
+B.lfo1.point9|B.LFO 1 / Point 9|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.lfo1.point10|B.LFO 1 / Point 10|2147483647|0|0|-0.3826834|-1.0000000|0.0000000|1.0000000
+B.lfo1.point11|B.LFO 1 / Point 11|2147483647|0|0|-0.7071068|-1.0000000|0.0000000|1.0000000
+B.lfo1.point12|B.LFO 1 / Point 12|2147483647|0|0|-0.9238795|-1.0000000|0.0000000|1.0000000
+B.lfo1.point13|B.LFO 1 / Point 13|2147483647|0|0|-1.0000000|-1.0000000|0.0000000|1.0000000
+B.lfo1.point14|B.LFO 1 / Point 14|2147483647|0|0|-0.9238795|-1.0000000|0.0000000|1.0000000
+B.lfo1.point15|B.LFO 1 / Point 15|2147483647|0|0|-0.7071068|-1.0000000|0.0000000|1.0000000
+B.lfo1.point16|B.LFO 1 / Point 16|2147483647|0|0|-0.3826834|-1.0000000|0.0000000|1.0000000
+B.lfo2.rate|B.LFO 2 / Rate|2147483647|0|0|0.9999999|0.0100000|3.9775107|40.0000000
+B.lfo2.sync|B.LFO 2 / Sync|2|1|0|On|Off|Off|On|Off;On
+B.lfo2.division|B.LFO 2 / Division|10|1|0|1 bar|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+B.lfo2.restart|B.LFO 2 / Key restart|2|1|0|On|Off|Off|On|Off;On
+B.lfo2.fade|B.LFO 2 / Fade|2147483647|0|0|0.0000000|0.0000000|1.6561341|12.0000000
+B.lfo2.interpolation|B.LFO 2 / Curve|3|1|0|Smooth|Smooth|Linear|Steps|Smooth;Linear;Steps
+B.lfo2.point1|B.LFO 2 / Point 1|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.lfo2.point2|B.LFO 2 / Point 2|2147483647|0|0|0.3826834|-1.0000000|0.0000000|1.0000000
+B.lfo2.point3|B.LFO 2 / Point 3|2147483647|0|0|0.7071068|-1.0000000|0.0000000|1.0000000
+B.lfo2.point4|B.LFO 2 / Point 4|2147483647|0|0|0.9238795|-1.0000000|0.0000000|1.0000000
+B.lfo2.point5|B.LFO 2 / Point 5|2147483647|0|0|1.0000000|-1.0000000|0.0000000|1.0000000
+B.lfo2.point6|B.LFO 2 / Point 6|2147483647|0|0|0.9238795|-1.0000000|0.0000000|1.0000000
+B.lfo2.point7|B.LFO 2 / Point 7|2147483647|0|0|0.7071068|-1.0000000|0.0000000|1.0000000
+B.lfo2.point8|B.LFO 2 / Point 8|2147483647|0|0|0.3826834|-1.0000000|0.0000000|1.0000000
+B.lfo2.point9|B.LFO 2 / Point 9|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.lfo2.point10|B.LFO 2 / Point 10|2147483647|0|0|-0.3826834|-1.0000000|0.0000000|1.0000000
+B.lfo2.point11|B.LFO 2 / Point 11|2147483647|0|0|-0.7071068|-1.0000000|0.0000000|1.0000000
+B.lfo2.point12|B.LFO 2 / Point 12|2147483647|0|0|-0.9238795|-1.0000000|0.0000000|1.0000000
+B.lfo2.point13|B.LFO 2 / Point 13|2147483647|0|0|-1.0000000|-1.0000000|0.0000000|1.0000000
+B.lfo2.point14|B.LFO 2 / Point 14|2147483647|0|0|-0.9238795|-1.0000000|0.0000000|1.0000000
+B.lfo2.point15|B.LFO 2 / Point 15|2147483647|0|0|-0.7071068|-1.0000000|0.0000000|1.0000000
+B.lfo2.point16|B.LFO 2 / Point 16|2147483647|0|0|-0.3826834|-1.0000000|0.0000000|1.0000000
+B.lfo3.rate|B.LFO 3 / Rate|2147483647|0|0|0.9999999|0.0100000|3.9775107|40.0000000
+B.lfo3.sync|B.LFO 3 / Sync|2|1|0|On|Off|Off|On|Off;On
+B.lfo3.division|B.LFO 3 / Division|10|1|0|2 bars|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+B.lfo3.restart|B.LFO 3 / Key restart|2|1|0|On|Off|Off|On|Off;On
+B.lfo3.fade|B.LFO 3 / Fade|2147483647|0|0|0.0000000|0.0000000|1.6561341|12.0000000
+B.lfo3.interpolation|B.LFO 3 / Curve|3|1|0|Smooth|Smooth|Linear|Steps|Smooth;Linear;Steps
+B.lfo3.point1|B.LFO 3 / Point 1|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.lfo3.point2|B.LFO 3 / Point 2|2147483647|0|0|0.3826834|-1.0000000|0.0000000|1.0000000
+B.lfo3.point3|B.LFO 3 / Point 3|2147483647|0|0|0.7071068|-1.0000000|0.0000000|1.0000000
+B.lfo3.point4|B.LFO 3 / Point 4|2147483647|0|0|0.9238795|-1.0000000|0.0000000|1.0000000
+B.lfo3.point5|B.LFO 3 / Point 5|2147483647|0|0|1.0000000|-1.0000000|0.0000000|1.0000000
+B.lfo3.point6|B.LFO 3 / Point 6|2147483647|0|0|0.9238795|-1.0000000|0.0000000|1.0000000
+B.lfo3.point7|B.LFO 3 / Point 7|2147483647|0|0|0.7071068|-1.0000000|0.0000000|1.0000000
+B.lfo3.point8|B.LFO 3 / Point 8|2147483647|0|0|0.3826834|-1.0000000|0.0000000|1.0000000
+B.lfo3.point9|B.LFO 3 / Point 9|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.lfo3.point10|B.LFO 3 / Point 10|2147483647|0|0|-0.3826834|-1.0000000|0.0000000|1.0000000
+B.lfo3.point11|B.LFO 3 / Point 11|2147483647|0|0|-0.7071068|-1.0000000|0.0000000|1.0000000
+B.lfo3.point12|B.LFO 3 / Point 12|2147483647|0|0|-0.9238795|-1.0000000|0.0000000|1.0000000
+B.lfo3.point13|B.LFO 3 / Point 13|2147483647|0|0|-1.0000000|-1.0000000|0.0000000|1.0000000
+B.lfo3.point14|B.LFO 3 / Point 14|2147483647|0|0|-0.9238795|-1.0000000|0.0000000|1.0000000
+B.lfo3.point15|B.LFO 3 / Point 15|2147483647|0|0|-0.7071068|-1.0000000|0.0000000|1.0000000
+B.lfo3.point16|B.LFO 3 / Point 16|2147483647|0|0|-0.3826834|-1.0000000|0.0000000|1.0000000
+B.lfo4.rate|B.LFO 4 / Rate|2147483647|0|0|0.9999999|0.0100000|3.9775107|40.0000000
+B.lfo4.sync|B.LFO 4 / Sync|2|1|0|On|Off|Off|On|Off;On
+B.lfo4.division|B.LFO 4 / Division|10|1|0|1/2|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+B.lfo4.restart|B.LFO 4 / Key restart|2|1|0|On|Off|Off|On|Off;On
+B.lfo4.fade|B.LFO 4 / Fade|2147483647|0|0|0.0000000|0.0000000|1.6561341|12.0000000
+B.lfo4.interpolation|B.LFO 4 / Curve|3|1|0|Smooth|Smooth|Linear|Steps|Smooth;Linear;Steps
+B.lfo4.point1|B.LFO 4 / Point 1|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.lfo4.point2|B.LFO 4 / Point 2|2147483647|0|0|0.3826834|-1.0000000|0.0000000|1.0000000
+B.lfo4.point3|B.LFO 4 / Point 3|2147483647|0|0|0.7071068|-1.0000000|0.0000000|1.0000000
+B.lfo4.point4|B.LFO 4 / Point 4|2147483647|0|0|0.9238795|-1.0000000|0.0000000|1.0000000
+B.lfo4.point5|B.LFO 4 / Point 5|2147483647|0|0|1.0000000|-1.0000000|0.0000000|1.0000000
+B.lfo4.point6|B.LFO 4 / Point 6|2147483647|0|0|0.9238795|-1.0000000|0.0000000|1.0000000
+B.lfo4.point7|B.LFO 4 / Point 7|2147483647|0|0|0.7071068|-1.0000000|0.0000000|1.0000000
+B.lfo4.point8|B.LFO 4 / Point 8|2147483647|0|0|0.3826834|-1.0000000|0.0000000|1.0000000
+B.lfo4.point9|B.LFO 4 / Point 9|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.lfo4.point10|B.LFO 4 / Point 10|2147483647|0|0|-0.3826834|-1.0000000|0.0000000|1.0000000
+B.lfo4.point11|B.LFO 4 / Point 11|2147483647|0|0|-0.7071068|-1.0000000|0.0000000|1.0000000
+B.lfo4.point12|B.LFO 4 / Point 12|2147483647|0|0|-0.9238795|-1.0000000|0.0000000|1.0000000
+B.lfo4.point13|B.LFO 4 / Point 13|2147483647|0|0|-1.0000000|-1.0000000|0.0000000|1.0000000
+B.lfo4.point14|B.LFO 4 / Point 14|2147483647|0|0|-0.9238795|-1.0000000|0.0000000|1.0000000
+B.lfo4.point15|B.LFO 4 / Point 15|2147483647|0|0|-0.7071068|-1.0000000|0.0000000|1.0000000
+B.lfo4.point16|B.LFO 4 / Point 16|2147483647|0|0|-0.3826834|-1.0000000|0.0000000|1.0000000
+B.macro1.value|B.Macros / Macro 1|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+B.macro2.value|B.Macros / Macro 2|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+B.macro3.value|B.Macros / Macro 3|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+B.macro4.value|B.Macros / Macro 4|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+B.macro5.value|B.Macros / Macro 5|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+B.macro6.value|B.Macros / Macro 6|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+B.macro7.value|B.Macros / Macro 7|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+B.macro8.value|B.Macros / Macro 8|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+B.macro.euphoria|B.Macros / Euphoria|2147483647|0|0|0.1200000|0.0000000|0.5000000|1.0000000
+B.macro.space|B.Macros / Space|2147483647|0|0|0.1500000|0.0000000|0.5000000|1.0000000
+B.voice.mode|B.Performance / Voice mode|3|1|0|Poly|Poly|Mono|Legato|Poly;Mono;Legato
+B.voice.glide|B.Performance / Glide|2147483647|0|0|0.0000000|0.0000000|0.3535534|2.0000000
+B.voice.bend|B.Performance / Bend range|24|0|0|2|1|12|24
+B.voice.velocity|B.Performance / Velocity curve|2147483647|0|0|1.0000000|0.3000000|1.6500001|3.0000000
+B.clock.bpm|B.Clock / Tempo|2147483647|0|0|138.0000000|30.0000000|165.0000000|300.0000000
+B.clock.host|B.Clock / Host sync|2|1|0|On|Off|Off|On|Off;On
+B.arp.on|B.Arpeggiator / Enabled|2|1|0|Off|Off|Off|On|Off;On
+B.arp.mode|B.Arpeggiator / Mode|6|1|0|Up|Up|Up down|Chord|Up;Down;Up down;Random;As played;Chord
+B.arp.rate|B.Arpeggiator / Rate|10|1|0|1/16|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+B.arp.swing|B.Arpeggiator / Swing|2147483647|0|0|0.0000000|0.0000000|0.3250000|0.6500000
+B.arp.length|B.Arpeggiator / Gate length|2147483647|0|0|0.6500000|0.0500000|0.5150000|0.9800000
+B.arp.hold|B.Arpeggiator / Latch|2|1|0|Off|Off|Off|On|Off;On
+B.arp.octaves|B.Arpeggiator / Octaves|4|0|0|1|1|2|4
+B.arp.restart|B.Arpeggiator / Key restart|2|1|0|On|Off|Off|On|Off;On
+B.arp.step1.pitch|B.Arpeggiator / Pitch 1|49|0|0|0|-24|0|24
+B.arp.step2.pitch|B.Arpeggiator / Pitch 2|49|0|0|0|-24|0|24
+B.arp.step3.pitch|B.Arpeggiator / Pitch 3|49|0|0|0|-24|0|24
+B.arp.step4.pitch|B.Arpeggiator / Pitch 4|49|0|0|0|-24|0|24
+B.arp.step5.pitch|B.Arpeggiator / Pitch 5|49|0|0|0|-24|0|24
+B.arp.step6.pitch|B.Arpeggiator / Pitch 6|49|0|0|0|-24|0|24
+B.arp.step7.pitch|B.Arpeggiator / Pitch 7|49|0|0|0|-24|0|24
+B.arp.step8.pitch|B.Arpeggiator / Pitch 8|49|0|0|0|-24|0|24
+B.arp.step9.pitch|B.Arpeggiator / Pitch 9|49|0|0|0|-24|0|24
+B.arp.step10.pitch|B.Arpeggiator / Pitch 10|49|0|0|0|-24|0|24
+B.arp.step11.pitch|B.Arpeggiator / Pitch 11|49|0|0|0|-24|0|24
+B.arp.step12.pitch|B.Arpeggiator / Pitch 12|49|0|0|0|-24|0|24
+B.arp.step13.pitch|B.Arpeggiator / Pitch 13|49|0|0|0|-24|0|24
+B.arp.step14.pitch|B.Arpeggiator / Pitch 14|49|0|0|0|-24|0|24
+B.arp.step15.pitch|B.Arpeggiator / Pitch 15|49|0|0|0|-24|0|24
+B.arp.step16.pitch|B.Arpeggiator / Pitch 16|49|0|0|0|-24|0|24
+B.arp.step1.gate|B.Arpeggiator / Gate 1|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.arp.step2.gate|B.Arpeggiator / Gate 2|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.arp.step3.gate|B.Arpeggiator / Gate 3|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.arp.step4.gate|B.Arpeggiator / Gate 4|2147483647|0|0|0.6000000|0.0000000|0.5000000|1.0000000
+B.arp.step5.gate|B.Arpeggiator / Gate 5|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.arp.step6.gate|B.Arpeggiator / Gate 6|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.arp.step7.gate|B.Arpeggiator / Gate 7|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.arp.step8.gate|B.Arpeggiator / Gate 8|2147483647|0|0|0.6000000|0.0000000|0.5000000|1.0000000
+B.arp.step9.gate|B.Arpeggiator / Gate 9|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.arp.step10.gate|B.Arpeggiator / Gate 10|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.arp.step11.gate|B.Arpeggiator / Gate 11|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.arp.step12.gate|B.Arpeggiator / Gate 12|2147483647|0|0|0.6000000|0.0000000|0.5000000|1.0000000
+B.arp.step13.gate|B.Arpeggiator / Gate 13|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.arp.step14.gate|B.Arpeggiator / Gate 14|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.arp.step15.gate|B.Arpeggiator / Gate 15|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.arp.step16.gate|B.Arpeggiator / Gate 16|2147483647|0|0|0.6000000|0.0000000|0.5000000|1.0000000
+B.arp.step1.velocity|B.Arpeggiator / Velocity 1|2147483647|0|0|1.0000000|0.0500000|0.5250000|1.0000000
+B.arp.step2.velocity|B.Arpeggiator / Velocity 2|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.arp.step3.velocity|B.Arpeggiator / Velocity 3|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.arp.step4.velocity|B.Arpeggiator / Velocity 4|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.arp.step5.velocity|B.Arpeggiator / Velocity 5|2147483647|0|0|1.0000000|0.0500000|0.5250000|1.0000000
+B.arp.step6.velocity|B.Arpeggiator / Velocity 6|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.arp.step7.velocity|B.Arpeggiator / Velocity 7|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.arp.step8.velocity|B.Arpeggiator / Velocity 8|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.arp.step9.velocity|B.Arpeggiator / Velocity 9|2147483647|0|0|1.0000000|0.0500000|0.5250000|1.0000000
+B.arp.step10.velocity|B.Arpeggiator / Velocity 10|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.arp.step11.velocity|B.Arpeggiator / Velocity 11|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.arp.step12.velocity|B.Arpeggiator / Velocity 12|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.arp.step13.velocity|B.Arpeggiator / Velocity 13|2147483647|0|0|1.0000000|0.0500000|0.5250000|1.0000000
+B.arp.step14.velocity|B.Arpeggiator / Velocity 14|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.arp.step15.velocity|B.Arpeggiator / Velocity 15|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.arp.step16.velocity|B.Arpeggiator / Velocity 16|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.seq.on|B.Step sequencer / Enabled|2|1|0|Off|Off|Off|On|Off;On
+B.seq.mode|B.Step sequencer / Mode|6|1|0|Up|Up|Up down|Chord|Up;Down;Up down;Random;As played;Chord
+B.seq.rate|B.Step sequencer / Rate|10|1|0|1/16|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+B.seq.swing|B.Step sequencer / Swing|2147483647|0|0|0.0000000|0.0000000|0.3250000|0.6500000
+B.seq.length|B.Step sequencer / Gate length|2147483647|0|0|0.6500000|0.0500000|0.5150000|0.9800000
+B.seq.hold|B.Step sequencer / Latch|2|1|0|Off|Off|Off|On|Off;On
+B.seq.octaves|B.Step sequencer / Octaves|4|0|0|1|1|2|4
+B.seq.restart|B.Step sequencer / Key restart|2|1|0|On|Off|Off|On|Off;On
+B.seq.step1.pitch|B.Step sequencer / Pitch 1|49|0|0|0|-24|0|24
+B.seq.step2.pitch|B.Step sequencer / Pitch 2|49|0|0|0|-24|0|24
+B.seq.step3.pitch|B.Step sequencer / Pitch 3|49|0|0|0|-24|0|24
+B.seq.step4.pitch|B.Step sequencer / Pitch 4|49|0|0|0|-24|0|24
+B.seq.step5.pitch|B.Step sequencer / Pitch 5|49|0|0|0|-24|0|24
+B.seq.step6.pitch|B.Step sequencer / Pitch 6|49|0|0|0|-24|0|24
+B.seq.step7.pitch|B.Step sequencer / Pitch 7|49|0|0|0|-24|0|24
+B.seq.step8.pitch|B.Step sequencer / Pitch 8|49|0|0|0|-24|0|24
+B.seq.step9.pitch|B.Step sequencer / Pitch 9|49|0|0|0|-24|0|24
+B.seq.step10.pitch|B.Step sequencer / Pitch 10|49|0|0|0|-24|0|24
+B.seq.step11.pitch|B.Step sequencer / Pitch 11|49|0|0|0|-24|0|24
+B.seq.step12.pitch|B.Step sequencer / Pitch 12|49|0|0|0|-24|0|24
+B.seq.step13.pitch|B.Step sequencer / Pitch 13|49|0|0|0|-24|0|24
+B.seq.step14.pitch|B.Step sequencer / Pitch 14|49|0|0|0|-24|0|24
+B.seq.step15.pitch|B.Step sequencer / Pitch 15|49|0|0|0|-24|0|24
+B.seq.step16.pitch|B.Step sequencer / Pitch 16|49|0|0|0|-24|0|24
+B.seq.step1.gate|B.Step sequencer / Gate 1|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.seq.step2.gate|B.Step sequencer / Gate 2|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.seq.step3.gate|B.Step sequencer / Gate 3|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.seq.step4.gate|B.Step sequencer / Gate 4|2147483647|0|0|0.6000000|0.0000000|0.5000000|1.0000000
+B.seq.step5.gate|B.Step sequencer / Gate 5|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.seq.step6.gate|B.Step sequencer / Gate 6|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.seq.step7.gate|B.Step sequencer / Gate 7|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.seq.step8.gate|B.Step sequencer / Gate 8|2147483647|0|0|0.6000000|0.0000000|0.5000000|1.0000000
+B.seq.step9.gate|B.Step sequencer / Gate 9|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.seq.step10.gate|B.Step sequencer / Gate 10|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.seq.step11.gate|B.Step sequencer / Gate 11|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.seq.step12.gate|B.Step sequencer / Gate 12|2147483647|0|0|0.6000000|0.0000000|0.5000000|1.0000000
+B.seq.step13.gate|B.Step sequencer / Gate 13|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.seq.step14.gate|B.Step sequencer / Gate 14|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.seq.step15.gate|B.Step sequencer / Gate 15|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.seq.step16.gate|B.Step sequencer / Gate 16|2147483647|0|0|0.6000000|0.0000000|0.5000000|1.0000000
+B.seq.step1.velocity|B.Step sequencer / Velocity 1|2147483647|0|0|1.0000000|0.0500000|0.5250000|1.0000000
+B.seq.step2.velocity|B.Step sequencer / Velocity 2|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.seq.step3.velocity|B.Step sequencer / Velocity 3|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.seq.step4.velocity|B.Step sequencer / Velocity 4|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.seq.step5.velocity|B.Step sequencer / Velocity 5|2147483647|0|0|1.0000000|0.0500000|0.5250000|1.0000000
+B.seq.step6.velocity|B.Step sequencer / Velocity 6|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.seq.step7.velocity|B.Step sequencer / Velocity 7|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.seq.step8.velocity|B.Step sequencer / Velocity 8|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.seq.step9.velocity|B.Step sequencer / Velocity 9|2147483647|0|0|1.0000000|0.0500000|0.5250000|1.0000000
+B.seq.step10.velocity|B.Step sequencer / Velocity 10|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.seq.step11.velocity|B.Step sequencer / Velocity 11|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.seq.step12.velocity|B.Step sequencer / Velocity 12|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.seq.step13.velocity|B.Step sequencer / Velocity 13|2147483647|0|0|1.0000000|0.0500000|0.5250000|1.0000000
+B.seq.step14.velocity|B.Step sequencer / Velocity 14|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.seq.step15.velocity|B.Step sequencer / Velocity 15|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.seq.step16.velocity|B.Step sequencer / Velocity 16|2147483647|0|0|0.8000000|0.0500000|0.5250000|1.0000000
+B.fx1.on|B.Chorus / Power|2|1|0|Off|Off|Off|On|Off;On
+B.fx1.mix|B.Chorus / Mix|2147483647|0|0|0.3000000|0.0000000|0.5000000|1.0000000
+B.fx1.a|B.Chorus / Rate|2147483647|0|0|0.3500000|0.0100000|4.0050001|8.0000000
+B.fx1.b|B.Chorus / Depth|2147483647|0|0|0.5000000|0.0000000|0.5000000|1.0000000
+B.fx1.c|B.Chorus / Feedback|2147483647|0|0|0.1500000|0.0000000|0.4250000|0.8500000
+B.fx1.mode|B.Chorus / Mode|2|1|0|Normal|Normal|Normal|Wide|Normal;Wide
+B.fx1.sync|B.Chorus / Sync|2|1|0|Off|Off|Off|On|Off;On
+B.fx1.division|B.Chorus / Division|10|1|0|1/8 D|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+B.fx2.on|B.Flanger / Power|2|1|0|Off|Off|Off|On|Off;On
+B.fx2.mix|B.Flanger / Mix|2147483647|0|0|0.3000000|0.0000000|0.5000000|1.0000000
+B.fx2.a|B.Flanger / Rate|2147483647|0|0|0.2000000|0.0100000|5.0050001|10.0000000
+B.fx2.b|B.Flanger / Depth|2147483647|0|0|0.5000000|0.0000000|0.5000000|1.0000000
+B.fx2.c|B.Flanger / Feedback|2147483647|0|0|0.3000000|0.0000000|0.4400000|0.8800000
+B.fx2.mode|B.Flanger / Mode|2|1|0|Normal|Normal|Normal|Wide|Normal;Wide
+B.fx2.sync|B.Flanger / Sync|2|1|0|Off|Off|Off|On|Off;On
+B.fx2.division|B.Flanger / Division|10|1|0|1/8 D|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+B.fx3.on|B.Phaser / Power|2|1|0|Off|Off|Off|On|Off;On
+B.fx3.mix|B.Phaser / Mix|2147483647|0|0|0.3000000|0.0000000|0.5000000|1.0000000
+B.fx3.a|B.Phaser / Rate|2147483647|0|0|0.2500000|0.0100000|6.0050001|12.0000000
+B.fx3.b|B.Phaser / Depth|2147483647|0|0|0.6500000|0.0000000|0.5000000|1.0000000
+B.fx3.c|B.Phaser / Feedback|2147483647|0|0|0.2500000|0.0000000|0.4250000|0.8500000
+B.fx3.mode|B.Phaser / Mode|2|1|0|Normal|Normal|Normal|Wide|Normal;Wide
+B.fx3.sync|B.Phaser / Sync|2|1|0|Off|Off|Off|On|Off;On
+B.fx3.division|B.Phaser / Division|10|1|0|1/8 D|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+B.fx4.on|B.Delay / Power|2|1|0|On|Off|Off|On|Off;On
+B.fx4.mix|B.Delay / Mix|2147483647|0|0|0.3000000|0.0000000|0.5000000|1.0000000
+B.fx4.a|B.Delay / Time|2147483647|0|0|0.3750000|0.0100000|1.5050000|3.0000000
+B.fx4.b|B.Delay / Feedback|2147483647|0|0|0.3000000|0.0000000|0.4600000|0.9200000
+B.fx4.c|B.Delay / Tone|2147483647|0|0|11999.9990234|200.0000000|1437.5000000|20000.0000000
+B.fx4.mode|B.Delay / Mode|3|1|0|Stereo|Stereo|Ping pong|Cross|Stereo;Ping pong;Cross
+B.fx4.sync|B.Delay / Sync|2|1|0|On|Off|Off|On|Off;On
+B.fx4.division|B.Delay / Division|10|1|0|1/8 D|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+B.fx5.on|B.Reverb / Power|2|1|0|On|Off|Off|On|Off;On
+B.fx5.mix|B.Reverb / Mix|2147483647|0|0|0.3000000|0.0000000|0.5000000|1.0000000
+B.fx5.a|B.Reverb / Size|2147483647|0|0|0.7000000|0.0000000|0.5000000|1.0000000
+B.fx5.b|B.Reverb / Damping|2147483647|0|0|0.2500000|0.0000000|0.5000000|1.0000000
+B.fx5.c|B.Reverb / Shimmer|2147483647|0|0|0.3000000|0.0000000|0.5000000|1.0000000
+B.fx5.mode|B.Reverb / Mode|3|1|0|Hall|Hall|Plate|Shimmer|Hall;Plate;Shimmer
+B.fx5.sync|B.Reverb / Tempo motion|2|1|0|Off|Off|Off|On|Off;On
+B.fx5.division|B.Reverb / Division|10|1|0|1/8 D|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+B.fx6.on|B.Distortion / Power|2|1|0|Off|Off|Off|On|Off;On
+B.fx6.mix|B.Distortion / Mix|2147483647|0|0|0.3000000|0.0000000|0.5000000|1.0000000
+B.fx6.a|B.Distortion / Drive|2147483647|0|0|0.2500000|0.0000000|0.5000000|1.0000000
+B.fx6.b|B.Distortion / Tone|2147483647|0|0|16000.0009766|200.0000000|1437.5000000|20000.0000000
+B.fx6.c|B.Distortion / Resolution|2147483647|0|0|10.0000000|2.0000000|9.0000000|16.0000000
+B.fx6.mode|B.Distortion / Mode|3|1|0|Soft clip|Soft clip|Wavefold|Bitcrush|Soft clip;Wavefold;Bitcrush
+B.fx6.sync|B.Distortion / Tempo motion|2|1|0|Off|Off|Off|On|Off;On
+B.fx6.division|B.Distortion / Division|10|1|0|1/8 D|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+B.fx7.on|B.EQ / Power|2|1|0|On|Off|Off|On|Off;On
+B.fx7.mix|B.EQ / Mix|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.fx7.a|B.EQ / Low|2147483647|0|0|0.0000000|-12.0000000|0.0000000|12.0000000
+B.fx7.b|B.EQ / Mid|2147483647|0|0|0.0000000|-12.0000000|0.0000000|12.0000000
+B.fx7.c|B.EQ / Air|2147483647|0|0|2.0000000|-12.0000000|0.0000000|12.0000000
+B.fx7.mode|B.EQ / Mode|2|1|0|Normal|Normal|Normal|Wide|Normal;Wide
+B.fx7.sync|B.EQ / Tempo motion|2|1|0|Off|Off|Off|On|Off;On
+B.fx7.division|B.EQ / Division|10|1|0|1/8 D|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+B.fx8.on|B.Compressor / Power|2|1|0|Off|Off|Off|On|Off;On
+B.fx8.mix|B.Compressor / Mix|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.fx8.a|B.Compressor / Threshold|2147483647|0|0|-18.0000000|-48.0000000|-24.0000000|0.0000000
+B.fx8.b|B.Compressor / Ratio|2147483647|0|0|4.0000000|1.0000000|10.5000000|20.0000000
+B.fx8.c|B.Compressor / Release|2147483647|0|0|0.1200000|0.0100000|0.5050000|1.0000000
+B.fx8.mode|B.Compressor / Mode|2|1|0|Normal|Normal|Normal|Wide|Normal;Wide
+B.fx8.sync|B.Compressor / Tempo motion|2|1|0|Off|Off|Off|On|Off;On
+B.fx8.division|B.Compressor / Division|10|1|0|1/8 D|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+B.fx9.on|B.Filter / Power|2|1|0|Off|Off|Off|On|Off;On
+B.fx9.mix|B.Filter / Mix|2147483647|0|0|1.0000000|0.0000000|0.5000000|1.0000000
+B.fx9.a|B.Filter / Cutoff|2147483647|0|0|14000.0000000|20.0000000|1268.7500000|20000.0000000
+B.fx9.b|B.Filter / Resonance|2147483647|0|0|0.1500000|0.0000000|0.5000000|1.0000000
+B.fx9.c|B.Filter / Drive|2147483647|0|0|0.0000000|0.0000000|0.5000000|1.0000000
+B.fx9.mode|B.Filter / Mode|3|1|0|Low pass|Low pass|High pass|Band pass|Low pass;High pass;Band pass
+B.fx9.sync|B.Filter / Tempo motion|2|1|0|Off|Off|Off|On|Off;On
+B.fx9.division|B.Filter / Division|10|1|0|1/8 D|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+B.fx10.on|B.Widener / Power|2|1|0|On|Off|Off|On|Off;On
+B.fx10.mix|B.Widener / Mix|2147483647|0|0|0.3000000|0.0000000|0.5000000|1.0000000
+B.fx10.a|B.Widener / Width|2147483647|0|0|1.2000000|0.0000000|1.0000000|2.0000000
+B.fx10.b|B.Widener / Delay|2147483647|0|0|7.0000000|0.0000000|15.0000000|30.0000000
+B.fx10.c|B.Widener / Balance|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.fx10.mode|B.Widener / Mode|2|1|0|Normal|Normal|Normal|Wide|Normal;Wide
+B.fx10.sync|B.Widener / Tempo motion|2|1|0|Off|Off|Off|On|Off;On
+B.fx10.division|B.Widener / Division|10|1|0|1/8 D|1/32|1/8|2 bars|1/32;1/16 T;1/16;1/8 T;1/8;1/8 D;1/4;1/2;1 bar;2 bars
+B.rack.slot1|B.Rack order / Slot 1|10|1|0|Chorus|Chorus|Reverb|Widener|Chorus;Flanger;Phaser;Delay;Reverb;Distortion;EQ;Compressor;Filter;Widener
+B.rack.slot2|B.Rack order / Slot 2|10|1|0|Flanger|Chorus|Reverb|Widener|Chorus;Flanger;Phaser;Delay;Reverb;Distortion;EQ;Compressor;Filter;Widener
+B.rack.slot3|B.Rack order / Slot 3|10|1|0|Phaser|Chorus|Reverb|Widener|Chorus;Flanger;Phaser;Delay;Reverb;Distortion;EQ;Compressor;Filter;Widener
+B.rack.slot4|B.Rack order / Slot 4|10|1|0|Delay|Chorus|Reverb|Widener|Chorus;Flanger;Phaser;Delay;Reverb;Distortion;EQ;Compressor;Filter;Widener
+B.rack.slot5|B.Rack order / Slot 5|10|1|0|Reverb|Chorus|Reverb|Widener|Chorus;Flanger;Phaser;Delay;Reverb;Distortion;EQ;Compressor;Filter;Widener
+B.rack.slot6|B.Rack order / Slot 6|10|1|0|Distortion|Chorus|Reverb|Widener|Chorus;Flanger;Phaser;Delay;Reverb;Distortion;EQ;Compressor;Filter;Widener
+B.rack.slot7|B.Rack order / Slot 7|10|1|0|EQ|Chorus|Reverb|Widener|Chorus;Flanger;Phaser;Delay;Reverb;Distortion;EQ;Compressor;Filter;Widener
+B.rack.slot8|B.Rack order / Slot 8|10|1|0|Compressor|Chorus|Reverb|Widener|Chorus;Flanger;Phaser;Delay;Reverb;Distortion;EQ;Compressor;Filter;Widener
+B.rack.slot9|B.Rack order / Slot 9|10|1|0|Filter|Chorus|Reverb|Widener|Chorus;Flanger;Phaser;Delay;Reverb;Distortion;EQ;Compressor;Filter;Widener
+B.rack.slot10|B.Rack order / Slot 10|10|1|0|Widener|Chorus|Reverb|Widener|Chorus;Flanger;Phaser;Delay;Reverb;Distortion;EQ;Compressor;Filter;Widener
+B.random.lock1|B.Randomizer locks / Oscillators|2|1|0|Off|Off|Off|On|Off;On
+B.random.lock2|B.Randomizer locks / Filters|2|1|0|Off|Off|Off|On|Off;On
+B.random.lock3|B.Randomizer locks / Envelopes|2|1|0|Off|Off|Off|On|Off;On
+B.random.lock4|B.Randomizer locks / Modulation|2|1|0|Off|Off|Off|On|Off;On
+B.random.lock5|B.Randomizer locks / Sequence|2|1|0|On|Off|Off|On|Off;On
+B.random.lock6|B.Randomizer locks / Effects|2|1|0|Off|Off|Off|On|Off;On
+B.master.gain|B.Master / Output|2147483647|0|0|-9.0000000|-60.0000000|-30.0000000|0.0000000
+B.master.pan|B.Master / Pan|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod1.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod1.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod1.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod1.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod1.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod2.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod2.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod2.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod2.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod2.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod3.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod3.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod3.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod3.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod3.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod4.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod4.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod4.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod4.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod4.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod5.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod5.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod5.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod5.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod5.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod6.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod6.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod6.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod6.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod6.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod7.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod7.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod7.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod7.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod7.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod8.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod8.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod8.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod8.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod8.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod9.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod9.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod9.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod9.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod9.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod10.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod10.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod10.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod10.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod10.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod11.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod11.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod11.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod11.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod11.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod12.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod12.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod12.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod12.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod12.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod13.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod13.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod13.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod13.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod13.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod14.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod14.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod14.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod14.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod14.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod15.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod15.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod15.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod15.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod15.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod16.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod16.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod16.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod16.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod16.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod17.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod17.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod17.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod17.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod17.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod18.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod18.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod18.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod18.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod18.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod19.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod19.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod19.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod19.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod19.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod20.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod20.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod20.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod20.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod20.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod21.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod21.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod21.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod21.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod21.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod22.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod22.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod22.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod22.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod22.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod23.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod23.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod23.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod23.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod23.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
+B.mod24.source|B.Matrix / Source|24|1|0|None|None|Random|Space|None;Env 1;Env 2;Env 3;LFO 1;LFO 2;LFO 3;LFO 4;Velocity;Key;Wheel;Pressure;Random;Sample hold;Macro 1;Macro 2;Macro 3;Macro 4;Macro 5;Macro 6;Macro 7;Macro 8;Euphoria;Space
+B.mod24.destination|B.Matrix / Destination|520|1|0|None|None|seq.step7.pitch|mod24.curve
+B.mod24.depth|B.Matrix / Depth|2147483647|0|0|0.0000000|-1.0000000|0.0000000|1.0000000
+B.mod24.bipolar|B.Matrix / Bipolar|2|1|0|On|Off|Off|On|Off;On
+B.mod24.curve|B.Matrix / Curve|2147483647|0|0|1.0000000|0.2500000|2.1250000|4.0000000
