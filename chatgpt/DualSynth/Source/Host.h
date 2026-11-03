@@ -1,5 +1,6 @@
 #pragma once
 #include <JuceHeader.h>
+#include "SidebarLook.h"
 #include "sa-processor.h"
 #include "sb-plugin.h"
 
@@ -69,7 +70,7 @@ private:
 class DualEditor final:public juce::AudioProcessorEditor,private juce::Timer {
 public:explicit DualEditor(DualProcessor&);~DualEditor()override;void resized()override;void paint(juce::Graphics&)override;void select(int);
 private:
- DualProcessor& p;juce::LookAndFeel_V4 look;juce::Component surface,clip;
+ DualProcessor& p;juce::LookAndFeel_V4 look;Sidebar::Look sidebarLook;juce::Component surface,clip;
  std::unique_ptr<juce::AudioProcessorEditor> editorA,editorB;
  juce::MidiKeyboardComponent keys;
  juce::TextButton showA{"A  /  EMBER VA"},showB{"B  /  PRISM FLUX"},panicButton{"PANIC"},save{"Save performance"},load{"Load"};
@@ -78,6 +79,7 @@ private:
  std::vector<std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>> toggles;
  std::vector<std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment>> choices;
  juce::Slider pitch,mod;juce::Label meter,status;
+ bool sidebarEffectsOn=false;
  std::unique_ptr<juce::FileChooser> chooser;
  void dial(juce::String,int,int,int,int);void toggle(juce::String,juce::String,int,int,int);void menu(juce::String,juce::StringArray,int,int,int);
  void file(bool);void timerCallback()override;
