@@ -23,7 +23,7 @@ public:
  void processBlock(juce::AudioBuffer<float>&,juce::MidiBuffer&)override;
  bool isBusesLayoutSupported(const BusesLayout&)const override;
  juce::AudioProcessorEditor* createEditor()override;bool hasEditor()const override{return true;}
- const juce::String getName()const override{return "AEther v4.0";}
+ const juce::String getName()const override{return "AEther v4.1";}
  bool acceptsMidi()const override{return true;}bool producesMidi()const override{return false;}
  double getTailLengthSeconds()const override{return 30;}
  int getNumPrograms()override{return 1;}int getCurrentProgram()override{return 0;}

@@ -64,7 +64,7 @@ void DualEditor::resized(){surface.setBounds(0,0,1600,840);surface.setTransform(
  if(getWidth()>0){p.state.state.setProperty("uiWidth",getWidth(),nullptr);
   static const double steps[]={.9,1.,1.25,1.5,2.};int match=0;for(int i=0;i<5;++i)if(std::abs(getWidth()-1600*steps[i])<std::abs(getWidth()-1600*steps[match]))match=i;
   if(std::abs(getWidth()-1600*steps[match])<2)sizeBox.setSelectedId(match+1,dontSendNotification);else sizeBox.setText(String(int(std::lround(100.0*getWidth()/1600)))+"%",dontSendNotification);}}
-void DualEditor::paint(Graphics& g){g.fillAll(navy());g.addTransform(AffineTransform::scale(float(getWidth())/1600,float(getHeight())/840));g.setColour(ice());g.setFont(FontOptions(23.f,Font::bold));g.drawText("AETHER v4.0",26,13,218,35,Justification::centredLeft);g.setColour(aqua());g.setFont(FontOptions(10.f));g.drawText("TWO ENGINES  /  ONE PERFORMANCE",26,47,300,12,Justification::centredLeft);
+void DualEditor::paint(Graphics& g){g.fillAll(navy());g.addTransform(AffineTransform::scale(float(getWidth())/1600,float(getHeight())/840));g.setColour(ice());g.setFont(FontOptions(23.f,Font::bold));g.drawText("AETHER v4.1",26,13,218,35,Justification::centredLeft);g.setColour(aqua());g.setFont(FontOptions(10.f));g.drawText("TWO ENGINES  /  ONE PERFORMANCE",26,47,300,12,Justification::centredLeft);
  const Rectangle<float> bay(1290, 76, 298, 752);
  g.setColour(Colours::black.withAlpha(.5f));
  g.fillRoundedRectangle(bay.translated(0, 3), 12);
@@ -89,7 +89,7 @@ void DualEditor::paint(Graphics& g){g.fillAll(navy());g.addTransform(AffineTrans
  g.drawText("CONTROL BAY", 1318, 20, 160, 22, Justification::centredLeft);
  g.setColour(ControlBay::secondary);
  g.setFont(FontOptions(9.f));
- g.drawText("AETHER v4.0 / SIGNAL PATH", 1318, 41, 230, 13, Justification::centredLeft);
+ g.drawText("AETHER v4.1 / SIGNAL PATH", 1318, 41, 230, 13, Justification::centredLeft);
  g.drawText("01 / 03", 1510, 22, 58, 17, Justification::centredRight);
 
  auto section = [&](int y, int height, const String& number, const String& title) {
