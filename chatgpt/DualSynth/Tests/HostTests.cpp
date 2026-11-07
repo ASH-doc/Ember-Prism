@@ -573,17 +573,34 @@ std::vector<float> prismGoldenRender(bool motionLanesEdited=false,float motionAm
  return samples;
 }
 void prismMotionTests(){
- const auto golden=File(__FILE__).getParentDirectory().getChildFile("golden-prism-presets.bin");
+ // The pre-Motion build at 7ea5e00 renders one preset differently on Apple Silicon
+ // from the original fixture. Use the same generator and tolerance with a native reference.
+#if JUCE_MAC && JUCE_ARM
+ const auto fixture = "golden-prism-presets-macos-arm64.bin";
+#else
+ const auto fixture = "golden-prism-presets.bin";
+#endif
+ const auto golden=File(__FILE__).getParentDirectory().getChildFile(fixture);
  require(golden.existsAsFile(),"the pre-Motion PRISM golden render is present next to the tests");
  MemoryBlock stored;golden.loadFileAsData(stored);const float* before=static_cast<const float*>(stored.getData());
- auto worstAgainstGolden=[&](const std::vector<float>& now){require(stored.getSize()==now.size()*sizeof(float),"PRISM golden render has the expected length");float worst=0;for(size_t i=0;i<now.size();++i)worst=std::max(worst,std::abs(before[i]-now[i]));return worst;};
  const auto& layout=SynthB::Schema::get().loc;
  require(SynthB::Schema::get().specs[size_t(layout.motionAmount)].initial==0.f,"Motion Amount defaults to 0%");
- const float plain=worstAgainstGolden(prismGoldenRender());
- const float edited=worstAgainstGolden(prismGoldenRender(true,0.f));
- std::cout<<"INFO: 8 old PRISM presets at Motion Amount 0% vs the render from before Motion existed: largest sample difference "<<plain<<"; with all three lanes rewritten but amount still 0%: "<<edited<<"\n";
- require(plain<1.e-4f,"old PRISM presets render as before at Motion Amount 0%");require(edited<1.e-4f,"lane settings have no effect at Motion Amount 0%");
- const auto moving=prismGoldenRender(true,1.f);float difference=0;for(size_t i=0;i<moving.size();++i){require(std::isfinite(moving[i]),"motion render is finite");difference=std::max(difference,std::abs(before[i]-moving[i]));}
+ const auto plain=prismGoldenRender();
+ const auto edited=prismGoldenRender(true,0.f);
+ require(stored.getSize()==plain.size()*sizeof(float),"PRISM golden render has the expected length");
+ float worst=0;
+ for(size_t i=0;i<plain.size();++i){
+  require(std::isfinite(plain[i])&&std::isfinite(before[i]),"PRISM reference and render are finite");
+  worst=std::max(worst,std::abs(before[i]-plain[i]));
+ }
+ std::cout<<"INFO: 8 old PRISM presets at Motion Amount 0% vs "<<fixture<<": largest sample difference "<<worst<<"\n";
+ require(worst<1.e-4f,"old PRISM presets render as before at Motion Amount 0%");
+ require(edited==plain,"lane settings have no effect at Motion Amount 0%");
+ const auto moving=prismGoldenRender(true,1.f);float difference=0;
+ for(size_t i=0;i<moving.size();++i){
+  require(std::isfinite(moving[i]),"motion render is finite");
+  difference=std::max(difference,std::abs(edited[i]-moving[i]));
+ }
  std::cout<<"INFO: same presets with Motion Amount 100%: largest sample difference "<<difference<<"\n";require(difference>.01f,"Motion Amount raises the lanes into the sound");
  // The lane position is a function of the beat only: whole loops later (or a transport jump) lands on the same step.
  auto renderAt=[&](double startBeat,double bpm){
