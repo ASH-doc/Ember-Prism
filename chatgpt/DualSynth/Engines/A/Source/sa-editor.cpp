@@ -1,6 +1,7 @@
 // sa-editor.cpp — Drawn hardware controls, amber display, full matrix, scope and parameter inspector.
 #include "PresetBrowser.h"
 #include "sa-editor.h"
+#include "sa-workbench.h"
 using namespace juce;
 namespace SynthAUI {
 HardwareLook::HardwareLook(){
@@ -12,7 +13,11 @@ HardwareLook::HardwareLook(){
  setColour(TooltipWindow::backgroundColourId,Colour(0xff211b16));setColour(TooltipWindow::textColourId,cream());
 }
 Label* HardwareLook::createSliderTextBox(Slider& slider){auto* box=LookAndFeel_V4::createSliderTextBox(slider);box->setFont(FontOptions(9.f));box->setColour(Label::textColourId,cream());box->setColour(Label::outlineColourId,Colours::transparentBlack);box->setColour(Label::backgroundColourId,Colours::transparentBlack);return box;}
-void HardwareLook::drawRotarySlider(Graphics& g,int x,int y,int w,int h,float value,float start,float end,Slider&){
+void HardwareLook::drawRotarySlider(Graphics& g,int x,int y,int w,int h,float value,float start,float end,Slider& slider){
+ if(slider.getProperties().contains("emberWorkbenchKnob")){
+  drawWorkbenchKnob(g,{x,y,w,h},value,start,end,int(slider.getProperties()["emberWorkbenchKnob"]));
+  return;
+ }
  const float size=float(std::min(w,h))-9,r=size*.5f,cx=float(x)+float(w)*.5f,cy=float(y)+float(h)*.5f;
  for(int i=0;i<=10;++i){float a=start+(end-start)*float(i)/10;Point<float> a1(cx+std::sin(a)*(r+2),cy-std::cos(a)*(r+2)),a2(cx+std::sin(a)*(r+4),cy-std::cos(a)*(r+4));g.setColour(Colour(0xff897350));g.drawLine({a1,a2},.8f);}
  g.setColour(Colours::black.withAlpha(.65f));g.fillEllipse(cx-r+1,cy-r+3,size,size);
@@ -23,16 +28,30 @@ void HardwareLook::drawRotarySlider(Graphics& g,int x,int y,int w,int h,float va
  const float a=start+value*(end-start);g.setColour(cream());g.drawLine(cx+std::sin(a)*(r*.45f),cy-std::cos(a)*(r*.45f),cx+std::sin(a)*(r-4),cy-std::cos(a)*(r-4),2);
 }
 void HardwareLook::drawLinearSlider(Graphics& g,int x,int y,int w,int h,float pos,float,float,Slider::SliderStyle style,Slider& s){
+ if(s.getProperties().contains("emberRouteDepth")){
+  const float middle=float(x)+float(w)*.5f, yCentre=float(y)+float(h)*.5f;
+  const float end=jlimit(float(x),float(x+w),pos);
+  g.setColour(Colour(0xff100d09));
+  g.fillRoundedRectangle(float(x),yCentre-2.f,float(w),4.f,2.f);
+  g.setColour(end<middle?Colour(0xffd58465):Colour(0xffbcbb78));
+  g.fillRect(std::min(middle,end),yCentre-2.f,std::abs(end-middle),4.f);
+  g.setColour(Colour(0xff9e835e));
+  g.drawVerticalLine(roundToInt(middle),yCentre-4.f,yCentre+4.f);
+  g.setColour(cream());
+  g.fillRoundedRectangle(end-1.5f,yCentre-4.f,3.f,8.f,1.f);
+  return;
+ }
  if(style==Slider::LinearVertical){float cx=float(x)+float(w)*.5f;g.setColour(Colour(0xff100c09));g.fillRoundedRectangle(cx-2,float(y),4,float(h),2);for(int i=0;i<6;++i){g.setColour(Colour(0xff705b3d));float yy=float(y)+float(h*i)/5;g.drawHorizontalLine(int(yy),cx-8,cx-4);}
  g.setGradientFill(ColourGradient(Colour(0xff96816a),cx-8,pos-4,Colour(0xff2a241e),cx+8,pos+5,false));g.fillRoundedRectangle(cx-8,pos-5,16,10,2);g.setColour(cream());g.drawHorizontalLine(int(pos),cx-6,cx+6);
  }else {g.setColour(Colour(0xff0f0c09));g.fillRoundedRectangle(float(x),float(y+h/2-2),float(w),4,2);g.setColour(s.getName().startsWith("seq.gate.step")?amber():Colour(0xffb18b52));g.fillRoundedRectangle(float(x),float(y+h/2-2),std::max(1.f,pos-float(x)),4,2);g.setColour(cream());g.fillRoundedRectangle(pos-2,float(y+h/2-5),4,10,1);}
 }
 void HardwareLook::drawToggleButton(Graphics& g,ToggleButton& b,bool,bool){auto r=b.getLocalBounds();g.setColour(Colour(0xff100d0a));g.fillRoundedRectangle(r.toFloat(),3);g.setColour(b.getToggleState()?amber():Colour(0xff59442a));g.fillEllipse(5,float(r.getCentreY())-3,6,6);g.setColour(cream());g.setFont(FontOptions(9.f));g.drawText(b.getButtonText(),r.withTrimmedLeft(15),Justification::centredLeft);}
-Control::Control(SynthAProcessor& p,int i,bool f,bool in):parameter(i),proc(p),fader(f),inlineLabel(in){
+Control::Control(SynthAProcessor& p,int i,bool f,bool in,bool rotaryChoice):parameter(i),proc(p),fader(f),inlineLabel(in){
  const auto& def=SynthA::parameters()[size_t(i)];label.setText(def.label,dontSendNotification);label.setFont(FontOptions(in?11.f:9.f));label.setJustificationType(in?Justification::centredLeft:Justification::centred);addAndMakeVisible(label);
- if(!def.choices.empty()){for(size_t n=0;n<def.choices.size();++n)combo.addItem(def.choices[n],int(n+1));addAndMakeVisible(combo);ca=std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment>(proc.state,def.id,combo);combo.setTooltip(def.id);}
+ if(!def.choices.empty()&&!rotaryChoice){for(size_t n=0;n<def.choices.size();++n)combo.addItem(def.choices[n],int(n+1));addAndMakeVisible(combo);ca=std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment>(proc.state,def.id,combo);combo.setTooltip(def.id);}
  else{slider.setName(def.id);slider.setSliderStyle(in?Slider::LinearHorizontal:f?Slider::LinearVertical:Slider::RotaryVerticalDrag);slider.setTextBoxStyle(Slider::TextBoxBelow,false,in?60:48,13);slider.setRotaryParameters(float(SynthA::pi)*1.25f,float(SynthA::pi)*2.75f,true);slider.setVelocityBasedMode(false);slider.setVelocityModeParameters(.2,1,0,true,ModifierKeys::shiftModifier);slider.setMouseDragSensitivity(160);slider.setDoubleClickReturnValue(true,def.initial);slider.setTextValueSuffix(def.unit.empty()?"":" "+def.unit);slider.setTooltip(def.id+" | Shift: fine | Double-click: reset | Right-click label: MIDI learn");slider.setNumDecimalPlacesToDisplay(def.discrete?0:def.max>100?0:2);addAndMakeVisible(slider);sa=std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(proc.state,def.id,slider);slider.setPopupMenuEnabled(false);
  slider.textFromValueFunction=[def](double value){
+  if(!def.choices.empty())return String(def.choices[size_t(jlimit(0,int(def.choices.size())-1,int(std::round(value))))]);
   if(def.unit=="Hz"&&value>=1000)return String(value/1000,2)+"k";
   if(def.unit=="s")return value<1?String(value*1000,0)+"ms":String(value,2)+"s";
   if(def.discrete)return String(int(std::round(value)));
@@ -40,7 +59,9 @@ Control::Control(SynthAProcessor& p,int i,bool f,bool in):parameter(i),proc(p),f
   if(def.unit=="dB")return String(value,1);
   return String(value,2);
  };
- slider.valueFromTextFunction=[def](const String& text){double value=text.getDoubleValue();if(def.unit=="Hz"&&text.containsIgnoreCase("k"))value*=1000;if(def.unit=="s"&&text.containsIgnoreCase("ms"))value/=1000;return value;};
+ slider.valueFromTextFunction=[def](const String& text){
+  for(size_t i=0;i<def.choices.size();++i)if(text.equalsIgnoreCase(String(def.choices[i])))return double(i);
+  double value=text.getDoubleValue();if(def.unit=="Hz"&&text.containsIgnoreCase("k"))value*=1000;if(def.unit=="s"&&text.containsIgnoreCase("ms"))value/=1000;return value;};
  slider.setTextValueSuffix("");slider.updateText();}
  label.addMouseListener(this,false);
 }
@@ -221,10 +242,26 @@ Face::Face(SynthAProcessor& p):proc(p),keyboard(p.keyboard,MidiKeyboardComponent
  keyboard.setBounds(118,668,1129,39);keyboard.setAvailableRange(24,108);keyboard.setLowestVisibleKey(36);keyboard.setKeyWidth(20);keyboard.setVelocity(.8f,true);keyboard.setColour(MidiKeyboardComponent::whiteNoteColourId,Colour(0xffd5c5a8));keyboard.setColour(MidiKeyboardComponent::blackNoteColourId,Colour(0xff1c1814));keyboard.setColour(MidiKeyboardComponent::keyDownOverlayColourId,amber().withAlpha(.6f));addAndMakeVisible(keyboard);
  pitch.setSliderStyle(Slider::LinearVertical);pitch.setTextBoxStyle(Slider::NoTextBox,false,0,0);pitch.setRange(-1,1);pitch.setBounds(36,668,28,38);pitch.onValueChange=[this]{proc.uiPitch.store(float(pitch.getValue()));};pitch.onDragEnd=[this]{pitch.setValue(0);};addAndMakeVisible(pitch);
  mod.setSliderStyle(Slider::LinearVertical);mod.setTextBoxStyle(Slider::NoTextBox,false,0,0);mod.setRange(0,127,1);mod.setBounds(77,668,28,38);mod.onValueChange=[this]{proc.uiMod.store(float(mod.getValue()));};addAndMakeVisible(mod);
+ workbench=std::make_unique<Workbench>(proc,[this](const String& group){showInspector(group);});
+ workbench->setBounds(28,96,1224,427);
+ for(auto* child:getChildren())
+  if(workbench->getBounds().contains(child->getBounds()))advancedControls.push_back(child);
+ addAndMakeVisible(*workbench);
+ viewButton.setBounds(800,59,154,22);
+ viewButton.setTooltip("Switch between the EMBER workbench and the original full control panel.");
+ viewButton.onClick=[this]{showWorkbench(!workbenchShown());};
+ addAndMakeVisible(viewButton);
+ showWorkbench(true);
  arpBoard=std::make_unique<ArpBoard>(proc,look);arpBoard->setBounds(28,92,1224,568);arpBoard->onClose=[this]{closeArpBoard();};addChildComponent(*arpBoard);
  phosphor=Image(Image::ARGB,160,28,true);browse();timerCallback();startTimerHz(24);
 }
 Face::~Face(){stopTimer();inspectorWindow.reset();setLookAndFeel(nullptr);}
+bool Face::workbenchShown()const{return workbench!=nullptr&&workbench->isVisible();}
+void Face::showWorkbench(bool show){
+ for(auto* control:advancedControls)control->setVisible(!show);
+ workbench->setVisible(show);
+ viewButton.setButtonText(show?"ADVANCED VIEW":"WORKBENCH");
+}
 void Face::browse(){
  PresetBrowser::rebuild(presetBox, categoryBox, search.getText(), proc.presetCount(), [this](int i){ return proc.preset(i); });
  presetBox.setSelectedId(selectedPreset+1, dontSendNotification);
@@ -243,7 +280,7 @@ void Face::paint(Graphics& g){
  g.setFont(FontOptions(9.f));for(int n=0;n<12;++n){g.setColour(Colour(0xffa88b61));g.drawText(String(n+1),570,313+n*17,16,16,Justification::centred);}
  g.setColour(Colour(0xff332a21));g.fillRoundedRectangle(28,529,1224,48,4);for(int n=0;n<8;++n)section(g,{28+n*153,581,147,80},"");
  g.setColour(Colour(0xff0c0b08));g.fillRoundedRectangle(974,1,192,14,2);g.setColour(amber());g.setFont(FontOptions(8.f));g.drawText("2x ENGINE  /  16 VOICES  /  STEREO",974,1,192,14,Justification::centred);
- g.drawImage(phosphor,800,61,160,24,0,0,160,28);
+ g.drawImage(phosphor,800,1,160,22,0,0,160,28);
  // Small live response sketches are visual guides to cutoff/resonance, not measured transfer plots.
  for(int f=0;f<2;++f){const int x=710+f*270;float cutoff=proc.getParam("flt"+String(f+1)+".cutoff"),res=proc.getParam("flt"+String(f+1)+".res");Path response;for(int j=0;j<82;++j){float hz=20*std::pow(1000.f,float(j)/81),ratio=hz/cutoff;float magnitude=1/std::sqrt(1+std::pow(ratio,proc.getParam("flt"+String(f+1)+".model")<.5f?8.f:4.f));magnitude+=res*.45f*std::exp(-std::pow(std::log2(std::max(.0001f,ratio))*2.5f,2.f));float y=184-std::min(1.3f,magnitude)*10;if(j==0)response.startNewSubPath(float(x+14),y);else response.lineTo(float(x+14+j),y);}g.setColour(amber().withAlpha(.35f));g.strokePath(response,PathStrokeType(.8f));}
  for(int o=0;o<3;++o){int x=28+o*192;int wave=int(proc.getParam("osc"+String(o+1)+".wave"));Path path;for(int j=0;j<26;++j){float v=SynthA::wave(float(j)/26,.01f,wave,.5f);if(j==0)path.startNewSubPath(float(x+125),109-v*4);else path.lineTo(float(x+125+j),109-v*4);}g.setColour(amber().withAlpha(.7f));g.strokePath(path,PathStrokeType(.8f));}

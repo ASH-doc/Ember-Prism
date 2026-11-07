@@ -297,7 +297,13 @@ void phase2HostTests(){
   for(int block=0;block<120;++block){MidiBuffer m;if(block==0)for(int note:{48,55,60,67})m.addEvent(MidiMessage::noteOn(1,note,.9f),0);host->processBlock(out,m);if(block==100)reduction=host->gainReduction.load();}
   std::cout<<"INFO: FET gain reduction readout with +24 dB input, 20:1 on a four-note chord: "<<reduction<<" dB; A left "<<host->levels[0].load()<<", output left "<<host->levels[4].load()<<"\n";
   require(reduction>1.f,"the gain-reduction readout moves when the FET compressor works");require(host->levels[0].load()>0&&host->levels[1].load()>0&&host->levels[4].load()>0&&host->levels[5].load()>0,"stereo meters read signal");
-  host->write("comp",0);for(int block=0;block<4;++block){MidiBuffer m;host->processBlock(out,m);}require(host->gainReduction.load()==0.f,"gain reduction reads zero with the compressor off");
+  require(host->meterReduction.load()>1.f,"visible needle receives the compressor reduction");
+  host->write("fet.mix",0);
+  {MidiBuffer m;host->processBlock(out,m);}
+  require(host->meterReduction.load()==0.f,"needle returns to zero at 100% dry");
+  host->write("fet.mix",1);
+  host->write("comp",0);for(int block=0;block<4;++block){MidiBuffer m;host->processBlock(out,m);}
+  require(host->gainReduction.load()==0.f&&host->meterReduction.load()==0.f,"gain reduction reads zero with the compressor off");
   // With Master FX bypassed the compressor's work is inaudible, so the needle must not move.
   host->write("comp",1);host->write("glue",0);for(int block=0;block<60;++block){MidiBuffer m;host->processBlock(out,m);}
   std::cout<<"INFO: gain-reduction readout with Master FX bypassed: "<<host->gainReduction.load()<<" dB\n";require(host->gainReduction.load()<.05f,"the gain-reduction needle reads zero while Master FX is bypassed");
@@ -694,6 +700,38 @@ void uiDesignTests(const File* folder){
  auto host=makeHost();
  {auto editor=std::unique_ptr<AudioProcessorEditor>(host->a.createEditor());auto* ember=dynamic_cast<SynthAEditor*>(editor.get());require(ember!=nullptr,"EMBER editor is created");editor->setSize(1280,720);
   auto& face=ember->panel();require(!face.arpBoardOpen(),"the arp board starts closed");
+  require(face.workbenchShown(),"EMBER starts with the workbench");
+  const auto beforeView=JSON::toString(host->a.getPatch());
+  face.showWorkbench(false);
+  require(!face.workbenchShown(),"Advanced View shows the original layout");
+  if(folder!=nullptr)savePng(*folder,"ember-advanced-view.png",editor->createComponentSnapshot(editor->getLocalBounds(),true));
+  face.showWorkbench(true);
+  require(face.workbenchShown()&&JSON::toString(host->a.getPatch())==beforeView,"view switching preserves patch values");
+  const auto findTitled=[](const auto& find,Component& parent,const String& title)->Component*{
+   if(parent.getTitle()==title)return &parent;
+   for(auto* child:parent.getChildren())if(auto* match=find(find,*child,title))return match;
+   return nullptr;
+  };
+  auto* waveform=dynamic_cast<Slider*>(findTitled(findTitled,face,"Oscillator 2 waveform"));
+  require(waveform!=nullptr&&waveform->getInterval()==1.0,"waveform knob selects discrete shapes");
+  const float oldWave=host->a.getParam("osc2.wave");
+  waveform->setValue(2,sendNotificationSync);
+  require(host->a.getParam("osc2.wave")==2.f,"waveform selector edits the existing parameter");
+  waveform->setValue(oldWave,sendNotificationSync);
+  auto* routeDepth=dynamic_cast<Slider*>(findTitled(findTitled,face,"Route 12 depth"));
+  require(routeDepth!=nullptr,"all twelve routes have an editable depth");
+  routeDepth->setValue(-.25,sendNotificationSync);
+  require(host->a.getParam("mod.12.amount")==-.25f,"patchboard uses the existing bipolar route amount");
+  routeDepth->setValue(0,sendNotificationSync);
+  if(folder!=nullptr){
+   host->a.setParam("mod.1.source",2);
+   host->a.setParam("mod.1.dest",float(SynthA::indexOf("flt1.cutoff")+1));
+   host->a.setParam("mod.1.amount",.4f);
+   host->a.setParam("mod.7.source",5);
+   host->a.setParam("mod.7.dest",float(SynthA::indexOf("osc2.pw")+1));
+   host->a.setParam("mod.7.amount",-.32f);
+   savePng(*folder,"ember-workbench.png",editor->createComponentSnapshot(editor->getLocalBounds(),true));
+  }
   face.openArpBoard();require(face.arpBoardOpen(),"the three dots open the arp board");
   auto* matrix=face.stepMatrix();require(matrix!=nullptr,"the board has its step matrix");
   host->a.setParam("arp.velocity1",.8f);require(matrix->keyPressed(KeyPress(KeyPress::downKey)),"arrow down is handled");

@@ -2,6 +2,7 @@
 #pragma once
 #include "sa-processor.h"
 namespace SynthAUI {
+class Workbench;
 inline juce::Colour amber(){return juce::Colour(0xffffb23e);}inline juce::Colour cream(){return juce::Colour(0xffe9dcc3);}
 class HardwareLook final:public juce::LookAndFeel_V4 {
  public:HardwareLook();
@@ -12,7 +13,7 @@ class HardwareLook final:public juce::LookAndFeel_V4 {
  juce::Font getComboBoxFont(juce::ComboBox&)override{return juce::Font(juce::FontOptions(10.f));}
 };
 class Control final:public juce::Component {
- public:Control(SynthAProcessor&,int,bool fader=false,bool inlineLabel=false);void resized()override;void paint(juce::Graphics&)override;
+ public:Control(SynthAProcessor&,int,bool fader=false,bool inlineLabel=false,bool rotaryChoice=false);void resized()override;void paint(juce::Graphics&)override;
  juce::Slider slider;juce::ComboBox combo;juce::Label label;int parameter;
  private:SynthAProcessor& proc;bool fader,inlineLabel;
  std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sa;
@@ -66,6 +67,8 @@ class Face final:public juce::Component,private juce::Timer {
  // Embedded mode: the host owns the shared keyboard and wheels, so this panel hides its own.
  void setEmbedded(bool embedded){keyboard.setVisible(!embedded);pitch.setVisible(!embedded);mod.setVisible(!embedded);}
  // The arp and gate board is an overlay owned by this panel (opened from the three dots beside the compact arp strip).
+ void showWorkbench(bool);
+ bool workbenchShown()const;
  void openArpBoard();void closeArpBoard();bool arpBoardOpen()const{return arpBoard!=nullptr&&arpBoard->isVisible();}
  StepMatrix* stepMatrix(){return arpBoard!=nullptr?&arpBoard->stepMatrix():nullptr;}
  private:
@@ -76,6 +79,9 @@ class Face final:public juce::Component,private juce::Timer {
  juce::ComboBox presetBox,categoryBox;juce::TextEditor search;juce::Label status;
  juce::MidiKeyboardComponent keyboard;juce::Slider pitch,mod;
  juce::Label macroLabels[4];std::unique_ptr<juce::FileChooser> chooser;
+ std::unique_ptr<Workbench> workbench;
+ std::vector<juce::Component*> advancedControls;
+ juce::TextButton viewButton{"ADVANCED VIEW"};
  std::unique_ptr<GateGrid> gateGrid;std::unique_ptr<ArpBoard> arpBoard;juce::Component::SafePointer<juce::TextButton> arpMore;
  std::unique_ptr<juce::DocumentWindow> inspectorWindow;int selectedPreset=0;
  juce::String lastName;juce::Image phosphor;

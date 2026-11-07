@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(DualSynth VERSION 1.0.0 LANGUAGES C CXX)
+project(DualSynth VERSION 4.9.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(MSVC)
@@ -11,7 +11,7 @@ juce_add_binary_data(EmberBank NAMESPACE EmberBank HEADER_NAME EmberBankData.h S
 juce_add_binary_data(EmberClaudeBank NAMESPACE EmberClaudeBank HEADER_NAME EmberClaudeBankData.h SOURCES Engines/A/Presets/claude-import.json)
 juce_add_binary_data(PrismBank NAMESPACE PrismBank HEADER_NAME PrismBankData.h SOURCES Engines/B/Presets/factory.json Engines/B/Presets/signal_studies.json Engines/B/Presets/claude-prism.json)
 juce_add_plugin(DualSynth COMPANY_NAME "Dual Synth Studio" BUNDLE_ID "studio.dualsynth.instrument"
- PLUGIN_MANUFACTURER_CODE Dyst PLUGIN_CODE Du41 PRODUCT_NAME "AEther v4.1"
+ PLUGIN_MANUFACTURER_CODE Dyst PLUGIN_CODE Du49 PRODUCT_NAME "AEther v4.9"
  FORMATS Standalone VST3 IS_SYNTH TRUE NEEDS_MIDI_INPUT TRUE NEEDS_MIDI_OUTPUT FALSE
  EDITOR_WANTS_KEYBOARD_FOCUS TRUE COPY_PLUGIN_AFTER_BUILD FALSE VST3_CATEGORIES Instrument Synth)
 juce_generate_juce_header(DualSynth)

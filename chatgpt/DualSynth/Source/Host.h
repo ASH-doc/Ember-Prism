@@ -23,7 +23,7 @@ public:
  void processBlock(juce::AudioBuffer<float>&,juce::MidiBuffer&)override;
  bool isBusesLayoutSupported(const BusesLayout&)const override;
  juce::AudioProcessorEditor* createEditor()override;bool hasEditor()const override{return true;}
- const juce::String getName()const override{return "AEther v4.1";}
+ const juce::String getName()const override{return "AEther v4.9";}
  bool acceptsMidi()const override{return true;}bool producesMidi()const override{return false;}
  double getTailLengthSeconds()const override{return 30;}
  int getNumPrograms()override{return 1;}int getCurrentProgram()override{return 0;}
@@ -52,6 +52,8 @@ public:
  std::array<std::atomic<float>,6> levels{};
  // Largest compressor gain reduction in the last block, dB (>= 0), for the gain-reduction meter.
  std::atomic<float> gainReduction{0};
+ // Meter decay runs at audio-block rate so the editor can see short peaks between refreshes.
+ std::atomic<float> meterReduction{0};
  // Tap tempo is a UI gesture: each call adds a tap. With two or more taps the average tempo is written to the engine(s)
  // chosen by the "tap.target" parameter and their "follow host" switch is turned off. Returns the tempo or 0 for the first tap.
  float tapTempo();
@@ -78,6 +80,7 @@ private:
  std::vector<float> dryL,dryR,wetL,wetR;
  std::array<double,8> tapTimes{};int tapCount=0;std::atomic<float> tapBpm{0};
  std::array<std::array<float,4>,2> alignB{};int alignHead=0;
+ int lastMeterMode=-1;
  float toneLow[2]{},toneHigh[2]{};double sampleRate=48000;
  // Recall publication is exclusive with a complete host audio block.
  juce::CriticalSection publicationLock;

@@ -37,6 +37,7 @@ DualEditor::DualEditor(DualProcessor& processor):AudioProcessorEditor(processor)
  for(int i=0;i<3;++i){auto& tab=tabButtons[size_t(i)];tab.setButtonText(tabNames[i]);tab.setClickingTogglesState(false);tab.setBounds(1308+i*89,558,86,22);ControlBay::buttonColours(tab);surface.addAndMakeVisible(tab);tab.onClick=[this,i]{showMasterTab(i);};}
  currentGroup=CompShared;menu("comp.mode",{"Glue","FET 76"},1308,586,100,24);toggle("comp","COMP ON",1414,586,100);
  surface.addAndMakeVisible(reductionMeter);reductionMeter.setBounds(1308,614,264,80);
+ reductionMeter.setTooltip("Gain reduction in dB. For a stronger response, raise FET Input or lower the Glue Threshold.");
  reductionMeter.onEnable=[this]{if(auto* master=p.state.getParameter("glue")){master->beginChangeGesture();master->setValueNotifyingHost(1.f);master->endChangeGesture();}};grouped.push_back({&reductionMeter,CompShared});
  currentGroup=CompFet;
  toggle("fet.hpf","90 Hz SC",1520,586,52);
@@ -64,7 +65,7 @@ void DualEditor::resized(){surface.setBounds(0,0,1600,840);surface.setTransform(
  if(getWidth()>0){p.state.state.setProperty("uiWidth",getWidth(),nullptr);
   static const double steps[]={.9,1.,1.25,1.5,2.};int match=0;for(int i=0;i<5;++i)if(std::abs(getWidth()-1600*steps[i])<std::abs(getWidth()-1600*steps[match]))match=i;
   if(std::abs(getWidth()-1600*steps[match])<2)sizeBox.setSelectedId(match+1,dontSendNotification);else sizeBox.setText(String(int(std::lround(100.0*getWidth()/1600)))+"%",dontSendNotification);}}
-void DualEditor::paint(Graphics& g){g.fillAll(navy());g.addTransform(AffineTransform::scale(float(getWidth())/1600,float(getHeight())/840));g.setColour(ice());g.setFont(FontOptions(23.f,Font::bold));g.drawText("AETHER v4.1",26,13,218,35,Justification::centredLeft);g.setColour(aqua());g.setFont(FontOptions(10.f));g.drawText("TWO ENGINES  /  ONE PERFORMANCE",26,47,300,12,Justification::centredLeft);
+void DualEditor::paint(Graphics& g){g.fillAll(navy());g.addTransform(AffineTransform::scale(float(getWidth())/1600,float(getHeight())/840));g.setColour(ice());g.setFont(FontOptions(23.f,Font::bold));g.drawText("AETHER v4.9",26,13,218,35,Justification::centredLeft);g.setColour(aqua());g.setFont(FontOptions(10.f));g.drawText("TWO ENGINES  /  ONE PERFORMANCE",26,47,300,12,Justification::centredLeft);
  const Rectangle<float> bay(1290, 76, 298, 752);
  g.setColour(Colours::black.withAlpha(.5f));
  g.fillRoundedRectangle(bay.translated(0, 3), 12);
@@ -89,7 +90,7 @@ void DualEditor::paint(Graphics& g){g.fillAll(navy());g.addTransform(AffineTrans
  g.drawText("CONTROL BAY", 1318, 20, 160, 22, Justification::centredLeft);
  g.setColour(ControlBay::secondary);
  g.setFont(FontOptions(9.f));
- g.drawText("AETHER v4.1 / SIGNAL PATH", 1318, 41, 230, 13, Justification::centredLeft);
+ g.drawText("AETHER v4.9 / SIGNAL PATH", 1318, 41, 230, 13, Justification::centredLeft);
  g.drawText("01 / 03", 1510, 22, 58, 17, Justification::centredRight);
 
  auto section = [&](int y, int height, const String& number, const String& title) {
@@ -152,8 +153,12 @@ void DualEditor::refreshMasterTabs(){
 void DualEditor::timerCallback(){if(editorA->isVisible()!=(p.panel.load()==0))select(p.panel.load());
  auto db=[](float x){return x>1.e-7f?String(Decibels::gainToDecibels(x),1):String("-inf");};float out=p.peaks[2].load();meter.setText("A "+db(p.peaks[0].load())+"   B "+db(p.peaks[1].load())+"   OUT "+db(out)+" dB   /   GR "+String(p.gainReduction.load(),1)+" dB",dontSendNotification);meter.setColour(Label::textColourId,out>1?Colours::salmon:aqua());
  barsA.setLevels(p.levels[0].load(),p.levels[1].load());barsB.setLevels(p.levels[2].load(),p.levels[3].load());barsOut.setLevels(p.levels[4].load(),p.levels[5].load());
- reductionMeter.setBypassed(p.value("glue")<.5f);
- reductionMeter.setTitle(int(p.get(DualProcessor::CompMode))==DualProcessor::Fet76?"FET 76":"GLUE");reductionMeter.setReduction(p.gainReduction.load());reductionMeter.tick();
+ const bool fet=int(p.get(DualProcessor::CompMode))==DualProcessor::Fet76;
+ reductionMeter.setBypassed(p.get(DualProcessor::Glue)<.5f);
+ reductionMeter.setCompressorState(p.get(DualProcessor::Comp)>.5f,fet&&p.get(DualProcessor::FetMix)<=0.f);
+ reductionMeter.setTitle(fet?"FET 76":"GLUE");
+ reductionMeter.setReduction(p.meterReduction.load(std::memory_order_relaxed));
+ reductionMeter.tick();
  const float bpm=p.lastTapBpm();tapLabel.setText(bpm>0?String(bpm,1)+" BPM":"tap tempo",dontSendNotification);
  refreshMasterTabs();
  String route=p.value("routing")==0?"LAYER":p.value("routing")==1?"SPLIT at "+MidiMessage::getMidiNoteName(int(p.value("split")),true,true,4)+(p.value("swap")>.5f?" (swapped)":""):p.value("routing")==2?"A ONLY":"B ONLY";

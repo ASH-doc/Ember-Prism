@@ -79,6 +79,7 @@ void DualProcessor::prepareToPlay(double sr,int block){
  for(auto* scratch:{&dryL,&dryR,&wetL,&wetR})scratch->assign(size_t(capacity),0.f);
  owners={};alignB={};alignHead=0;keyboard.reset();reverb.setSampleRate(sr);reverb.reset();compressor.prepare({sr,uint32(capacity),2});toneLow[0]=toneLow[1]=toneHigh[0]=toneHigh[1]=0;
  fet.prepare(sr);reverbInput.prepare(sr);
+ meterReduction.store(0);lastMeterMode=-1;
  for(auto* smooth:{&gainA,&gainB,&master,&width,&fxBlend,&verbWet,&panLeftA,&panRightA,&panLeftB,&panRightB})smooth->reset(sr,.02);
  gainA.setCurrentAndTargetValue(stripGain(0));gainB.setCurrentAndTargetValue(stripGain(1));master.setCurrentAndTargetValue(mixerGain(get(Master)));width.setCurrentAndTargetValue(get(Width));fxBlend.setCurrentAndTargetValue(get(Glue));verbWet.setCurrentAndTargetValue(get(Verb)>.5f?get(Wet):0);
  panLeftA.setCurrentAndTargetValue(panGain(get(APan),0));panRightA.setCurrentAndTargetValue(panGain(get(APan),1));panLeftB.setCurrentAndTargetValue(panGain(get(BPan),0));panRightB.setCurrentAndTargetValue(panGain(get(BPan),1));
@@ -105,7 +106,7 @@ float DualProcessor::tapTempo(){
  if(target!=1){b.write("clock.bpm",bpm);b.write("clock.host",0);}
  return bpm;
 }
-void DualProcessor::releaseResources(){a.releaseResources();b.releaseResources();}
+void DualProcessor::releaseResources(){a.releaseResources();b.releaseResources();gainReduction.store(0);meterReduction.store(0);}
 
 void DualProcessor::routeMidi(const MidiBuffer& input,MidiBuffer& ma,MidiBuffer& mb){
  ma.clear();mb.clear();
@@ -200,10 +201,11 @@ void DualProcessor::processBlock(AudioBuffer<float>& audio,MidiBuffer& midi){
   for (auto& peak : peaks) peak.store(0);
   for (auto& level : levels) level.store(0);
   gainReduction.store(0);
+  meterReduction.store(0);
   return;
  }
  ScopedNoDenormals guard;const int n=audio.getNumSamples();
- if(panic.exchange(false)){a.panicRequested.store(true);b.silence.store(true);owners={};keyboard.reset();alignB={};reverb.reset();compressor.reset();fet.reset();reverbInput.reset();toneLow[0]=toneLow[1]=toneHigh[0]=toneHigh[1]=0;}
+ if(panic.exchange(false)){meterReduction.store(0);a.panicRequested.store(true);b.silence.store(true);owners={};keyboard.reset();alignB={};reverb.reset();compressor.reset();fet.reset();reverbInput.reset();toneLow[0]=toneLow[1]=toneHigh[0]=toneHigh[1]=0;}
  keyboard.processNextMidiBuffer(midi,0,n,true);float pb=bend.exchange(-2),mw=wheel.exchange(-1);if(pb>=-1)midi.addEvent(MidiMessage::pitchWheel(1,jlimit(0,16383,int(pb*8192+8192))),0);if(mw>=0)midi.addEvent(MidiMessage::controllerEvent(1,1,int(mw)),0);
  audio.clear();
  Peaks peak;const int capacity=sliceCapacity();
@@ -222,7 +224,16 @@ void DualProcessor::processBlock(AudioBuffer<float>& audio,MidiBuffer& midi){
  for(size_t i=0;i<levels.size();++i)levels[i].store(peak.level[i]);
  // The needle shows compression you can hear: it is scaled by how much of the master-effects path is blended in,
  // so it reads zero while Master FX is bypassed (the detector keeps running underneath).
- gainReduction.store(peak.reduction*jlimit(0.f,1.f,fxBlend.getCurrentValue()));midi.clear();
+ const int mode=int(get(CompMode));
+ const float compMix=mode==Fet76?get(FetMix):1.f;
+ const float reduction=peak.reduction*jlimit(0.f,1.f,fxBlend.getCurrentValue())*compMix;
+ gainReduction.store(reduction);
+ const bool active=get(Glue)>.5f&&get(Comp)>.5f&&compMix>0.f;
+ const float held=mode==lastMeterMode?meterReduction.load(std::memory_order_relaxed):0.f;
+ const float decay=60.f*float(double(n)/sampleRate);
+ meterReduction.store(active?std::max(reduction,held-decay):0.f,std::memory_order_relaxed);
+ lastMeterMode=mode;
+ midi.clear();
 }
 void DualProcessor::getStateInformation(MemoryBlock& block){const ScopedLock recall(recallLock);ValueTree tree=state.copyState();MemoryBlock sa,sb;a.getStateInformation(sa);b.getStateInformation(sb);tree.setProperty("engineA",sa.toBase64Encoding(),nullptr);tree.setProperty("engineB",sb.toBase64Encoding(),nullptr);tree.setProperty("panel",panel.load(),nullptr);MemoryOutputStream output(block,false);tree.writeToStream(output);}
 

@@ -20,13 +20,14 @@ inline void buttonColours(juce::TextButton& button) {
 
 // Analog-style gain-reduction meter: cream backlit face, needle at rest on the right (0 dB) and swinging left as the
 // compressor works, with VU-style ballistics (quick to swing in, slow to fall back).
-class GainReductionMeter final:public juce::Component{
+class GainReductionMeter final:public juce::Component,public juce::SettableTooltipClient{
 public:
  void setReduction(float db){target=juce::jlimit(0.f,24.f,db);}
  void setTitle(const juce::String& text){if(text!=title){title=text;repaint();}}
  // Master effects are bypassed: the meter is dimmed and says so; a click calls onEnable (turns Master FX on).
  void setBypassed(bool off){if(off!=bypassed){bypassed=off;setMouseCursor(off?juce::MouseCursor::PointingHandCursor:juce::MouseCursor::NormalCursor);repaint();}}
  bool isBypassed()const{return bypassed;}
+ void setCompressorState(bool enabled,bool dryMix){compressorEnabled=enabled;dry=dryMix;}
  std::function<void()> onEnable;
  void mouseUp(const juce::MouseEvent& e)override{if(bypassed&&onEnable&&e.mouseWasClicked())onEnable();}
  // Call at the UI refresh rate (about 24 Hz).
@@ -55,12 +56,19 @@ public:
   g.setFont(FontOptions(10.f,Font::bold));
   for(int db:{0,3,5,7,10,20}){const auto at=point(positionFor(float(db)),radius-27.f);g.setColour(db>=10?Colour(0xffa31f18):Colour(0xff2b2217));g.drawText(String(db),Rectangle<float>(26.f,12.f).withCentre(at),Justification::centred,false);}
   g.setColour(Colour(0xff2b2217));g.setFont(FontOptions(9.f,Font::bold));
-  g.drawText("GAIN REDUCTION",area.withTrimmedTop(area.getHeight()-17.f).withTrimmedBottom(3.f),Justification::centred,false);
+  const juce::String readout=!compressorEnabled?"COMPRESSOR OFF":dry?"COMPRESSOR MIX 0%":
+      needle<.05f?"NO GAIN REDUCTION":juce::String(needle,1)+" dB GAIN REDUCTION";
   g.setFont(FontOptions(9.f));g.drawText(title,area.reduced(9.f,5.f),Justification::topLeft,false);g.drawText("dB",area.reduced(9.f,5.f),Justification::topRight,false);
   // Needle with a soft shadow and a hub.
   const auto tip=point(positionFor(needle),radius-4.f);
   g.setColour(Colour(0x40000000));g.drawLine({Point<float>(pivotX+1.5f,pivotY+1.5f),Point<float>(tip.x+1.5f,tip.y+1.5f)},2.f);
   g.setColour(Colour(0xff17110a));g.drawLine({Point<float>(pivotX,pivotY),tip},1.7f);
+  const auto label=area.withSizeKeepingCentre(134.f,13.f).withBottomY(area.getBottom()-3.f);
+  g.setColour(Colour(0xffd7c899));
+  g.fillRoundedRectangle(label,2.f);
+  g.setColour(Colour(0xff2b2217));
+  g.setFont(FontOptions(9.f,Font::bold));
+  g.drawText(readout,label,Justification::centred,false);
   if(bypassed){
    g.setColour(Colour(0xcc1a1a18));g.fillRoundedRectangle(area,7.f);
    g.setColour(Colour(0xffe4e1d8));g.setFont(FontOptions(12.f,Font::bold));g.drawText("MASTER FX OFF",area.withTrimmedBottom(area.getHeight()*.55f),Justification::centred,false);
@@ -68,7 +76,7 @@ public:
   }
  }
 private:
- bool bypassed=false;
+ bool bypassed=false,compressorEnabled=true,dry=false;
  float target=0,needle=0;juce::String title{"FET 76"};
  // Position along the scale (0 = right end, 1 = left end) for a gain reduction in dB; the spacing follows the cramped
  // top end of a real GR meter: 0..3 dB take a lot of room, 10..20 dB very little.
