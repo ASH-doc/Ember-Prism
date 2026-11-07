@@ -5,7 +5,7 @@ using namespace juce;
 namespace {
 Colour navy(){return Colour(0xff0b1020);}Colour aqua(){return Colour(0xff4fe3f5);}Colour ice(){return Colour(0xffeaf2ff);}
 }
-DualEditor::DualEditor(DualProcessor& processor):AudioProcessorEditor(processor),p(processor),keys(p.keyboard,MidiKeyboardComponent::horizontalKeyboard){
+DualEditor::DualEditor(DualProcessor& processor):AudioProcessorEditor(processor),p(processor),keys(p.keyboard,MidiKeyboardComponent::horizontalKeyboard),routingMap(p.state,p.keyboard){
  // Read the remembered width first: setting the resize limits below resizes the editor and would overwrite it.
  const int savedWidth=int(p.state.state.getProperty("uiWidth",1600));
  look.setColour(ResizableWindow::backgroundColourId,navy());look.setColour(Label::textColourId,ice());look.setColour(Slider::thumbColourId,aqua());look.setColour(Slider::rotarySliderFillColourId,aqua());look.setColour(Slider::rotarySliderOutlineColourId,Colour(0xff2e3c59));look.setColour(TextButton::buttonColourId,Colour(0xff202d49));look.setColour(TextButton::buttonOnColourId,Colour(0xff4d4783));look.setColour(Slider::textBoxBackgroundColourId,Colour(0xff101a2e));look.setColour(Slider::textBoxTextColourId,ice());look.setColour(Slider::textBoxOutlineColourId,Colours::transparentBlack);look.setColour(ComboBox::backgroundColourId,Colour(0xff131e34));look.setColour(ComboBox::outlineColourId,Colour(0xff33425d));setLookAndFeel(&look);
@@ -20,17 +20,30 @@ DualEditor::DualEditor(DualProcessor& processor):AudioProcessorEditor(processor)
  for(auto* slider:{&pitch,&mod}){slider->setSliderStyle(Slider::LinearVertical);slider->setTextBoxStyle(Slider::NoTextBox,false,0,0);surface.addAndMakeVisible(slider);}pitch.setRange(-1,1);pitch.setBounds(28,749,28,34);pitch.onValueChange=[this]{p.bend.store(float(pitch.getValue()));};pitch.onDragEnd=[this]{pitch.setValue(0);};mod.setRange(0,127,1);mod.setBounds(70,749,28,34);mod.onValueChange=[this]{p.wheel.store(float(mod.getValue()));};
  dial("master",1077,8,76,49);
  // ---- Keyboard routing: mode, split note and swap, tap tempo -------------------------------------------------------------
- menu("routing",{"Layer","Split","A only","B only"},1308,102,264,26);
- dial("split",1308,132,170,44);toggle("swap","SWAP",1488,142,84);
- ControlBay::buttonColours(tapButton);surface.addAndMakeVisible(tapButton);tapButton.setBounds(1308,181,56,24);tapButton.onClick=[this]{p.tapTempo();};
- surface.addAndMakeVisible(tapLabel);tapLabel.setBounds(1368,181,76,24);tapLabel.setFont(FontOptions(10.f));tapLabel.setColour(Label::textColourId,ControlBay::secondary);tapLabel.setJustificationType(Justification::centredLeft);
- menu("tap.target",{"Tap: both","Tap: A","Tap: B"},1448,181,124,24);
- // ---- Per-engine note range and channel ------------------------------------------------------------------------------------
- dial("a.low",1308,224,74,50);dial("a.high",1390,224,74,50);dial("a.channel",1472,224,100,50);
- dial("b.low",1308,292,74,50);dial("b.high",1390,292,74,50);dial("b.channel",1472,292,100,50);
- // ---- Output mixer: gain, pan, mute, solo and level bars for each strip ----------------------------------------------------
- dial("a.gain",1308,384,86,72);surface.addAndMakeVisible(barsA);barsA.setBounds(1402,388,30,64);dial("a.pan",1308,456,128,44);toggle("a.mute","MUTE",1308,502,62);toggle("a.solo","SOLO",1374,502,62);
- dial("b.gain",1444,384,86,72);surface.addAndMakeVisible(barsB);barsB.setBounds(1538,388,30,64);dial("b.pan",1444,456,128,44);toggle("b.mute","MUTE",1444,502,62);toggle("b.solo","SOLO",1510,502,62);
+ routeButtons=std::make_unique<ChoiceButtons>(p.state,"routing",StringArray{"LAYER","SPLIT","A ONLY","B ONLY"});
+ routeButtons->setBounds(1308,103,264,26);
+ surface.addAndMakeVisible(*routeButtons);
+ routingMap.setBounds(1308,135,264,80);
+ surface.addAndMakeVisible(routingMap);
+ sidebarSlider("split","Split note",{1313,221,169,22},ControlBay::signal);
+ toggle("swap","SWAP",1488,220,84);
+ ControlBay::buttonColours(tapButton);surface.addAndMakeVisible(tapButton);tapButton.setBounds(1308,248,56,23);tapButton.onClick=[this]{p.tapTempo();};
+ surface.addAndMakeVisible(tapLabel);tapLabel.setBounds(1368,248,76,23);tapLabel.setFont(FontOptions(10.f));tapLabel.setColour(Label::textColourId,ControlBay::secondary);tapLabel.setJustificationType(Justification::centredLeft);
+ menu("tap.target",{"Tap: both","Tap: A","Tap: B"},1448,248,124,23);
+ for(int engine=0;engine<2;++engine){
+  const String prefix=engine==0?"a.":"b.",name=engine==0?"EMBER":"PRISM";
+  const auto accent=engine==0?ControlBay::ember:ControlBay::prism;
+  const int y=292+engine*31,x=1308+engine*136;
+  sidebarSlider(prefix+"low",name+" low note",{1367,y,64,24},accent);
+  sidebarSlider(prefix+"high",name+" high note",{1438,y,64,24},accent);
+  sidebarSlider(prefix+"channel",name+" MIDI channel",{1508,y,64,24},accent);
+  sidebarSlider(prefix+"gain",name+" level",{x+22,400,64,77},accent,true);
+  sidebarSlider(prefix+"pan",name+" pan",{x+21,479,107,20},accent);
+  toggle(prefix+"mute","MUTE",x,502,62);
+  toggle(prefix+"solo","SOLO",x+66,502,62);
+ }
+ surface.addAndMakeVisible(barsA);barsA.setBounds(1403,401,26,58);
+ surface.addAndMakeVisible(barsB);barsB.setBounds(1539,401,26,58);
  // ---- Master section: switch, then three tabs ------------------------------------------------------------------------------
  toggle("glue","MASTER FX",1458,532,114);
  const char* tabNames[3]={"COMP","REVERB","TONE"};
@@ -41,7 +54,7 @@ DualEditor::DualEditor(DualProcessor& processor):AudioProcessorEditor(processor)
  reductionMeter.onEnable=[this]{if(auto* master=p.state.getParameter("glue")){master->beginChangeGesture();master->setValueNotifyingHost(1.f);master->endChangeGesture();}};grouped.push_back({&reductionMeter,CompShared});
  currentGroup=CompFet;
  toggle("fet.hpf","90 Hz SC",1520,586,52);
- ratioButtons=std::make_unique<RatioButtons>(p.state,"fet.ratio",StringArray{"4","8","12","20","ALL"});surface.addAndMakeVisible(*ratioButtons);ratioButtons->setBounds(1308,698,264,22);grouped.push_back({ratioButtons.get(),CompFet});
+ ratioButtons=std::make_unique<ChoiceButtons>(p.state,"fet.ratio",StringArray{"4","8","12","20","ALL"});surface.addAndMakeVisible(*ratioButtons);ratioButtons->setBounds(1308,698,264,22);grouped.push_back({ratioButtons.get(),CompFet});
  dial("fet.input",1308,724,52,70);dial("fet.output",1361,724,52,70);dial("fet.attack",1414,724,52,70);dial("fet.release",1467,724,52,70);dial("fet.mix",1520,724,52,70);
  currentGroup=CompGlue;dial("threshold",1308,724,62,70);dial("ratio",1375,724,62,70);dial("attack",1442,724,62,70);dial("release",1509,724,63,70);
  currentGroup=ReverbTab;toggle("verb","REVERB ON",1308,586,120);dial("room",1308,618,84,72);dial("damp",1398,618,84,72);dial("wet",1488,618,84,72);dial("verb.predelay",1308,698,84,72);dial("verb.lowcut",1398,698,84,72);
@@ -107,19 +120,27 @@ void DualEditor::paint(Graphics& g){g.fillAll(navy());g.addTransform(AffineTrans
  section(80, 278, "01", "KEYBOARD ROUTING");
  section(362, 166, "02", "OUTPUT MIXER");
  section(532, 290, "03", "MASTER GLUE");
- g.setColour(ControlBay::border);
- g.drawVerticalLine(1440, 386, 522);
-
- g.setFont(FontOptions(9.f, Font::bold));
- g.setColour(ControlBay::text);
- g.drawText("A / EMBER VA", 1310, 207, 112, 17, Justification::centredLeft);
- g.drawText("B / PRISM FLUX", 1310, 275, 112, 17, Justification::centredLeft);
- g.drawText("OUT", 1308, 798, 26, 20, Justification::centredLeft);
+ for(int i=0;i<2;++i){
+  const int x=1308+i*136,y=292+i*31;
+  const auto accent=i==0?ControlBay::ember:ControlBay::prism;
+  g.setColour(ControlBay::ink);
+  g.fillRoundedRectangle(float(x),383.f,128.f,116.f,5.f);
+  g.setColour(ControlBay::border);
+  g.drawRoundedRectangle(float(x),383.f,128.f,116.f,5.f,.8f);
+  g.setColour(accent);
+  g.setFont(FontOptions(9.f,Font::bold));
+  g.drawText(i==0?"A / EMBER":"B / PRISM",x+7,384,100,16,Justification::centredLeft);
+  g.drawText(i==0?"A / EMBER":"B / PRISM",1308,y,58,24,Justification::centredLeft);
+  g.setColour(ControlBay::secondary);
+  g.setFont(FontOptions(8.f));
+  g.drawText("PAN",x+5,479,24,20,Justification::centredLeft);
+ }
  g.setColour(ControlBay::secondary);
- g.setFont(FontOptions(9.f));
- g.drawText("NOTE RANGE + CHANNEL", 1420, 207, 150, 17, Justification::centredRight);
- g.drawText("NOTE RANGE + CHANNEL", 1420, 275, 150, 17, Justification::centredRight);
- g.drawText("CH 0 = OMNI / SWAP REVERSES THE SPLIT", 1310, 343, 259, 12, Justification::centredLeft);
+ g.setFont(FontOptions(9.f,Font::bold));
+ g.drawText("LOW",1367,275,64,15,Justification::centredRight);
+ g.drawText("HIGH",1438,275,64,15,Justification::centredRight);
+ g.drawText("MIDI CH",1508,275,64,15,Justification::centredRight);
+ g.drawText("OUT",1308,798,26,20,Justification::centredLeft);
 }
 void DualEditor::dial(String id,int x,int y,int w,int h){auto label=std::make_unique<Label>();auto* param=p.state.getParameter(id);String title=param->name;
  if(id.endsWith(".channel"))title="Channel";else if(id.endsWith(".low")&&id!="verb.lowcut")title="Low note";else if(id.endsWith(".high"))title="High note";else if(id=="room")title="Size";else if(id=="damp")title="Damping";else if(id=="width")title="Width";
@@ -136,6 +157,48 @@ void DualEditor::dial(String id,int x,int y,int w,int h){auto label=std::make_un
   slider->setColour(Slider::textBoxTextColourId,ControlBay::text);
  }surface.addAndMakeVisible(*slider);sliders.push_back(std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(p.state,id,*slider));
  slider->textFromValueFunction=[integer=param->isDiscrete(),pan=id.endsWith(".pan")](double v){if(pan){const int percent=int(std::lround(std::abs(v)*100));return percent==0?String("C"):String(v<0?"L":"R")+String(percent);}return String(std::abs(v)<.0001?0:v,integer?0:2);};slider->updateText();grouped.push_back({slider.get(),currentGroup});controls.push_back(std::move(slider));}
+void DualEditor::sidebarSlider(const String& id,const String& label,Rectangle<int> bounds,Colour accent,bool vertical){
+ auto slider=std::make_unique<Slider>(vertical?Slider::LinearVertical:Slider::LinearHorizontal,
+                                     vertical?Slider::TextBoxBelow:Slider::TextBoxRight);
+ slider->setName(id);
+ slider->setTitle(label);
+ slider->setTooltip(label);
+ slider->getProperties().set("controlBayRail",true);
+ slider->setColour(Slider::trackColourId,accent);
+ slider->setColour(Slider::textBoxOutlineColourId,Colours::transparentBlack);
+ slider->setColour(Slider::textBoxBackgroundColourId,ControlBay::ink);
+ slider->setColour(Slider::textBoxTextColourId,ControlBay::text);
+ slider->setTextBoxStyle(vertical?Slider::TextBoxBelow:Slider::TextBoxRight,false,vertical?59:36,17);
+ slider->setBounds(bounds);
+ surface.addAndMakeVisible(*slider);
+ sliders.push_back(std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(p.state,id,*slider));
+ const bool note=id=="split"||id.endsWith(".low")||id.endsWith(".high");
+ const bool channel=id.endsWith(".channel"),pan=id.endsWith(".pan");
+ slider->textFromValueFunction=[note,channel,pan](double value){
+  if(note)return MidiMessage::getMidiNoteName(roundToInt(value),true,true,4);
+  if(channel)return value==0.0?String("Omni"):String(roundToInt(value));
+  if(pan){
+   const int percent=roundToInt(std::abs(value)*100.0);
+   return percent==0?String("C"):String(value<0.0?"L":"R")+String(percent);
+  }
+  return String(value,1)+" dB";
+ };
+ slider->valueFromTextFunction=[note,channel,pan](const String& value){
+  const auto text=value.trim();
+  if(note)for(int n=0;n<128;++n)
+   if(MidiMessage::getMidiNoteName(n,true,true,4).equalsIgnoreCase(text))return double(n);
+  if(channel&&text.equalsIgnoreCase("Omni"))return 0.0;
+  if(pan){
+   if(text.equalsIgnoreCase("C"))return 0.0;
+   if(text.startsWithIgnoreCase("L")||text.startsWithIgnoreCase("R"))
+    return (text.startsWithIgnoreCase("L")?-1.0:1.0)*text.substring(1).getDoubleValue()/100.0;
+  }
+  return text.getDoubleValue();
+ };
+ if(pan||vertical)slider->setDoubleClickReturnValue(true,pan?0.0:-6.0);
+ slider->updateText();
+ controls.push_back(std::move(slider));
+}
 void DualEditor::toggle(String id,String name,int x,int y,int w){auto button=std::make_unique<ToggleButton>(name);button->setBounds(x,y,w,24);surface.addAndMakeVisible(*button);toggles.push_back(std::make_unique<AudioProcessorValueTreeState::ButtonAttachment>(p.state,id,*button));grouped.push_back({button.get(),currentGroup});controls.push_back(std::move(button));}
 void DualEditor::menu(String id,StringArray labels,int x,int y,int w,int height){auto combo=std::make_unique<ComboBox>();combo->addItemList(labels,1);combo->setBounds(x,y,w,height);
  if(x>=1290){
@@ -161,6 +224,7 @@ void DualEditor::timerCallback(){if(editorA->isVisible()!=(p.panel.load()==0))se
  reductionMeter.tick();
  const float bpm=p.lastTapBpm();tapLabel.setText(bpm>0?String(bpm,1)+" BPM":"tap tempo",dontSendNotification);
  refreshMasterTabs();
+ routingMap.refresh();
  String route=p.value("routing")==0?"LAYER":p.value("routing")==1?"SPLIT at "+MidiMessage::getMidiNoteName(int(p.value("split")),true,true,4)+(p.value("swap")>.5f?" (swapped)":""):p.value("routing")==2?"A ONLY":"B ONLY";
  status.setText(route+"    /    Shared MIDI keyboard    /    Master FX "+String(p.value("glue")>.5f?"ON":"BYPASSED"),dontSendNotification);}
 void DualEditor::file(bool saving){chooser=std::make_unique<FileChooser>(saving?"Save dual performance":"Load dual performance",File::getSpecialLocation(File::userDocumentsDirectory).getChildFile("Dual Performance.dualsynth"),"*.dualsynth");Component::SafePointer<DualEditor> safe(this);chooser->launchAsync(saving?FileBrowserComponent::saveMode|FileBrowserComponent::canSelectFiles|FileBrowserComponent::warnAboutOverwriting:FileBrowserComponent::openMode|FileBrowserComponent::canSelectFiles,[safe,saving](const FileChooser& chosen){if(!safe||chosen.getResult()==File())return;auto file=chosen.getResult();if(saving){MemoryBlock block;safe->p.getStateInformation(block);if(!file.withFileExtension("dualsynth").replaceWithData(block.getData(),block.getSize()))AlertWindow::showMessageBoxAsync(MessageBoxIconType::WarningIcon,"Performance","Could not save performance.");}else{

@@ -10,9 +10,13 @@ add_subdirectory(third_party/JUCE EXCLUDE_FROM_ALL)
 juce_add_binary_data(EmberBank NAMESPACE EmberBank HEADER_NAME EmberBankData.h SOURCES Engines/A/Presets/factory.json Engines/A/Presets/signal_studies.json)
 juce_add_binary_data(EmberClaudeBank NAMESPACE EmberClaudeBank HEADER_NAME EmberClaudeBankData.h SOURCES Engines/A/Presets/claude-import.json)
 juce_add_binary_data(PrismBank NAMESPACE PrismBank HEADER_NAME PrismBankData.h SOURCES Engines/B/Presets/factory.json Engines/B/Presets/signal_studies.json Engines/B/Presets/claude-prism.json)
-juce_add_plugin(DualSynth COMPANY_NAME "Dual Synth Studio" BUNDLE_ID "studio.dualsynth.instrument"
+set(aether_formats Standalone VST3)
+if(APPLE)
+ list(APPEND aether_formats AU)
+endif()
+juce_add_plugin(DualSynth COMPANY_NAME "Dual Synth Studio" BUNDLE_ID "studio.dualsynth.instrument.v49"
  PLUGIN_MANUFACTURER_CODE Dyst PLUGIN_CODE Du49 PRODUCT_NAME "AEther v4.9"
- FORMATS Standalone VST3 IS_SYNTH TRUE NEEDS_MIDI_INPUT TRUE NEEDS_MIDI_OUTPUT FALSE
+ FORMATS ${aether_formats} IS_SYNTH TRUE NEEDS_MIDI_INPUT TRUE NEEDS_MIDI_OUTPUT FALSE
  EDITOR_WANTS_KEYBOARD_FOCUS TRUE COPY_PLUGIN_AFTER_BUILD FALSE VST3_CATEGORIES Instrument Synth)
 juce_generate_juce_header(DualSynth)
 file(GLOB engine_a CONFIGURE_DEPENDS Engines/A/Source/*.cpp)

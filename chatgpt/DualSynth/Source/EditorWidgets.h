@@ -8,6 +8,8 @@ inline const juce::Colour border{0xff4b4d45};
 inline const juce::Colour text{0xffe4e1d8};
 inline const juce::Colour secondary{0xffb4b6a9};
 inline const juce::Colour signal{0xffb7cb91};
+inline const juce::Colour ember{0xffdfae76};
+inline const juce::Colour prism{0xff8fcad0};
 
 inline void buttonColours(juce::TextButton& button) {
  button.setColour(juce::TextButton::buttonColourId, plate);
@@ -111,6 +113,54 @@ public:
   g.setColour(ControlBay::text);g.drawLine({from,to},1.6f);
  }
 
+ void drawLinearSlider(juce::Graphics& g,int x,int y,int w,int h,float position,float minimum,float maximum,
+                       juce::Slider::SliderStyle style,juce::Slider& slider) override {
+  using namespace juce;
+  if(!slider.getProperties().contains("controlBayRail")){
+   LookAndFeel_V4::drawLinearSlider(g,x,y,w,h,position,minimum,maximum,style,slider);
+   return;
+  }
+  const auto accent=slider.findColour(Slider::trackColourId);
+  const bool hover=slider.isMouseOverOrDragging()||slider.hasKeyboardFocus(false);
+  const auto area=Rectangle<float>(float(x),float(y),float(w),float(h));
+  if(style==Slider::LinearVertical){
+   const float railX=area.getCentreX();
+   const auto rail=area.withSizeKeepingCentre(7.f,area.getHeight());
+   g.setColour(ControlBay::ink);
+   g.fillRoundedRectangle(rail,3.f);
+   g.setColour(ControlBay::border);
+   g.drawRoundedRectangle(rail,3.f,1.f);
+   g.setColour(accent.withAlpha(.50f));
+   g.fillRoundedRectangle(rail.reduced(2.f,1.f).withTop(jlimit(rail.getY()+1.f,rail.getBottom()-1.f,position)),1.f);
+   for(float db:{-48.f,-36.f,-24.f,-12.f,0.f,6.f}){
+    const float tick=area.getBottom()-float(slider.valueToProportionOfLength(db))*area.getHeight();
+    g.setColour(db==0.f?accent:ControlBay::border);
+    g.drawLine(railX-14.f,tick,railX-8.f,tick,1.f);
+    g.drawLine(railX+8.f,tick,railX+14.f,tick,1.f);
+   }
+   const auto cap=Rectangle<float>(35.f,13.f).withCentre({railX,position});
+   g.setColour(Colours::black.withAlpha(.7f));
+   g.fillRoundedRectangle(cap.translated(0.f,2.f),3.f);
+   g.setGradientFill(ColourGradient(Colour(hover?0xff777a71:0xff5f625b),cap.getTopLeft(),
+                                   Colour(0xff292b29),cap.getBottomLeft(),false));
+   g.fillRoundedRectangle(cap,3.f);
+   g.setColour(accent.withAlpha(hover?1.f:.8f));
+   g.drawRoundedRectangle(cap,3.f,1.f);
+   g.drawHorizontalLine(roundToInt(position),cap.getX()+4.f,cap.getRight()-4.f);
+   return;
+  }
+  const auto track=area.withSizeKeepingCentre(area.getWidth(),5.f);
+  g.setColour(ControlBay::ink);
+  g.fillRoundedRectangle(track,2.f);
+  g.setColour(ControlBay::border);
+  g.drawRoundedRectangle(track,2.f,.8f);
+  const float origin=slider.getMinimum()<0.0?area.getCentreX():track.getX();
+  g.setColour(accent.withAlpha(.58f));
+  g.fillRect(jmin(origin,position),track.getY()+1.f,std::abs(position-origin),3.f);
+  g.setColour(accent.brighter(hover?.3f:0.f));
+  g.fillRoundedRectangle(Rectangle<float>(6.f,9.f).withCentre({position,track.getCentreY()}),2.f);
+ }
+
  void drawToggleButton(juce::Graphics& g, juce::ToggleButton& button, bool hover, bool down) override {
   using namespace juce;
   const auto face = button.getLocalBounds().toFloat().reduced(.5f, 2.5f);
@@ -148,10 +198,10 @@ private:
  bool horizontal;float shown[2]={-90.f,-90.f};
 };
 
-// Five ratio buttons (4, 8, 12, 20, ALL) bound to one choice parameter.
-class RatioButtons final:public juce::Component{
+// A bank of buttons bound to one choice parameter.
+class ChoiceButtons final:public juce::Component{
 public:
- RatioButtons(juce::AudioProcessorValueTreeState& state,const juce::String& parameterId,const juce::StringArray& labels){
+ ChoiceButtons(juce::AudioProcessorValueTreeState& state,const juce::String& parameterId,const juce::StringArray& labels){
   auto* parameter=state.getParameter(parameterId);
   for(int i=0;i<labels.size();++i){
    auto button=std::make_unique<juce::TextButton>(labels[i]);button->setClickingTogglesState(false);button->setRadioGroupId(0);

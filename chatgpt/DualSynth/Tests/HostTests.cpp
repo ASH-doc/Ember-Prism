@@ -758,6 +758,19 @@ void uiDesignTests(const File* folder){
  }
  {auto editor=std::unique_ptr<AudioProcessorEditor>(host->createEditor());editor->setSize(2000,1050);
   require(int(host->state.state.getProperty("uiWidth"))==2000,"the window width is remembered with the project");
+  const auto findMap=[](const auto& find,Component& node)->KeyboardRoutingMap*{
+   if(auto* map=dynamic_cast<KeyboardRoutingMap*>(&node))return map;
+   for(auto* child:node.getChildren())if(auto* map=find(find,*child))return map;
+   return nullptr;
+  };
+  auto* map=findMap(findMap,*editor);
+  require(map!=nullptr&&!map->keyPressed(KeyPress(KeyPress::rightKey)),"split editing is inactive in Layer");
+  host->write("routing",1);
+  host->write("split",64);
+  require(map->keyPressed(KeyPress(KeyPress::rightKey))&&host->get(DualProcessor::Split)==65.f,
+          "the routing map edits the existing split parameter");
+  host->write("routing",0);
+  host->write("split",60);
   if(folder!=nullptr){host->write("glue",0);savePng(*folder,"host-master-fx-off.png",editor->createComponentSnapshot(editor->getLocalBounds(),true,1.f));}}
  {auto editor=std::unique_ptr<AudioProcessorEditor>(host->createEditor());std::cout<<"INFO: reopened editor size "<<editor->getWidth()<<" x "<<editor->getHeight()<<", saved width "<<int(host->state.state.getProperty("uiWidth"))<<"\n";require(editor->getWidth()==2000&&editor->getHeight()==1050,"a reopened editor uses the remembered size");}
  {auto fresh=makeHost();auto editor=std::unique_ptr<AudioProcessorEditor>(fresh->createEditor());require(editor->getWidth()==1600&&editor->getHeight()==840,"a new instance opens at 100%");}

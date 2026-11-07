@@ -4,6 +4,7 @@
 #include "sb-plugin.h"
 #include "MasterDsp.h"
 #include "EditorWidgets.h"
+#include "KeyboardRoutingMap.h"
 
 // Hands a child the host transport shifted forward by `samples`, so a child that renders one slice of an
 // oversized host block sees tempo and PPQ for the start of that slice rather than the start of the block.
@@ -109,9 +110,11 @@ private:
  Group currentGroup=Always;int masterTab=0;std::vector<std::pair<juce::Component*,Group>> grouped;
  std::array<juce::TextButton,3> tabButtons;
  GainReductionMeter reductionMeter;LevelBars barsA,barsB,barsOut{true};
- std::unique_ptr<RatioButtons> ratioButtons;
+ std::unique_ptr<ChoiceButtons> ratioButtons, routeButtons;
+ KeyboardRoutingMap routingMap;
  juce::TextButton tapButton{"TAP"};juce::Label tapLabel;
  void dial(juce::String,int,int,int,int);void toggle(juce::String,juce::String,int,int,int);void menu(juce::String,juce::StringArray,int,int,int,int height=28);
+ void sidebarSlider(const juce::String&,const juce::String&,juce::Rectangle<int>,juce::Colour,bool vertical=false);
  void refreshMasterTabs();
  void file(bool);void timerCallback()override;
 };
