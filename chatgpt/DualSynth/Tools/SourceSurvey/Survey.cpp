@@ -5,7 +5,10 @@
 #include <juce_core/juce_core.h>
 #include "Import/SpireDecoder.h"
 #include <iostream>
+#include <functional>
 #include <map>
+#include <random>
+#include <set>
 using namespace juce;
 namespace {
 struct Histogram{std::map<double,int> values;int other=0;int total=0;void add(double v){++total;auto it=values.find(v);if(it!=values.end())++it->second;else if(values.size()<48)values[v]=1;else ++other;}};
@@ -66,9 +69,36 @@ void spireTargets(const StringArray& folders){
  top("matrix sources",sources,20);top("matrix targets",targets,40);top("env (index) and lfo (1000+index) targets",envLfoTargets,30);
  std::cout<<"matrix routes per file (target fields set): ";for(const auto& [k,c]:routesPerFile)std::cout<<k<<"x"<<c<<" ";std::cout<<"\nslots with a source: "<<slotsUsed<<"\n";
 }
+// Draws the tuning and evaluation sets of the Spire import contract from the factory presets (stratified, seeded, disjoint) and
+// copies the chosen files into one folder under short names so they can be loaded and rendered one by one. Counts and names only
+// leave this machine; the copies stay local.
+//   DualSurvey spire-select <factory folder> <output folder> [seed]
+void spireSelect(const File& factory,const File& output,uint64_t seed){
+ struct Candidate{File file;String category;bool osc4=false,link=false,multi=false;};
+ std::vector<Candidate> all;
+ for(const auto& entry:RangedDirectoryIterator(factory,true,"*.spf2",File::findFiles)){
+  var parsed;if(JSON::parse(entry.getFile().loadFileAsString(),parsed).failed())continue;auto* values=parsed["parameters"].getDynamicObject();if(values==nullptr)continue;
+  Candidate c;c.file=entry.getFile();c.category=entry.getFile().getParentDirectory().getFileName();auto v=[&](const char* k){return double(values->getProperty(k));};
+  c.osc4=v("mix_osc4")>.001&&v("osc4_mute")<.5;c.link=v("flt_link")>.5;int routes=0;
+  for(int slot=1;slot<=15;++slot){const String p="slot"+String(slot)+"_";if(int(double(values->getProperty(p+"Src1"))*999+.5)==0&&int(double(values->getProperty(p+"Src2"))*999+.5)==0)continue;for(int t=1;t<=4;++t)if(int(double(values->getProperty(p+"Trg"+String(t)))*999+.5)>0)++routes;}
+  c.multi=routes>=3;all.push_back(c);
+ }
+ std::mt19937_64 rng(seed);std::vector<size_t> order(all.size());for(size_t i=0;i<order.size();++i)order[i]=i;std::shuffle(order.begin(),order.end(),rng);
+ std::set<size_t> used;auto take=[&](auto accept)->int{for(size_t i:order)if(!used.count(i)&&accept(all[i])){used.insert(i);return int(i);}return -1;};
+ struct Slot{const char* label;std::function<bool(const Candidate&)> accept;int count;};
+ const Slot plan[]={{"bass",[](const Candidate& c){return c.category=="Basses";},5},{"lead",[](const Candidate& c){return c.category=="Leads";},5},{"pluck",[](const Candidate& c){return c.category=="Plucks";},4},{"pad",[](const Candidate& c){return c.category=="Pads"||c.category=="Keys";},2},
+  {"hard:osc4",[](const Candidate& c){return c.osc4;},1},{"hard:filter-link",[](const Candidate& c){return c.link;},1},{"hard:multi-target",[](const Candidate& c){return c.multi;},1},{"hard:osc4+link",[](const Candidate& c){return c.osc4&&c.link;},1}};
+ output.createDirectory();String listing;
+ for(const char* setName:{"T","E"}){int n=0;listing<<"== "<<setName<<(String(setName)=="T"?" (tuning set)":" (evaluation set, never used for mapping)")<<"\n";
+  for(const auto& slot:plan)for(int k=0;k<slot.count;++k){const int pick=take(slot.accept);if(pick<0){listing<<"  no candidate for "<<slot.label<<"\n";continue;}
+   ++n;const auto& c=all[size_t(pick)];const String name=String(setName)+String(n).paddedLeft('0',2)+"-"+String(slot.label).replaceCharacter(':','-').replaceCharacter('+','-')+".spf2";
+   c.file.copyFileTo(output.getChildFile(name));listing<<"  "<<name<<"  <- "<<c.category<<"/"<<c.file.getFileName()<<"  osc4="<<int(c.osc4)<<" link="<<int(c.link)<<" multi="<<int(c.multi)<<"\n";}}
+ output.getChildFile("selection.txt").replaceWithText(listing);std::cout<<listing<<"candidates: "<<all.size()<<", seed "<<seed<<"\n";
+}
 int main(int argc,char** argv){
  if(argc<3){std::cerr<<"usage: DualSurvey spire|serum1 <folder> ...\n";return 2;}
  const String mode(argv[1]);if(mode=="spire"){StringArray folders;for(int i=2;i<argc;++i)folders.add(argv[i]);spire(folders);return 0;}
+ if(mode=="spire-select"&&argc>=4){spireSelect(File(argv[2]),File(argv[3]),argc>=5?uint64_t(String(argv[4]).getLargeIntValue()):20261107ull);return 0;}
  if(mode=="spire-targets"){StringArray folders;for(int i=2;i<argc;++i)folders.add(argv[i]);spireTargets(folders);return 0;}
  if(mode=="spire-decode"){StringArray folders;for(int i=2;i<argc;++i)folders.add(argv[i]);spireDecode(folders);return 0;}
  if(mode=="serum1"){serum1(argv[2]);return 0;}return 2;
